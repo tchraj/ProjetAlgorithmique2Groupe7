@@ -1,0 +1,3 @@
+# Dépendances du projet
+Flask
+
