@@ -3,36 +3,278 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ordonnanceur de Tâches de Cuisine</title>
+    <title>Kitchen Load Balancer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>Ordonnanceur de Tâches de Cuisine</h1>
-        <form id="task-form">
-            <div class="form-group">
-                <label for="tasks">Tâches (nom, temps en secondes, une par ligne):</label>
-                <textarea id="tasks" name="tasks" rows="10" placeholder="pomme, 30&#10;mangue, 600&#10;poire, 40"></textarea>
+    <!-- Landing Page -->
+    <div class="landing-page" id="landing-page">
+        <div class="landing-content">
+            <div class="landing-logo">
+                <span class="logo-icon">🍳</span>
+                <h1>Kitchen Load Balancer</h1>
+                <p class="tagline">Apprenez le load balancing en cuisinant !</p>
             </div>
-            <div class="form-group">
-                <label for="num_workers">Nombre de commis :</label>
-                <input type="number" id="num_workers" name="num_workers" value="3" min="1">
+
+            <div class="landing-menu">
+                <button class="menu-btn play-btn" id="btn-play">
+                    <span class="btn-emoji">▶️</span>
+                    <span>Jouer</span>
+                </button>
+                <button class="menu-btn tutorial-btn" id="btn-tutorial">
+                    <span class="btn-emoji">📚</span>
+                    <span>Tutoriel</span>
+                </button>
+                <button class="menu-btn options-btn" id="btn-options">
+                    <span class="btn-emoji">⚙️</span>
+                    <span>Options</span>
+                </button>
             </div>
-            <div class="form-group">
-                <label for="algorithm">Algorithme :</label>
-                <select id="algorithm" name="algorithm">
-                    <option value="greedy">Glouton</option>
-                    <option value="dp">Programmation Dynamique (simulée)</option>
-                </select>
+
+            <div class="landing-footer">
+                <p>🎓 Projet Algorithmique - Load Balancing</p>
             </div>
-            <button type="submit">Planifier les Tâches</button>
-        </form>
-        <div id="results-container">
-            <h2>Résultats</h2>
-            <div id="results"></div>
+        </div>
+
+        <!-- Animated kitchen items -->
+        <div class="floating-items">
+            <span class="float-item" style="--delay: 0s; --x: 10%;">🍕</span>
+            <span class="float-item" style="--delay: 1s; --x: 25%;">🍔</span>
+            <span class="float-item" style="--delay: 2s; --x: 40%;">🥗</span>
+            <span class="float-item" style="--delay: 0.5s; --x: 55%;">🍜</span>
+            <span class="float-item" style="--delay: 1.5s; --x: 70%;">🥘</span>
+            <span class="float-item" style="--delay: 2.5s; --x: 85%;">🍰</span>
         </div>
     </div>
+
+    <!-- Tutorial Overlay -->
+    <div class="tutorial-overlay" id="tutorial-overlay">
+        <div class="tutorial-box">
+            <h2>📚 Comment Jouer</h2>
+            <div class="tutorial-content">
+                <div class="tutorial-step">
+                    <span class="step-num">1</span>
+                    <p><strong>Les commandes arrivent</strong> - Des plats apparaissent en bas de l'écran</p>
+                </div>
+                <div class="tutorial-step">
+                    <span class="step-num">2</span>
+                    <p><strong>Assignez aux stations</strong> - Chaque plat passe par: 🥕 Prépa → 🔥 Cuisson → 🎨 Dressage</p>
+                </div>
+                <div class="tutorial-step">
+                    <span class="step-num">3</span>
+                    <p><strong>Respectez les deadlines</strong> - Le compteur sur chaque plat indique le temps restant</p>
+                </div>
+                <div class="tutorial-step">
+                    <span class="step-num">4</span>
+                    <p><strong>Mode Manuel</strong> - Cliquez sur un plat puis sur une station pour l'assigner</p>
+                </div>
+            </div>
+            <button class="tutorial-close" id="tutorial-close">Compris ! 👍</button>
+        </div>
+    </div>
+
+    <!-- Options Overlay -->
+    <div class="options-overlay" id="options-overlay">
+        <div class="options-box">
+            <h2>⚙️ Options</h2>
+            <div class="options-content">
+                <div class="option-row">
+                    <label>🔊 Sons</label>
+                    <button class="toggle-btn active" id="toggle-sound" data-enabled="true">ON</button>
+                </div>
+                <div class="option-row">
+                    <label>🎵 Musique</label>
+                    <button class="toggle-btn active" id="toggle-music" data-enabled="true">ON</button>
+                </div>
+                <div class="option-row">
+                    <label>🔉 Volume</label>
+                    <input type="range" id="volume-slider" min="0" max="100" value="70">
+                </div>
+            </div>
+            <button class="options-close" id="options-close">Fermer</button>
+        </div>
+    </div>
+
+    <!-- Confetti Container -->
+    <div class="confetti-container" id="confetti-container"></div>
+
+    <div class="game-container" id="game-container" style="display: none;">
+        <!-- HUD - Barre supérieure -->
+        <header class="hud">
+            <div class="hud-satisfaction">
+                <span class="hud-icon">😊</span>
+                <div class="gauge">
+                    <div class="gauge-fill" id="satisfaction-fill"></div>
+                </div>
+                <span class="hud-value" id="satisfaction-value">100%</span>
+            </div>
+            <div class="hud-timer">
+                <span class="hud-icon">⏱</span>
+                <span id="game-timer">00:00</span>
+            </div>
+            <div class="hud-stats">
+                <div class="stat">
+                    <span class="stat-icon">✅</span>
+                    <span id="plats-servis">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-icon">❌</span>
+                    <span id="plats-rates">0</span>
+                </div>
+            </div>
+            <div class="hud-algorithm">
+                <span class="algo-icon" id="algo-icon">📊</span>
+                <span class="algo-name" id="algo-name">Least Loaded</span>
+            </div>
+        </header>
+
+        <!-- Main content area -->
+        <div class="main-content">
+            <!-- Panel Load Balancer (latéral) -->
+            <aside class="panel-loadbalancer">
+                <h2>Load Balancer</h2>
+                <div class="algo-list">
+                    <button class="algo-btn" data-algo="manual" data-icon="🎮">
+                        <span class="btn-icon">🎮</span>
+                        <span class="btn-label">Manuel</span>
+                        <span class="btn-tooltip">Vous choisissez quoi cuisiner !</span>
+                    </button>
+                    <button class="algo-btn active" data-algo="least-loaded" data-icon="📊">
+                        <span class="btn-icon">📊</span>
+                        <span class="btn-label">Least Loaded</span>
+                        <span class="btn-tooltip">Envoie vers la station la moins chargée</span>
+                    </button>
+                    <button class="algo-btn" data-algo="round-robin" data-icon="🔄" disabled>
+                        <span class="btn-icon">🔄</span>
+                        <span class="btn-label">Round Robin</span>
+                        <span class="btn-tooltip">Répartition cyclique (bientôt)</span>
+                    </button>
+                    <button class="algo-btn" data-algo="shortest-job" data-icon="⏳" disabled>
+                        <span class="btn-icon">⏳</span>
+                        <span class="btn-label">Shortest Job</span>
+                        <span class="btn-tooltip">Priorité aux plats courts (bientôt)</span>
+                    </button>
+                    <button class="algo-btn" data-algo="priority-first" data-icon="⭐" disabled>
+                        <span class="btn-icon">⭐</span>
+                        <span class="btn-label">Priority First</span>
+                        <span class="btn-tooltip">VIP d'abord (bientôt)</span>
+                    </button>
+                </div>
+
+                <div class="manual-mode-indicator" id="manual-indicator">
+                    🎮 Mode Manuel Actif
+                </div>
+
+                <div class="game-controls">
+                    <button id="btn-start" class="control-btn start">▶ Démarrer</button>
+                    <button id="btn-pause" class="control-btn pause" disabled>⏸ Pause</button>
+                    <button id="btn-reset" class="control-btn reset">🔄 Reset</button>
+                </div>
+
+                <div class="speed-control">
+                    <label>Vitesse:</label>
+                    <div class="speed-buttons">
+                        <button class="speed-btn" data-speed="0.25">0.25x</button>
+                        <button class="speed-btn" data-speed="0.5">0.5x</button>
+                        <button class="speed-btn active" data-speed="1">1x</button>
+                        <button class="speed-btn" data-speed="2">2x</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Zone Cuisine (centrale) -->
+            <main class="zone-cuisine">
+                <div class="stations-container">
+                    <!-- Station Préparation -->
+                    <div class="station" data-type="preparation" data-status="idle">
+                        <div class="station-header">
+                            <span class="station-icon">🥕</span>
+                            <span class="station-name">Préparation</span>
+                            <span class="station-capacity">0/2</span>
+                        </div>
+                        <div class="station-load-bar">
+                            <div class="load-fill"></div>
+                        </div>
+                        <div class="station-active" id="prep-active">
+                            <!-- Plats en cours de préparation -->
+                        </div>
+                        <div class="station-queue" id="prep-queue">
+                            <!-- File d'attente préparation -->
+                        </div>
+                    </div>
+
+                    <!-- Station Cuisson -->
+                    <div class="station" data-type="cuisson" data-status="idle">
+                        <div class="station-header">
+                            <span class="station-icon">🔥</span>
+                            <span class="station-name">Cuisson</span>
+                            <span class="station-capacity">0/1</span>
+                        </div>
+                        <div class="station-load-bar">
+                            <div class="load-fill"></div>
+                        </div>
+                        <div class="station-active" id="cuisson-active">
+                            <!-- Plat en cuisson -->
+                        </div>
+                        <div class="station-queue" id="cuisson-queue">
+                            <!-- File d'attente cuisson -->
+                        </div>
+                    </div>
+
+                    <!-- Station Dressage -->
+                    <div class="station" data-type="dressage" data-status="idle">
+                        <div class="station-header">
+                            <span class="station-icon">🎨</span>
+                            <span class="station-name">Dressage</span>
+                            <span class="station-capacity">0/1</span>
+                        </div>
+                        <div class="station-load-bar">
+                            <div class="load-fill"></div>
+                        </div>
+                        <div class="station-active" id="dressage-active">
+                            <!-- Plat en dressage -->
+                        </div>
+                        <div class="station-queue" id="dressage-queue">
+                            <!-- File d'attente dressage -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Zone des plats servis -->
+                <div class="zone-servis">
+                    <h3>🍽️ Plats Servis</h3>
+                    <div class="servis-container" id="servis-container">
+                        <!-- Plats servis apparaissent ici -->
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Zone Commandes (bas de l'écran) -->
+        <footer class="zone-commandes">
+            <h3>📥 Commandes entrantes</h3>
+            <div class="commandes-container" id="commandes-container">
+                <!-- Les cartes de commandes apparaissent ici -->
+            </div>
+        </footer>
+    </div>
+
+    <!-- Messages pédagogiques -->
+    <div class="message-overlay" id="message-overlay">
+        <div class="message-box">
+            <p id="message-text"></p>
+            <button id="message-close">OK</button>
+        </div>
+    </div>
+
+    <!-- Manual mode instructions -->
+    <div class="manual-instructions" id="manual-instructions">
+        Cliquez sur un plat pour le sélectionner, puis sur une station pour l'assigner
+    </div>
+
+    <!-- Back to menu button -->
+    <button class="back-to-menu" id="back-to-menu">🏠 Menu</button>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
-
