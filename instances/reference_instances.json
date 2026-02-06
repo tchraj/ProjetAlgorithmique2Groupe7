@@ -1,0 +1,312 @@
+{
+  "metadata": {
+    "titre": "Instances de référence - Projet Ordonnancement Cuisine",
+    "projet": "Polytech Nice SI4 - Algorithmes et Médiation",
+    "groupe": "Groupe 7",
+    "auteur": "Imane",
+    "description": "Instances basées sur les exemples du document projet",
+    "nombre_instances": 7,
+    "date_creation": "janvier-avril 2026"
+  },
+  "instances": [
+    {
+      "nom": "exemple_1_sujet",
+      "description": "3 plats: plat 1 (15min prep, 0min cuisson), plat 2 (11min prep, 16min cuisson), plat 3 (0min prep, 8min cuisson)",
+      "plats": [
+        {
+          "nom": "plat_1",
+          "temps_epluchage": 900,
+          "temps_cuisson": 0
+        },
+        {
+          "nom": "plat_2",
+          "temps_epluchage": 660,
+          "temps_cuisson": 960
+        },
+        {
+          "nom": "plat_3",
+          "temps_epluchage": 0,
+          "temps_cuisson": 480
+        }
+      ],
+      "nombre_commis": 2,
+      "difficulte": "facile",
+      "source": "Document projet - Exemple 1",
+      "statistiques": {
+        "nombre_plats": 3,
+        "temps_total_travail": 3000,
+        "temps_moyen_par_plat": 1000,
+        "temps_max_plat": 1620,
+        "temps_min_plat": 480,
+        "charge_theorique_par_commis": 1500
+      }
+    },
+    {
+      "nom": "exemple_2_sujet",
+      "description": "3 plats: plat 1 (16min prep, 10min cuisson), plat 2 (11min prep, 14min cuisson), plat 3 (0min prep, 8min cuisson)",
+      "plats": [
+        {
+          "nom": "plat_1",
+          "temps_epluchage": 960,
+          "temps_cuisson": 600
+        },
+        {
+          "nom": "plat_2",
+          "temps_epluchage": 660,
+          "temps_cuisson": 840
+        },
+        {
+          "nom": "plat_3",
+          "temps_epluchage": 0,
+          "temps_cuisson": 480
+        }
+      ],
+      "nombre_commis": 2,
+      "difficulte": "facile",
+      "source": "Document projet - Exemple 2",
+      "statistiques": {
+        "nombre_plats": 3,
+        "temps_total_travail": 3540,
+        "temps_moyen_par_plat": 1180,
+        "temps_max_plat": 1560,
+        "temps_min_plat": 480,
+        "charge_theorique_par_commis": 1770
+      }
+    },
+    {
+      "nom": "exemple_3_sujet",
+      "description": "4 plats: plat 1 (8min prep, 12min cuisson), plat 2 (12min prep, 8min cuisson), plat 3 (17min prep, 20min cuisson), plat 4 (19min prep, 12min cuisson)",
+      "plats": [
+        {
+          "nom": "plat_1",
+          "temps_epluchage": 480,
+          "temps_cuisson": 720
+        },
+        {
+          "nom": "plat_2",
+          "temps_epluchage": 720,
+          "temps_cuisson": 480
+        },
+        {
+          "nom": "plat_3",
+          "temps_epluchage": 1020,
+          "temps_cuisson": 1200
+        },
+        {
+          "nom": "plat_4",
+          "temps_epluchage": 1140,
+          "temps_cuisson": 720
+        }
+      ],
+      "nombre_commis": 2,
+      "difficulte": "moyen",
+      "source": "Document projet - Exemple 3",
+      "statistiques": {
+        "nombre_plats": 4,
+        "temps_total_travail": 6480,
+        "temps_moyen_par_plat": 1620,
+        "temps_max_plat": 2220,
+        "temps_min_plat": 1200,
+        "charge_theorique_par_commis": 3240
+      }
+    },
+    {
+      "nom": "exemple_fruits_classique",
+      "description": "Problème d'origine: 43 pommes, 57 mangues, 107 tomates, 13 litchis",
+      "plats": [
+        {
+          "nom": "pommes",
+          "temps_epluchage": 1290,
+          "temps_cuisson": 8600
+        },
+        {
+          "nom": "mangues",
+          "temps_epluchage": 34200,
+          "temps_cuisson": 5700
+        },
+        {
+          "nom": "tomates",
+          "temps_epluchage": 1070,
+          "temps_cuisson": 16050
+        },
+        {
+          "nom": "litchis",
+          "temps_epluchage": 65,
+          "temps_cuisson": 650
+        }
+      ],
+      "nombre_commis": 3,
+      "difficulte": "moyen",
+      "source": "Document projet - Problème initial avec fruits",
+      "statistiques": {
+        "nombre_plats": 4,
+        "temps_total_travail": 67625,
+        "temps_moyen_par_plat": 16906,
+        "temps_max_plat": 39900,
+        "temps_min_plat": 715,
+        "charge_theorique_par_commis": 22541
+      }
+    },
+    {
+      "nom": "exemple_vacances_ludique",
+      "description": "Planifier des vacances avec activités et horaires contraints",
+      "plats": [
+        {
+          "nom": "musee",
+          "temps_epluchage": 36000,
+          "temps_cuisson": 0
+        },
+        {
+          "nom": "parc_attraction",
+          "temps_epluchage": 54000,
+          "temps_cuisson": 0
+        },
+        {
+          "nom": "restaurant",
+          "temps_epluchage": 4200,
+          "temps_cuisson": 0
+        },
+        {
+          "nom": "plage_matin",
+          "temps_epluchage": 10800,
+          "temps_cuisson": 0
+        },
+        {
+          "nom": "plage_apresmidi",
+          "temps_epluchage": 14400,
+          "temps_cuisson": 0
+        }
+      ],
+      "nombre_commis": 5,
+      "difficulte": "moyen",
+      "source": "Document projet - Approche ludique vacances",
+      "statistiques": {
+        "nombre_plats": 5,
+        "temps_total_travail": 119400,
+        "temps_moyen_par_plat": 23880,
+        "temps_max_plat": 54000,
+        "temps_min_plat": 4200,
+        "charge_theorique_par_commis": 23880
+      }
+    },
+    {
+      "nom": "exemple_mini_test",
+      "description": "Instance minimale pour tests rapides (2 plats, 2 commis)",
+      "plats": [
+        {
+          "nom": "salade",
+          "temps_epluchage": 300,
+          "temps_cuisson": 0
+        },
+        {
+          "nom": "soupe",
+          "temps_epluchage": 600,
+          "temps_cuisson": 1200
+        }
+      ],
+      "nombre_commis": 2,
+      "difficulte": "facile",
+      "source": "Instance de test minimale",
+      "statistiques": {
+        "nombre_plats": 2,
+        "temps_total_travail": 2100,
+        "temps_moyen_par_plat": 1050,
+        "temps_max_plat": 1800,
+        "temps_min_plat": 300,
+        "charge_theorique_par_commis": 1050
+      }
+    },
+    {
+      "nom": "exemple_benchmark_complexe",
+      "description": "Instance complexe pour tester les performances (15 plats, 5 commis)",
+      "plats": [
+        {
+          "nom": "plat_1",
+          "temps_epluchage": 300,
+          "temps_cuisson": 600
+        },
+        {
+          "nom": "plat_2",
+          "temps_epluchage": 420,
+          "temps_cuisson": 780
+        },
+        {
+          "nom": "plat_3",
+          "temps_epluchage": 540,
+          "temps_cuisson": 960
+        },
+        {
+          "nom": "plat_4",
+          "temps_epluchage": 660,
+          "temps_cuisson": 1140
+        },
+        {
+          "nom": "plat_5",
+          "temps_epluchage": 780,
+          "temps_cuisson": 1320
+        },
+        {
+          "nom": "plat_6",
+          "temps_epluchage": 900,
+          "temps_cuisson": 1500
+        },
+        {
+          "nom": "plat_7",
+          "temps_epluchage": 1020,
+          "temps_cuisson": 1680
+        },
+        {
+          "nom": "plat_8",
+          "temps_epluchage": 1140,
+          "temps_cuisson": 1860
+        },
+        {
+          "nom": "plat_9",
+          "temps_epluchage": 1260,
+          "temps_cuisson": 2040
+        },
+        {
+          "nom": "plat_10",
+          "temps_epluchage": 1380,
+          "temps_cuisson": 2220
+        },
+        {
+          "nom": "plat_11",
+          "temps_epluchage": 1500,
+          "temps_cuisson": 2400
+        },
+        {
+          "nom": "plat_12",
+          "temps_epluchage": 1620,
+          "temps_cuisson": 2580
+        },
+        {
+          "nom": "plat_13",
+          "temps_epluchage": 1740,
+          "temps_cuisson": 2760
+        },
+        {
+          "nom": "plat_14",
+          "temps_epluchage": 1860,
+          "temps_cuisson": 2940
+        },
+        {
+          "nom": "plat_15",
+          "temps_epluchage": 1980,
+          "temps_cuisson": 3120
+        }
+      ],
+      "nombre_commis": 5,
+      "difficulte": "difficile",
+      "source": "Instance de benchmark",
+      "statistiques": {
+        "nombre_plats": 15,
+        "temps_total_travail": 45000,
+        "temps_moyen_par_plat": 3000,
+        "temps_max_plat": 5100,
+        "temps_min_plat": 900,
+        "charge_theorique_par_commis": 9000
+      }
+    }
+  ]
+}

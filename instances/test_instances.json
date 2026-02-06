@@ -1,0 +1,172 @@
+{
+  "metadata": {
+    "nombre_instances": 3,
+    "generateur": "InstanceGenerator v1.0",
+    "projet": "Ordonnancement Cuisine - Polytech Nice SI4"
+  },
+  "instances": [
+    {
+      "nom": "test_simple",
+      "description": "Instance simple avec 5 plats et 3 commis",
+      "plats": [
+        {
+          "nom": "abricot",
+          "temps_epluchage": 540,
+          "temps_cuisson": 1680
+        },
+        {
+          "nom": "poire",
+          "temps_epluchage": 480,
+          "temps_cuisson": 1560
+        },
+        {
+          "nom": "papaye",
+          "temps_epluchage": 420,
+          "temps_cuisson": 1380
+        },
+        {
+          "nom": "raisin",
+          "temps_epluchage": 1080,
+          "temps_cuisson": 360
+        },
+        {
+          "nom": "pastèque",
+          "temps_epluchage": 300,
+          "temps_cuisson": 420
+        }
+      ],
+      "nombre_commis": 3,
+      "difficulte": "facile",
+      "statistiques": {
+        "nombre_plats": 5,
+        "temps_total_travail": 8220,
+        "temps_moyen_par_plat": 1644,
+        "temps_max_plat": 2220,
+        "temps_min_plat": 720,
+        "charge_theorique_par_commis": 2740
+      }
+    },
+    {
+      "nom": "test_equilibree",
+      "description": "Instance équilibrée avec 8 plats et 3 commis (temps similaires)",
+      "plats": [
+        {
+          "nom": "melon",
+          "temps_epluchage": 477,
+          "temps_cuisson": 846
+        },
+        {
+          "nom": "pastèque",
+          "temps_epluchage": 322,
+          "temps_cuisson": 638
+        },
+        {
+          "nom": "poire",
+          "temps_epluchage": 925,
+          "temps_cuisson": 919
+        },
+        {
+          "nom": "papaye",
+          "temps_epluchage": 547,
+          "temps_cuisson": 666
+        },
+        {
+          "nom": "pêche",
+          "temps_epluchage": 852,
+          "temps_cuisson": 1461
+        },
+        {
+          "nom": "aubergine",
+          "temps_epluchage": 558,
+          "temps_cuisson": 1001
+        },
+        {
+          "nom": "pomme de terre",
+          "temps_epluchage": 886,
+          "temps_cuisson": 1198
+        },
+        {
+          "nom": "céleri",
+          "temps_epluchage": 340,
+          "temps_cuisson": 602
+        }
+      ],
+      "nombre_commis": 3,
+      "difficulte": "moyen",
+      "statistiques": {
+        "nombre_plats": 8,
+        "temps_total_travail": 12238,
+        "temps_moyen_par_plat": 1529,
+        "temps_max_plat": 2313,
+        "temps_min_plat": 942,
+        "charge_theorique_par_commis": 4079
+      }
+    },
+    {
+      "nom": "test_difficile",
+      "description": "Instance difficile avec 10 plats et 4 commis (temps très variés)",
+      "plats": [
+        {
+          "nom": "carotte",
+          "temps_epluchage": 480,
+          "temps_cuisson": 600
+        },
+        {
+          "nom": "pomme de terre",
+          "temps_epluchage": 300,
+          "temps_cuisson": 900
+        },
+        {
+          "nom": "tomate",
+          "temps_epluchage": 420,
+          "temps_cuisson": 480
+        },
+        {
+          "nom": "abricot",
+          "temps_epluchage": 1320,
+          "temps_cuisson": 1860
+        },
+        {
+          "nom": "poireau",
+          "temps_epluchage": 2280,
+          "temps_cuisson": 2160
+        },
+        {
+          "nom": "radis",
+          "temps_epluchage": 300,
+          "temps_cuisson": 540
+        },
+        {
+          "nom": "framboise",
+          "temps_epluchage": 180,
+          "temps_cuisson": 600
+        },
+        {
+          "nom": "papaye",
+          "temps_epluchage": 120,
+          "temps_cuisson": 480
+        },
+        {
+          "nom": "mangue",
+          "temps_epluchage": 480,
+          "temps_cuisson": 540
+        },
+        {
+          "nom": "cerise",
+          "temps_epluchage": 480,
+          "temps_cuisson": 360
+        }
+      ],
+      "nombre_commis": 4,
+      "difficulte": "difficile",
+      "statistiques": {
+        "nombre_plats": 10,
+        "temps_total_travail": 14880,
+        "temps_moyen_par_plat": 1488,
+        "temps_max_plat": 4440,
+        "temps_min_plat": 600,
+        "charge_theorique_par_commis": 3720
+      }
+    }
+  ]
+}
