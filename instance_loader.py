@@ -67,7 +67,7 @@ class InstanceManager:
             })
         
         # Charger les instances de test
-        test_data = self.charger_fichier_instances("instances_test.json")
+        test_data = self.charger_fichier_instances("test_instances.json")
         for instance in test_data.get("instances", []):
             instances.append({
                 "nom": instance["nom"],
@@ -95,7 +95,7 @@ class InstanceManager:
             return self.instances_cache[nom]
         
         # Chercher dans les fichiers
-        for fichier in ["reference_instances.json", "instances_test.json"]:
+        for fichier in ["reference_instances.json", "test_instances.json"]:
             data = self.charger_fichier_instances(fichier)
             for instance in data.get("instances", []):
                 if instance["nom"] == nom:

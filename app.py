@@ -1,8 +1,13 @@
 from flask import Flask, render_template, request, jsonify
 from algorithms import greedy_scheduler, dynamic_programming_scheduler
+from instance_loader import InstanceManager
 import heapq
+import math
 
 app = Flask(__name__)
+
+# Gestionnaire d'instances
+instance_manager = InstanceManager()
 
 # Catalogue des plats pour le jeu Kitchen Load Balancer
 PLATS_CATALOGUE = {
@@ -156,6 +161,157 @@ def schedule():
         'workers': workers,
         'makespan': makespan
     })
+
+# ================================================
+# API Instances - Rendre les instances générées utilisables par le front
+# ================================================
+
+# Icônes associées aux ingrédients pour l'affichage frontend
+ICONS_INGREDIENTS = {
+    "pomme": "\U0001F34E", "poire": "\U0001F350", "mangue": "\U0001F96D",
+    "ananas": "\U0001F34D", "kiwi": "\U0001F95D", "orange": "\U0001F34A",
+    "pêche": "\U0001F351", "abricot": "\U0001F351", "prune": "\U0001F351",
+    "cerise": "\U0001F352", "fraise": "\U0001F353", "framboise": "\U0001F353",
+    "myrtille": "\U0001FAD0", "melon": "\U0001F348", "pastèque": "\U0001F349",
+    "raisin": "\U0001F347", "litchi": "\U0001F352", "papaye": "\U0001F96D",
+    "goyave": "\U0001F96D", "carotte": "\U0001F955", "pomme de terre": "\U0001F954",
+    "courgette": "\U0001F96C", "aubergine": "\U0001F346", "poivron": "\U0001FAD1",
+    "tomate": "\U0001F345", "concombre": "\U0001F96C", "radis": "\U0001F96C",
+    "navet": "\U0001F96C", "céleri": "\U0001F96C", "poireau": "\U0001F96C",
+    "champignon": "\U0001F344", "brocoli": "\U0001F966", "chou-fleur": "\U0001F966",
+    "haricot vert": "\U0001FAD8", "salade": "\U0001F957", "soupe": "\U0001F372",
+}
+ICON_PAR_DEFAUT = "\U0001F37D\uFE0F"
+
+
+def convertir_plat_pour_frontend(plat_backend, index):
+    """
+    Convertit un plat du format instance (temps_epluchage/temps_cuisson en secondes)
+    vers le format attendu par le frontend (prep/cuisson/dressage en secondes de jeu).
+
+    Règle de conversion : temps réels (secondes) / 60 → secondes de jeu
+    Cela rend les instances jouables (900s réelles = 15s de jeu).
+    """
+    prep = max(1, round(plat_backend["temps_epluchage"] / 60))
+    cuisson = round(plat_backend["temps_cuisson"] / 60)
+
+    # Dressage : ~25% du temps de préparation, entre 2 et 10 secondes de jeu
+    dressage = max(2, min(10, round(prep * 0.25))) if prep > 0 else 3
+
+    temps_total = prep + cuisson + dressage
+
+    # Priorité basée sur le temps total
+    if temps_total > 45:
+        priorite = "vip"
+    elif temps_total > 30:
+        priorite = "elevee"
+    elif temps_total < 12:
+        priorite = "basse"
+    else:
+        priorite = "normale"
+
+    # Deadline : temps total * 1.6, arrondi, minimum 15s
+    deadline = max(15, round(temps_total * 1.6))
+
+    # Icône basée sur le nom de l'ingrédient
+    nom_lower = plat_backend["nom"].lower()
+    icon = ICONS_INGREDIENTS.get(nom_lower, ICON_PAR_DEFAUT)
+
+    # ID unique basé sur l'index
+    plat_id = chr(65 + (index % 26))  # A, B, C, ...
+    if index >= 26:
+        plat_id = f"{plat_id}{index // 26}"
+
+    return {
+        "id": plat_id,
+        "nom": plat_backend["nom"].capitalize(),
+        "icon": icon,
+        "prep": prep,
+        "cuisson": cuisson,
+        "dressage": dressage,
+        "priorite": priorite,
+        "deadline": deadline,
+        # Garder les temps originaux pour référence
+        "temps_epluchage_original": plat_backend["temps_epluchage"],
+        "temps_cuisson_original": plat_backend["temps_cuisson"]
+    }
+
+
+def convertir_instance_pour_frontend(instance):
+    """Convertit une instance complète au format frontend."""
+    plats_convertis = [
+        convertir_plat_pour_frontend(plat, i)
+        for i, plat in enumerate(instance["plats"])
+    ]
+    return {
+        "nom": instance["nom"],
+        "description": instance.get("description", ""),
+        "difficulte": instance.get("difficulte", "moyen"),
+        "nombre_commis": instance.get("nombre_commis", 3),
+        "statistiques": instance.get("statistiques", {}),
+        "plats": plats_convertis
+    }
+
+
+@app.route('/api/instances', methods=['GET'])
+def list_instances():
+    """Liste toutes les instances disponibles (référence + test)."""
+    instances = instance_manager.lister_instances_disponibles()
+    return jsonify({"instances": instances})
+
+
+@app.route('/api/instances/<nom>', methods=['GET'])
+def get_instance(nom):
+    """
+    Retourne une instance spécifique convertie au format frontend.
+    Le paramètre ?raw=true retourne le format brut (temps_epluchage/temps_cuisson).
+    """
+    instance = instance_manager.obtenir_instance_par_nom(nom)
+    if not instance:
+        return jsonify({"error": f"Instance '{nom}' non trouvée"}), 404
+
+    raw = request.args.get('raw', 'false').lower() == 'true'
+    if raw:
+        return jsonify(instance)
+
+    return jsonify(convertir_instance_pour_frontend(instance))
+
+
+@app.route('/api/instances/generate', methods=['POST'])
+def generate_instance():
+    """
+    Génère une nouvelle instance aléatoire et la retourne au format frontend.
+
+    Body JSON attendu :
+    {
+        "nombre_plats": 5,       (optionnel, défaut: 5)
+        "nombre_commis": 3,      (optionnel, défaut: 3)
+        "difficulte": "moyen"    (optionnel: "facile", "moyen", "difficile")
+    }
+    """
+    data = request.json or {}
+    nombre_plats = data.get("nombre_plats", 5)
+    nombre_commis = data.get("nombre_commis", 3)
+    difficulte = data.get("difficulte", "moyen")
+
+    # Validation
+    nombre_plats = max(2, min(20, int(nombre_plats)))
+    nombre_commis = max(1, min(10, int(nombre_commis)))
+    if difficulte not in ("facile", "moyen", "difficile"):
+        difficulte = "moyen"
+
+    instance = instance_manager.generer_instance_aleatoire(
+        nombre_plats=nombre_plats,
+        nombre_commis=nombre_commis,
+        difficulte=difficulte
+    )
+
+    raw = request.args.get('raw', 'false').lower() == 'true'
+    if raw:
+        return jsonify(instance)
+
+    return jsonify(convertir_instance_pour_frontend(instance))
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
