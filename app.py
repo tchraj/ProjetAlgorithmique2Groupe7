@@ -23,6 +23,11 @@ PLATS_CATALOGUE = {
 def index():
     return render_template('index.html')
 
+@app.route('/activite-debranchee')
+def activite_debranchee():
+    """Page de l'activité débranchée : simulation animée + cartes imprimables."""
+    return render_template('activite_debranchee.html')
+
 @app.route('/api/plats', methods=['GET'])
 def get_plats():
     """Retourne le catalogue des plats disponibles."""
