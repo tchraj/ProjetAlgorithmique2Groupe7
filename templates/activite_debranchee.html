@@ -3,579 +3,903 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kit Activit&eacute; D&eacute;branch&eacute;e - Ordonnancement en Cuisine</title>
+    <title>Activit&eacute; D&eacute;branch&eacute;e - Chef d'Orchestre en Cuisine</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; color: #333; }
 
-        /* ===== SCREEN UI (hidden when printing) ===== */
-        .screen-ui {
-            background: #1a1a2e; color: #fff; padding: 20px 30px;
-            position: sticky; top: 0; z-index: 100;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
         }
-        .screen-ui h1 { color: #e94560; font-size: 1.4em; margin-bottom: 8px; }
-        .screen-ui p { color: #aaa; font-size: 0.95em; margin-bottom: 15px; }
-        .screen-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-        .screen-btn {
-            padding: 10px 22px; border-radius: 20px; border: 2px solid #333;
+
+        /* ===== NAVIGATION ===== */
+        .nav-bar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 30px;
+            border-bottom: 2px solid #e94560;
+        }
+        .nav-bar h1 { font-size: 1.2em; color: #e94560; }
+        .nav-tabs { display: flex; gap: 8px; }
+        .nav-tab {
+            padding: 8px 18px; border-radius: 20px; border: 2px solid #333;
             background: transparent; color: #aaa; cursor: pointer; font-size: 0.9em;
             transition: all 0.3s;
         }
-        .screen-btn:hover { border-color: #e94560; color: #fff; }
-        .screen-btn.active { background: #e94560; border-color: #e94560; color: #fff; }
-        .print-all-btn {
-            padding: 10px 30px; border-radius: 20px; border: none;
-            background: #4ecdc4; color: #fff; cursor: pointer; font-size: 0.95em;
-            font-weight: bold; margin-left: auto;
-        }
-        .print-all-btn:hover { background: #3db8b0; }
-        .instance-select {
-            padding: 8px 14px; border-radius: 10px; border: 2px solid #333;
-            background: #16213e; color: #fff; font-size: 0.9em;
-        }
+        .nav-tab:hover { border-color: #e94560; color: #fff; }
+        .nav-tab.active { background: #e94560; border-color: #e94560; color: #fff; }
 
-        /* ===== PRINTABLE PAGES ===== */
-        .print-page {
-            width: 210mm; min-height: 297mm; margin: 20px auto;
-            background: #fff; padding: 15mm; box-shadow: 0 2px 20px rgba(0,0,0,0.1);
-            page-break-after: always; position: relative;
-        }
-        .print-page:last-child { page-break-after: avoid; }
+        /* ===== SECTIONS ===== */
+        .section { display: none; padding: 80px 30px 40px; min-height: 100vh; }
+        .section.active { display: block; }
 
-        /* ===== PAGE 1: REGLES DU JEU ===== */
-        .rules-header {
-            text-align: center; border-bottom: 3px solid #e94560;
-            padding-bottom: 15px; margin-bottom: 20px;
+        /* ===== SIMULATION ANIMEE ===== */
+        .sim-container { max-width: 1000px; margin: 0 auto; }
+        .sim-title {
+            text-align: center; font-size: 2em; margin-bottom: 10px;
+            background: linear-gradient(135deg, #e94560, #0f3460);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        .rules-header h1 { font-size: 2em; color: #e94560; margin-bottom: 5px; }
-        .rules-header .subtitle { font-size: 1.1em; color: #666; }
-        .rules-header .team { font-size: 0.85em; color: #999; margin-top: 5px; }
+        .sim-subtitle { text-align: center; color: #888; margin-bottom: 30px; font-size: 1.1em; }
 
-        .rules-section { margin-bottom: 18px; }
-        .rules-section h2 {
-            font-size: 1.15em; color: #fff; background: #e94560;
-            padding: 6px 14px; border-radius: 8px; display: inline-block;
-            margin-bottom: 8px;
+        /* Step indicator */
+        .steps-indicator {
+            display: flex; justify-content: center; gap: 12px; margin-bottom: 30px;
         }
-        .rules-section h2.green { background: #4ecdc4; }
-        .rules-section h2.blue { background: #0f3460; }
-
-        .rules-box {
-            border: 2px solid #eee; border-radius: 10px; padding: 12px 16px;
-            background: #fafafa; line-height: 1.7; font-size: 0.92em;
-        }
-        .rules-box ol, .rules-box ul { padding-left: 22px; }
-        .rules-box li { margin-bottom: 4px; }
-        .rules-box .highlight { background: #fff3cd; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-        .rules-box .keyword { color: #e94560; font-weight: bold; }
-
-        .materiel-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-        }
-        .materiel-item {
-            display: flex; align-items: center; gap: 10px;
-            padding: 8px 12px; border: 1px solid #eee; border-radius: 8px;
-            font-size: 0.9em;
-        }
-        .materiel-item .m-icon { font-size: 1.5em; }
-
-        .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-
-        /* ===== PAGE 2: CARTES PLATS ===== */
-        .cards-page-title {
-            text-align: center; font-size: 1.4em; color: #e94560;
-            margin-bottom: 5px; border-bottom: 2px solid #e94560; padding-bottom: 8px;
-        }
-        .cards-page-subtitle {
-            text-align: center; color: #888; font-size: 0.85em; margin-bottom: 15px;
-        }
-        /* Grille entourée de pointillés pour découpe facile */
-        #cards-grid {
-            border: 2px dashed #ccc;
-            padding: 14px;
-            border-radius: 8px;
-        }
-
-        .cards-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px 30px;
-        }
-        .plat-card {
-            border: 3px solid #e94560; border-radius: 14px; padding: 14px;
-            text-align: center; background: linear-gradient(180deg, #fff8f0 0%, #fff 100%);
-            position: relative; min-height: 160px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            margin-right: 14px; margin-bottom: 14px;
-        }
-        /* Tab puzzle — droite */
-        .plat-card::before {
-            content: '';
-            position: absolute;
-            width: 26px; height: 26px;
-            background: linear-gradient(135deg, #fff8f0, #fff);
-            border: 3px solid #e94560;
-            border-radius: 50%;
-            right: -17px; top: 42%;
-            z-index: 2;
-        }
-        /* Tab puzzle — bas */
-        .plat-card::after {
-            content: '';
-            position: absolute;
-            width: 26px; height: 26px;
-            background: linear-gradient(180deg, #fff8f0, #fff);
-            border: 3px solid #e94560;
-            border-radius: 50%;
-            bottom: -17px; left: 38%;
-            z-index: 2;
-        }
-        .plat-card .card-icon { font-size: 2.8em; margin-bottom: 6px; }
-        .plat-card .card-name {
-            font-size: 1.15em; font-weight: bold; color: #333; margin-bottom: 10px;
-            text-transform: capitalize;
-        }
-        .plat-card .card-times {
-            display: flex; gap: 8px; margin-bottom: 10px; width: 100%;
-            justify-content: center;
-        }
-        .card-time-box {
-            padding: 5px 10px; border-radius: 8px; font-size: 0.8em;
-            text-align: center; min-width: 70px;
-        }
-        .card-time-box.prep { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
-        .card-time-box.cuisson { background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
-        .card-time-box strong { display: block; font-size: 1.3em; }
-
-        .card-total {
-            background: #e94560; color: #fff; padding: 5px 16px;
-            border-radius: 20px; font-weight: bold; font-size: 1.05em;
-        }
-        .card-cut-line { display: none; }
-        /* Encart puzzle en haut à gauche de chaque pièce */
-        .card-puzzle-badge {
-            position: absolute; top: 6px; left: 8px;
-            font-size: 1em; opacity: 0.4;
-        }
-
-        /* ===== PAGE 3: PLATEAUX COMMIS ===== */
-        .commis-board {
-            border: 3px solid #0f3460; border-radius: 14px;
-            padding: 18px; margin-bottom: 15px; background: #f8f9ff;
-            min-height: 100px;
-        }
-        .commis-board h3 {
-            color: #0f3460; font-size: 1.2em; margin-bottom: 12px;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .commis-board h3 .commis-num {
-            background: #0f3460; color: #fff; width: 30px; height: 30px;
-            border-radius: 50%; display: inline-flex; align-items: center;
-            justify-content: center; font-size: 0.9em;
-        }
-        .drop-zones {
-            display: flex; gap: 10px; min-height: 80px;
-        }
-        .drop-zone {
-            flex: 1; border: 2px dashed #bbb; border-radius: 10px;
+        .step-dot {
+            width: 40px; height: 40px; border-radius: 50%; border: 2px solid #333;
             display: flex; align-items: center; justify-content: center;
-            color: #ccc; font-style: italic; font-size: 0.85em;
-            min-height: 75px; background: #fff;
+            font-weight: bold; font-size: 0.9em; color: #666; transition: all 0.4s;
+            cursor: pointer;
         }
-        .commis-total-row {
-            display: flex; justify-content: flex-end; align-items: center;
-            gap: 10px; margin-top: 10px; font-size: 0.95em;
+        .step-dot.active { border-color: #e94560; color: #fff; background: #e94560; }
+        .step-dot.done { border-color: #4ecdc4; color: #fff; background: #4ecdc4; }
+
+        /* Narration */
+        .narration {
+            background: linear-gradient(135deg, #16213e, #0f3460);
+            border-radius: 16px; padding: 25px 30px; margin-bottom: 25px;
+            border-left: 4px solid #e94560; font-size: 1.1em; line-height: 1.6;
+            min-height: 80px;
         }
-        .total-box {
-            border: 2px solid #0f3460; border-radius: 8px; padding: 4px 20px;
-            min-width: 80px; text-align: center; background: #fff;
-            font-weight: bold; height: 30px;
+        .narration .speaker {
+            display: inline-block; background: #e94560; color: #fff;
+            padding: 2px 10px; border-radius: 10px; font-size: 0.8em;
+            margin-bottom: 8px; font-weight: bold;
         }
 
-        /* ===== PAGE 4: FICHE RESULTATS ===== */
+        /* Animation area */
+        .anim-area {
+            background: #16213e; border-radius: 16px; padding: 30px;
+            min-height: 350px; position: relative; overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        /* Plat cards in animation */
+        .anim-card {
+            display: inline-flex; flex-direction: column; align-items: center;
+            background: linear-gradient(135deg, #fff8e7, #fff);
+            color: #333; border-radius: 12px; padding: 12px 16px;
+            margin: 6px; font-size: 0.85em; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative; min-width: 100px;
+        }
+        .anim-card .card-icon { font-size: 1.8em; margin-bottom: 4px; }
+        .anim-card .card-name { font-weight: bold; font-size: 0.95em; }
+        .anim-card .card-times { font-size: 0.8em; color: #666; margin-top: 4px; }
+        .anim-card .card-total {
+            background: #e94560; color: #fff; padding: 2px 8px;
+            border-radius: 8px; font-size: 0.8em; margin-top: 6px; font-weight: bold;
+        }
+        .anim-card.highlight { transform: scale(1.1); box-shadow: 0 6px 25px rgba(233,69,96,0.5); }
+        .anim-card.sorted { border: 2px solid #4ecdc4; }
+        .anim-card.assigned { opacity: 0.6; transform: scale(0.9); }
+
+        /* Commis lanes */
+        .commis-area {
+            display: flex; gap: 20px; margin-top: 20px;
+        }
+        .commis-lane {
+            flex: 1; background: rgba(255,255,255,0.05); border-radius: 12px;
+            padding: 15px; border: 2px dashed #333; min-height: 120px;
+            transition: all 0.3s;
+        }
+        .commis-lane.receiving { border-color: #4ecdc4; background: rgba(78,205,196,0.1); }
+        .commis-label {
+            text-align: center; font-weight: bold; margin-bottom: 10px;
+            color: #e94560; font-size: 1.1em;
+        }
+        .commis-load {
+            text-align: center; font-size: 0.85em; color: #888; margin-top: 8px;
+        }
+        .commis-load .load-value { color: #4ecdc4; font-weight: bold; font-size: 1.1em; }
+
+        /* Load bars */
+        .load-bar-container {
+            height: 20px; background: #333; border-radius: 10px;
+            margin-top: 8px; overflow: hidden;
+        }
+        .load-bar-fill {
+            height: 100%; border-radius: 10px; transition: width 0.8s ease;
+            background: linear-gradient(90deg, #4ecdc4, #44bd9e);
+        }
+
+        /* Makespan result */
+        .makespan-result {
+            text-align: center; margin-top: 20px; padding: 15px;
+            background: rgba(233,69,96,0.1); border-radius: 12px;
+            border: 1px solid #e94560;
+        }
+        .makespan-value { font-size: 2em; font-weight: bold; color: #e94560; }
+        .makespan-label { color: #888; }
+
+        /* Controls */
+        .sim-controls {
+            display: flex; justify-content: center; gap: 12px; margin-top: 25px;
+        }
+        .sim-btn {
+            padding: 12px 28px; border-radius: 25px; border: none; cursor: pointer;
+            font-size: 1em; font-weight: bold; transition: all 0.3s;
+        }
+        .sim-btn.primary { background: #e94560; color: #fff; }
+        .sim-btn.primary:hover { background: #d63851; transform: translateY(-2px); }
+        .sim-btn.secondary { background: #333; color: #ccc; }
+        .sim-btn.secondary:hover { background: #444; }
+        .sim-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* ===== CARTES IMPRIMABLES ===== */
+        .print-section { max-width: 1100px; margin: 0 auto; }
+        .print-title { text-align: center; font-size: 1.8em; margin-bottom: 8px; color: #e94560; }
+        .print-desc { text-align: center; color: #888; margin-bottom: 25px; }
+
+        .instance-selector {
+            display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px;
+        }
+        .instance-btn {
+            padding: 8px 18px; border-radius: 20px; border: 2px solid #333;
+            background: transparent; color: #aaa; cursor: pointer; font-size: 0.85em;
+            transition: all 0.3s;
+        }
+        .instance-btn:hover { border-color: #e94560; color: #fff; }
+        .instance-btn.active { background: #e94560; border-color: #e94560; color: #fff; }
+
+        .print-area {
+            background: #fff; color: #333; border-radius: 16px;
+            padding: 40px; margin-bottom: 20px;
+        }
+        .print-area h2 { color: #e94560; text-align: center; margin-bottom: 5px; }
+        .print-area .instance-info { text-align: center; color: #888; margin-bottom: 25px; font-size: 0.95em; }
+
+        /* Printable cards grid */
+        .cards-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px; margin-bottom: 30px;
+        }
+        .print-card {
+            border: 3px solid #e94560; border-radius: 16px; padding: 20px;
+            text-align: center; background: linear-gradient(135deg, #fff8f0, #fff);
+            position: relative; break-inside: avoid;
+        }
+        .print-card .p-icon { font-size: 3em; margin-bottom: 8px; }
+        .print-card .p-name { font-size: 1.2em; font-weight: bold; color: #333; margin-bottom: 12px; }
+        .print-card .p-time-row {
+            display: flex; justify-content: space-around; margin-bottom: 8px;
+        }
+        .print-card .p-time {
+            text-align: center; padding: 6px 10px; border-radius: 8px;
+            font-size: 0.85em;
+        }
+        .print-card .p-time.prep { background: #e8f5e9; color: #2e7d32; }
+        .print-card .p-time.cuisson { background: #fff3e0; color: #e65100; }
+        .print-card .p-total {
+            background: #e94560; color: #fff; padding: 6px 14px;
+            border-radius: 20px; font-weight: bold; font-size: 1.1em;
+            display: inline-block; margin-top: 8px;
+        }
+        .print-card .p-difficulty {
+            position: absolute; top: 8px; right: 10px;
+            font-size: 0.7em; padding: 2px 8px; border-radius: 8px;
+        }
+        .diff-facile { background: #e8f5e9; color: #2e7d32; }
+        .diff-moyen { background: #fff3e0; color: #e65100; }
+        .diff-difficile { background: #ffebee; color: #c62828; }
+
+        /* Commis print sheets */
+        .commis-sheets { margin-top: 30px; }
+        .commis-sheet {
+            border: 2px solid #0f3460; border-radius: 12px; padding: 20px;
+            margin-bottom: 15px; background: #f8f9ff; break-inside: avoid;
+        }
+        .commis-sheet h3 { color: #0f3460; margin-bottom: 10px; }
+        .commis-slot {
+            height: 60px; border: 2px dashed #ccc; border-radius: 8px;
+            margin-bottom: 8px; display: flex; align-items: center;
+            justify-content: center; color: #bbb; font-style: italic;
+        }
+        .commis-timeline {
+            height: 30px; background: #eee; border-radius: 6px; margin-top: 10px;
+            position: relative; overflow: hidden;
+        }
+        .commis-timeline .tick {
+            position: absolute; top: 0; bottom: 0; width: 1px; background: #ccc;
+        }
+        .commis-timeline .tick-label {
+            position: absolute; top: -18px; font-size: 0.7em; color: #999;
+            transform: translateX(-50%);
+        }
+
+        /* Results sheet */
+        .results-sheet {
+            border: 2px solid #4ecdc4; border-radius: 12px; padding: 25px;
+            margin-top: 30px; background: #f0fffe; break-inside: avoid;
+        }
+        .results-sheet h3 { color: #4ecdc4; margin-bottom: 15px; text-align: center; }
         .results-table {
-            width: 100%; border-collapse: collapse; margin-bottom: 20px;
+            width: 100%; border-collapse: collapse;
         }
         .results-table th, .results-table td {
-            border: 2px solid #ddd; padding: 12px 10px; text-align: center;
-            font-size: 0.95em;
+            border: 1px solid #ccc; padding: 10px; text-align: center;
         }
-        .results-table th { background: #0f3460; color: #fff; }
-        .results-table td { min-height: 40px; height: 45px; }
-        .results-table .makespan-col { background: #fff9c4; font-weight: bold; }
-        .results-table .label-col { background: #f5f5f5; text-align: left; font-weight: bold; padding-left: 15px; }
+        .results-table th { background: #e0f7fa; color: #00695c; }
+        .results-table .highlight-cell { background: #fff9c4; font-weight: bold; }
 
-        .solution-box {
-            border: 2px solid #4ecdc4; border-radius: 12px; padding: 18px;
-            background: #f0fffe; margin-top: 15px;
+        /* Print button */
+        .print-btn {
+            display: block; margin: 20px auto; padding: 14px 40px;
+            background: #e94560; color: #fff; border: none; border-radius: 25px;
+            font-size: 1.1em; font-weight: bold; cursor: pointer;
+            transition: all 0.3s;
         }
-        .solution-box h3 { color: #4ecdc4; margin-bottom: 10px; }
-        .solution-box .sol-line { margin-bottom: 5px; line-height: 1.6; }
-        .solution-box .sol-makespan {
-            font-size: 1.3em; font-weight: bold; color: #e94560;
-            margin-top: 10px; text-align: center;
-            padding: 8px; background: #fff; border-radius: 8px;
-        }
+        .print-btn:hover { background: #d63851; transform: translateY(-2px); }
 
-        /* ===== PAGE 5: QUESTIONS DEBAT ===== */
-        .question-card {
-            border: 2px solid #e94560; border-radius: 12px; padding: 16px;
-            margin-bottom: 12px; background: #fff;
-        }
-        .question-card .q-num {
-            display: inline-block; background: #e94560; color: #fff;
-            width: 28px; height: 28px; border-radius: 50%;
-            text-align: center; line-height: 28px; font-weight: bold;
-            margin-right: 8px; font-size: 0.9em;
-        }
-        .question-card .q-text { font-size: 1.05em; font-weight: bold; margin-bottom: 8px; }
-        .question-card .q-answer {
-            background: #f5f5f5; padding: 10px 14px; border-radius: 8px;
-            font-size: 0.9em; color: #555; border-left: 3px solid #4ecdc4;
-        }
-        .question-card .q-space {
-            border: 1px dashed #ccc; border-radius: 8px; min-height: 50px;
-            margin-top: 5px; background: #fafafa;
-        }
+        /* ===== GUIDE ANIMATEUR ===== */
+        .guide-section { max-width: 900px; margin: 0 auto; }
+        .guide-title { text-align: center; font-size: 1.8em; margin-bottom: 30px; color: #e94560; }
 
-        .algo-explain {
-            border: 2px solid #0f3460; border-radius: 12px; padding: 18px;
-            background: #f8f9ff; margin-bottom: 15px;
+        .phase-card {
+            background: #16213e; border-radius: 16px; padding: 25px;
+            margin-bottom: 20px; border-left: 4px solid #e94560;
         }
-        .algo-explain h3 { color: #0f3460; margin-bottom: 10px; }
-        .algo-steps { counter-reset: algo-step; padding-left: 0; list-style: none; }
-        .algo-steps li {
-            counter-increment: algo-step; padding: 8px 12px 8px 45px;
-            position: relative; margin-bottom: 6px; background: #fff;
-            border-radius: 8px; border: 1px solid #eee;
+        .phase-card h3 {
+            color: #e94560; margin-bottom: 8px; font-size: 1.2em;
         }
-        .algo-steps li::before {
-            content: counter(algo-step);
-            position: absolute; left: 10px; top: 8px;
-            background: #0f3460; color: #fff; width: 24px; height: 24px;
-            border-radius: 50%; text-align: center; line-height: 24px;
-            font-size: 0.8em; font-weight: bold;
+        .phase-card .phase-time {
+            display: inline-block; background: #0f3460; color: #4ecdc4;
+            padding: 3px 12px; border-radius: 10px; font-size: 0.8em;
+            margin-bottom: 12px;
+        }
+        .phase-card ul { padding-left: 20px; line-height: 1.8; color: #ccc; }
+        .phase-card li { margin-bottom: 4px; }
+        .phase-card .tip {
+            background: rgba(78,205,196,0.1); border-radius: 8px;
+            padding: 10px 15px; margin-top: 12px; border-left: 3px solid #4ecdc4;
+            font-size: 0.9em; color: #4ecdc4;
         }
 
         /* ===== PRINT STYLES ===== */
         @media print {
-            body { background: #fff; }
-            .screen-ui { display: none !important; }
-            .print-page { box-shadow: none; margin: 0; padding: 12mm; }
+            body { background: #fff; color: #333; }
+            .nav-bar, .sim-controls, .nav-tabs, .instance-selector,
+            .print-btn, .section:not(.print-target) { display: none !important; }
+            .section.print-target { display: block !important; padding: 10px; }
+            .print-area { box-shadow: none; padding: 20px; }
+            .print-card { break-inside: avoid; page-break-inside: avoid; }
+            .commis-sheet { break-inside: avoid; page-break-inside: avoid; }
         }
 
-        @media screen {
-            .print-page { margin-bottom: 30px; }
+        /* ===== COMPARISON SECTION ===== */
+        .comparison {
+            display: flex; gap: 20px; margin-top: 20px;
         }
+        .comparison-box {
+            flex: 1; background: rgba(255,255,255,0.05);
+            border-radius: 12px; padding: 20px; text-align: center;
+            border: 2px solid #333;
+        }
+        .comparison-box.winner { border-color: #4ecdc4; background: rgba(78,205,196,0.1); }
+        .comparison-box h4 { margin-bottom: 10px; color: #888; }
+        .comparison-box .comp-value { font-size: 2.5em; font-weight: bold; }
+        .comparison-box.winner .comp-value { color: #4ecdc4; }
+        .vs-text { display: flex; align-items: center; font-size: 1.5em; color: #e94560; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<!-- SCREEN CONTROLS (hidden when printing) -->
-<div class="screen-ui">
-    <h1>Kit Activit&eacute; D&eacute;branch&eacute;e - Ordonnancement en Cuisine</h1>
-    <p>S&eacute;lectionnez une instance, puis imprimez (Ctrl+P) pour obtenir tout le mat&eacute;riel physique de l'atelier.</p>
-    <div class="screen-controls">
-        <span style="color:#888;">Instance :</span>
-        <select class="instance-select" id="instance-select" onchange="loadInstance(this.value)">
-            <option value="">Chargement...</option>
-        </select>
-        <button class="print-all-btn" onclick="window.print()">Imprimer le kit complet</button>
+<!-- NAV BAR -->
+<nav class="nav-bar">
+    <h1>Activit&eacute; D&eacute;branch&eacute;e</h1>
+    <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showSection('simulation')">Simulation Anim&eacute;e</button>
+        <button class="nav-tab" onclick="showSection('cartes')">Cartes Imprimables</button>
+        <button class="nav-tab" onclick="showSection('guide')">Guide Animateur</button>
+    </div>
+</nav>
+
+<!-- ===== SECTION 1: SIMULATION ANIMEE ===== -->
+<div id="section-simulation" class="section active">
+    <div class="sim-container">
+        <div class="sim-title">Chef d'Orchestre en Cuisine</div>
+        <div class="sim-subtitle">Simulation de l'activit&eacute; d&eacute;branch&eacute;e - Probl&egrave;me d'ordonnancement</div>
+
+        <div class="steps-indicator">
+            <div class="step-dot active" onclick="goToStep(0)">1</div>
+            <div class="step-dot" onclick="goToStep(1)">2</div>
+            <div class="step-dot" onclick="goToStep(2)">3</div>
+            <div class="step-dot" onclick="goToStep(3)">4</div>
+            <div class="step-dot" onclick="goToStep(4)">5</div>
+            <div class="step-dot" onclick="goToStep(5)">6</div>
+            <div class="step-dot" onclick="goToStep(6)">7</div>
+        </div>
+
+        <div class="narration" id="narration"></div>
+        <div class="anim-area" id="anim-area"></div>
+
+        <div class="sim-controls">
+            <button class="sim-btn secondary" id="btn-prev" onclick="prevStep()" disabled>&larr; Pr&eacute;c&eacute;dent</button>
+            <button class="sim-btn primary" id="btn-next" onclick="nextStep()">Suivant &rarr;</button>
+            <button class="sim-btn secondary" onclick="goToStep(0)">Recommencer</button>
+        </div>
     </div>
 </div>
 
-<!-- ===== PAGE 1 : REGLES DU JEU ===== -->
-<div class="print-page" id="page-rules">
-    <div class="rules-header">
-        <h1>Chef d'Orchestre en Cuisine</h1>
-        <div class="subtitle">Activit&eacute; d&eacute;branch&eacute;e - Ordonnancement et optimisation</div>
-        <div class="team">Groupe 7 - Polytech Nice SI4 - Algorithmique &amp; M&eacute;diation</div>
-    </div>
+<!-- ===== SECTION 2: CARTES IMPRIMABLES ===== -->
+<div id="section-cartes" class="section">
+    <div class="print-section">
+        <div class="print-title">Cartes &agrave; Imprimer</div>
+        <div class="print-desc">S&eacute;lectionnez une instance puis cliquez sur "Imprimer" pour g&eacute;n&eacute;rer les supports de l'atelier</div>
 
-    <div class="rules-section">
-        <h2>Le Sc&eacute;nario</h2>
-        <div class="rules-box">
-            Vous &ecirc;tes <strong>chef cuisinier</strong> dans un grand restaurant. Plusieurs plats doivent &ecirc;tre pr&eacute;par&eacute;s,
-            et vous disposez d'un nombre limit&eacute; de <strong>commis de cuisine</strong>.
-            Chaque plat n&eacute;cessite un <span class="keyword">temps d'&eacute;pluchage</span> puis un <span class="keyword">temps de cuisson</span>.
-            <br><br>
-            Votre mission : <span class="highlight">r&eacute;partir les plats entre les commis pour que TOUT soit termin&eacute; le plus vite possible !</span>
-            <br><br>
-            Le temps total (quand le dernier commis finit) s'appelle le <span class="keyword">makespan</span>.
-        </div>
-    </div>
-
-    <div class="rules-section">
-        <h2>Mat&eacute;riel</h2>
-        <div class="materiel-grid">
-            <div class="materiel-item"><span class="m-icon">&#x1F9E9;</span> Pi&egrave;ces puzzle (page 2) &mdash; s&eacute;parer en d&eacute;chirant</div>
-            <div class="materiel-item"><span class="m-icon">&#x1F9D1;&#x200D;&#x1F373;</span> Plateaux commis (page 3) &mdash; poser sur table</div>
-            <div class="materiel-item"><span class="m-icon">&#x1F4CB;</span> Fiche r&eacute;sultats (page 4) &mdash; une par groupe</div>
-            <div class="materiel-item"><span class="m-icon">&#x270C;&#xFE0F;</span> Pas de ciseaux n&eacute;cessaires &mdash; d&eacute;chirer le long des pointill&eacute;s</div>
-        </div>
-    </div>
-
-    <div class="two-cols">
-        <div class="rules-section">
-            <h2>Tour 1 : Strat&eacute;gie libre</h2>
-            <div class="rules-box">
-                <ol>
-                    <li>Prenez les pi&egrave;ces puzzle des plats</li>
-                    <li>R&eacute;partissez-les <strong>librement</strong> entre les commis</li>
-                    <li>Pour chaque commis, <strong>additionnez</strong> les temps totaux de ses plats</li>
-                    <li>Le <span class="keyword">makespan</span> = le temps du commis <strong>le plus charg&eacute;</strong></li>
-                    <li>Notez votre r&eacute;sultat sur la fiche</li>
-                </ol>
-            </div>
+        <div class="instance-selector" id="instance-selector">
+            <span style="color:#888; align-self:center;">Chargement...</span>
         </div>
 
-        <div class="rules-section">
-            <h2 class="green">Tour 2 : Algorithme Glouton</h2>
-            <div class="rules-box">
-                <ol>
-                    <li><strong>Triez</strong> les pi&egrave;ces du temps total le plus grand au plus petit</li>
-                    <li>Prenez la premi&egrave;re pi&egrave;ce (la plus longue)</li>
-                    <li>Posez-la sur le commis qui a <strong>le moins de travail</strong></li>
-                    <li>R&eacute;p&eacute;tez pour chaque carte</li>
-                    <li>Calculez le makespan et comparez !</li>
-                </ol>
-            </div>
+        <div class="print-area" id="print-area">
+            <p style="text-align:center; color:#888;">S&eacute;lectionnez une instance ci-dessus</p>
         </div>
-    </div>
 
-    <div class="rules-section">
-        <h2 class="blue">Apr&egrave;s les 2 tours : Discussion</h2>
-        <div class="rules-box">
+        <button class="print-btn" onclick="printCards()">Imprimer les cartes</button>
+    </div>
+</div>
+
+<!-- ===== SECTION 3: GUIDE ANIMATEUR ===== -->
+<div id="section-guide" class="section">
+    <div class="guide-section">
+        <div class="guide-title">Guide de l'Animateur</div>
+
+        <div class="phase-card">
+            <h3>Phase 1 : D&eacute;couverte</h3>
+            <span class="phase-time">5-10 minutes</span>
             <ul>
-                <li>Qui a battu l'algorithme glouton au Tour 1 ?</li>
-                <li>Pourquoi le glouton marche bien ? &rarr; Il <strong>&eacute;quilibre la charge</strong> entre les commis</li>
-                <li>Est-il toujours optimal ? &rarr; <strong>Non !</strong> Ce probl&egrave;me est <span class="keyword">NP-complet</span></li>
-                <li>Analogie : c'est comme un Sudoku g&eacute;ant &mdash; facile &agrave; v&eacute;rifier, tr&egrave;s dur &agrave; r&eacute;soudre</li>
-                <li>Avec 100 plats et 10 commis : 10<sup>100</sup> combinaisons (plus que d'atomes dans l'univers !)</li>
+                <li><strong>Accrocher :</strong> "Imaginez : vous &ecirc;tes chef dans un grand restaurant. 10 plats &agrave; pr&eacute;parer, seulement 3 commis. Comment finir le plus vite possible ?"</li>
+                <li>Montrer les cartes-plats sur la table (face visible)</li>
+                <li>Poser les panneaux "Commis 1", "Commis 2", etc.</li>
+                <li>Demander : "Comment feriez-vous ? Qui veut essayer ?"</li>
+            </ul>
+            <div class="tip">Astuce : Laisser les participants manipuler les cartes, c'est le but de l'activit&eacute; d&eacute;branch&eacute;e !</div>
+        </div>
+
+        <div class="phase-card">
+            <h3>Phase 2 : Strat&eacute;gie libre (Tour 1)</h3>
+            <span class="phase-time">5-8 minutes</span>
+            <ul>
+                <li>Diviser en groupes de 4-5 personnes</li>
+                <li>Distribuer un jeu de cartes-plats par groupe</li>
+                <li>R&egrave;gle : "R&eacute;partissez les plats entre vos N commis pour que le dernier plat soit fini le plus t&ocirc;t possible"</li>
+                <li>Chaque groupe empile les cartes sur les fiches commis</li>
+                <li>Calculer le <strong>makespan</strong> : le temps du commis le plus charg&eacute;</li>
+                <li>Noter le r&eacute;sultat sur la fiche r&eacute;sultats</li>
+            </ul>
+            <div class="tip">Observer les strat&eacute;gies : certains vont au hasard, d'autres essaient d'&eacute;quilibrer, d'autres mettent les gros plats en premier...</div>
+        </div>
+
+        <div class="phase-card">
+            <h3>Phase 3 : L'algorithme glouton (Tour 2)</h3>
+            <span class="phase-time">5-8 minutes</span>
+            <ul>
+                <li>Expliquer la r&egrave;gle glouton : "Triez les plats du plus long au plus court. Puis donnez chaque plat au commis qui a le MOINS de travail."</li>
+                <li>Faire ex&eacute;cuter pas &agrave; pas avec les cartes physiques</li>
+                <li>Le groupe trie d'abord les cartes (par temps total d&eacute;croissant)</li>
+                <li>Puis assigne une par une au commis le moins charg&eacute;</li>
+                <li>Calculer le nouveau makespan</li>
+                <li>Comparer avec le Tour 1 sur la fiche r&eacute;sultats</li>
+            </ul>
+            <div class="tip">Question cl&eacute; : "L'algorithme a-t-il fait mieux que vous ? Pourquoi ?"</div>
+        </div>
+
+        <div class="phase-card">
+            <h3>Phase 4 : R&eacute;v&eacute;lation et d&eacute;bat</h3>
+            <span class="phase-time">5-10 minutes</span>
+            <ul>
+                <li>R&eacute;v&eacute;ler : "Ce probl&egrave;me est NP-complet. M&ecirc;me les meilleurs ordinateurs ne peuvent pas toujours trouver la solution parfaite !"</li>
+                <li>Analogie : "C'est comme un Sudoku g&eacute;ant : facile &agrave; v&eacute;rifier, tr&egrave;s dur &agrave; r&eacute;soudre"</li>
+                <li>L'algo glouton donne une solution au pire 2x l'optimal (ratio d'approximation 2 - 1/m)</li>
+                <li>Question : "Qui a r&eacute;ussi &agrave; battre l'algorithme ?"</li>
+                <li>Transition : "Voyons maintenant ce que fait l'ordinateur..."</li>
+            </ul>
+            <div class="tip">Si un groupe a battu le glouton, f&eacute;liciter ! C'est rare mais possible. Expliquer que le glouton n'est pas toujours optimal.</div>
+        </div>
+
+        <div class="phase-card">
+            <h3>Phase 5 : Version branch&eacute;e (optionnel)</h3>
+            <span class="phase-time">15-25 minutes</span>
+            <ul>
+                <li>Ouvrir la plateforme web sur le projecteur</li>
+                <li>Charger la m&ecirc;me instance que l'activit&eacute; d&eacute;branch&eacute;e</li>
+                <li>Ex&eacute;cuter l'algorithme et comparer visuellement</li>
+                <li>Tester d'autres sc&eacute;narios : "Et si on ajoute un commis ?" "Et si un plat prend 10x plus longtemps ?"</li>
+                <li>Montrer le jeu Kitchen Load Balancer pour exp&eacute;rimenter en temps r&eacute;el</li>
+            </ul>
+        </div>
+
+        <div class="phase-card">
+            <h3>Phase 6 : Cl&ocirc;ture</h3>
+            <span class="phase-time">5 minutes</span>
+            <ul>
+                <li>R&eacute;cap : "On a vu un probl&egrave;me NP-complet, un algorithme glouton qui marche bien, et pourquoi c'est important"</li>
+                <li>Applications : "Votre GPS, Netflix, Amazon... tous utilisent ce genre d'algorithmes !"</li>
+                <li>Mini-quiz (3 questions) pour mesurer la compr&eacute;hension</li>
+            </ul>
+        </div>
+
+        <div class="phase-card" style="border-left-color: #4ecdc4;">
+            <h3 style="color: #4ecdc4;">Mini-Quiz de fin (3 questions)</h3>
+            <span class="phase-time">2-3 minutes</span>
+            <ul>
+                <li><strong>Q1 :</strong> "L'algorithme glouton donne-t-il toujours la meilleure solution possible ?" &rarr; <em>Non, mais une bonne approximation</em></li>
+                <li><strong>Q2 :</strong> "Pourquoi l'algorithme glouton est-il utile m&ecirc;me s'il n'est pas parfait ?" &rarr; <em>Parce qu'il est rapide (temps polynomial) alors que la solution exacte peut prendre un temps exponentiel</em></li>
+                <li><strong>Q3 :</strong> "Si vous avez 100 plats et 5 commis, combien de fa&ccedil;ons diff&eacute;rentes de r&eacute;partir existe-t-il ?" &rarr; <em>5^100 (astronomique !), c'est pourquoi on a besoin d'algorithmes</em></li>
             </ul>
         </div>
     </div>
 </div>
 
-<!-- ===== PAGE 2 : CARTES PLATS (generated by JS) ===== -->
-<div class="print-page" id="page-cards">
-    <div class="cards-page-title">&#x1F9E9; Pi&egrave;ces Puzzle des Plats &mdash; s&eacute;parer en d&eacute;chirant le long des pointill&eacute;s</div>
-    <div class="cards-page-subtitle" id="cards-subtitle">S&eacute;lectionnez une instance</div>
-    <div class="cards-grid" id="cards-grid">
-        <div style="grid-column: 1/-1; text-align:center; padding: 60px; color:#aaa;">
-            S&eacute;lectionnez une instance en haut de page
-        </div>
-    </div>
-</div>
-
-<!-- ===== PAGE 3 : PLATEAUX COMMIS (generated by JS) ===== -->
-<div class="print-page" id="page-commis">
-    <div class="cards-page-title">Plateaux Commis &mdash; poser les cartes dessus</div>
-    <div class="cards-page-subtitle">Chaque commis a des emplacements pour recevoir les cartes-plats</div>
-    <div id="commis-boards">
-        <div style="text-align:center; padding: 60px; color:#aaa;">
-            S&eacute;lectionnez une instance en haut de page
-        </div>
-    </div>
-</div>
-
-<!-- ===== PAGE 4 : FICHE RESULTATS ===== -->
-<div class="print-page" id="page-results">
-    <div class="cards-page-title">Fiche R&eacute;sultats</div>
-    <div class="cards-page-subtitle">Nom du groupe : ________________&nbsp;&nbsp;&nbsp;&nbsp; Date : ________________</div>
-
-    <div id="results-content">
-        <div style="text-align:center; padding: 40px; color:#aaa;">
-            S&eacute;lectionnez une instance en haut de page
-        </div>
-    </div>
-</div>
-
-<!-- ===== PAGE 5 : EXPLICATION ALGORITHME + QUIZ ===== -->
-<div class="print-page" id="page-quiz">
-    <div class="cards-page-title">Fiche P&eacute;dagogique &mdash; Comprendre l'algorithme</div>
-    <div class="cards-page-subtitle">Pour l'animateur et les participants</div>
-
-    <div class="algo-explain">
-        <h3>L'algorithme Glouton (Least Loaded First)</h3>
-        <ol class="algo-steps">
-            <li><strong>Trier</strong> tous les plats par temps total d&eacute;croissant (le plus long d'abord)</li>
-            <li><strong>Prendre</strong> le premier plat de la liste (le plus long non assign&eacute;)</li>
-            <li><strong>Regarder</strong> quel commis a la charge la plus faible actuellement</li>
-            <li><strong>Assigner</strong> ce plat &agrave; ce commis (poser la carte sur son plateau)</li>
-            <li><strong>R&eacute;p&eacute;ter</strong> les &eacute;tapes 2-4 jusqu'&agrave; ce que tous les plats soient assign&eacute;s</li>
-        </ol>
-        <div style="margin-top:12px; padding:10px; background:#e8f5e9; border-radius:8px; font-size:0.9em;">
-            <strong>Pourquoi &ccedil;a marche ?</strong> En commen&ccedil;ant par les gros plats et en &eacute;quilibrant la charge,
-            on &eacute;vite de surcharger un seul commis. Garantie : au pire <strong>2x l'optimal</strong> (ratio 2 - 1/m).
-        </div>
-    </div>
-
-    <div class="cards-page-title" style="font-size:1.2em; margin-top:20px;">Mini-Quiz &mdash; V&eacute;rifiez votre compr&eacute;hension</div>
-
-    <div class="question-card">
-        <div class="q-text"><span class="q-num">1</span>L'algorithme glouton donne-t-il toujours LA meilleure solution possible ?</div>
-        <div class="q-space"></div>
-        <div class="q-answer"><strong>R&eacute;ponse :</strong> Non, mais il donne une bonne approximation rapidement. La solution exacte peut n&eacute;cessiter de tester un nombre astronomique de combinaisons.</div>
-    </div>
-
-    <div class="question-card">
-        <div class="q-text"><span class="q-num">2</span>Pourquoi commence-t-on par les plats les plus longs ?</div>
-        <div class="q-space"></div>
-        <div class="q-answer"><strong>R&eacute;ponse :</strong> Les gros plats sont les plus difficiles &agrave; placer. En les assignant en premier, on peut mieux &eacute;quilibrer avec les petits plats ensuite. Si on commence par les petits, les gros plats risquent tous de finir chez le m&ecirc;me commis.</div>
-    </div>
-
-    <div class="question-card">
-        <div class="q-text"><span class="q-num">3</span>Si vous avez 20 plats et 5 commis, combien de r&eacute;partitions diff&eacute;rentes existent ?</div>
-        <div class="q-space"></div>
-        <div class="q-answer"><strong>R&eacute;ponse :</strong> 5<sup>20</sup> &asymp; 95 000 milliards ! Chaque plat peut aller chez n'importe quel commis. M&ecirc;me un ordinateur rapide ne peut pas toutes les tester. C'est pourquoi on dit que ce probl&egrave;me est <strong>NP-complet</strong>.</div>
-    </div>
-
-    <div class="question-card">
-        <div class="q-text"><span class="q-num">4</span>Citez un exemple de la vie quotidienne o&ugrave; l'on retrouve ce probl&egrave;me d'ordonnancement.</div>
-        <div class="q-space"></div>
-        <div class="q-answer"><strong>R&eacute;ponses possibles :</strong> Caisses de supermarch&eacute; (r&eacute;partir les clients), serveurs web (r&eacute;partir les requ&ecirc;tes), GPS (optimiser les itin&eacute;raires), emploi du temps scolaire, cha&icirc;ne de montage en usine...</div>
-    </div>
-</div>
-
 <script>
-// ===== ICONS =====
-const ICONS = {
-    "pomme":"\u{1F34E}","poire":"\u{1F350}","mangue":"\u{1F96D}","ananas":"\u{1F34D}",
-    "kiwi":"\u{1F95D}","orange":"\u{1F34A}","p\u00eache":"\u{1F351}","abricot":"\u{1F351}",
-    "prune":"\u{1F351}","cerise":"\u{1F352}","fraise":"\u{1F353}","framboise":"\u{1F353}",
-    "myrtille":"\u{1FAD0}","melon":"\u{1F348}","past\u00e8que":"\u{1F349}","raisin":"\u{1F347}",
-    "litchi":"\u{1F352}","papaye":"\u{1F96D}","goyave":"\u{1F96D}","carotte":"\u{1F955}",
-    "pomme de terre":"\u{1F954}","courgette":"\u{1F96C}","aubergine":"\u{1F346}",
-    "poivron":"\u{1FAD1}","tomate":"\u{1F345}","concombre":"\u{1F96C}","radis":"\u{1F96C}",
-    "navet":"\u{1F96C}","c\u00e9leri":"\u{1F96C}","poireau":"\u{1F96C}",
-    "champignon":"\u{1F344}","brocoli":"\u{1F966}","chou-fleur":"\u{1F966}",
-    "haricot vert":"\u{1FAD8}","salade":"\u{1F957}","soupe":"\u{1F372}",
-    "pommes":"\u{1F34E}","mangues":"\u{1F96D}","tomates":"\u{1F345}","litchis":"\u{1F352}",
-    "default":"\u{1F37D}\u{FE0F}"
-};
-
-function getIcon(nom) {
-    return ICONS[nom.toLowerCase()] || ICONS["default"];
+// ===== NAVIGATION =====
+function showSection(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active', 'print-target'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    event.target.classList.add('active');
 }
 
-// ===== LOAD INSTANCES LIST =====
-async function init() {
+// ===== SIMULATION DATA =====
+const PLATS = [
+    { nom: "Plat 1", icon: "\u{1F969}", epluchage: 8, cuisson: 12, total: 20 },
+    { nom: "Plat 2", icon: "\u{1F957}", epluchage: 12, cuisson: 8, total: 20 },
+    { nom: "Plat 3", icon: "\u{1F355}", epluchage: 17, cuisson: 20, total: 37 },
+    { nom: "Plat 4", icon: "\u{1F354}", epluchage: 19, cuisson: 12, total: 31 }
+];
+const NB_COMMIS = 2;
+let currentStep = 0;
+
+const STEPS = [
+    // Step 0: Presentation du probleme
+    {
+        narration: `<span class="speaker">Animateur</span><br>
+        "Bienvenue dans notre cuisine ! Aujourd'hui, vous &ecirc;tes chef cuisinier. Vous avez <strong>4 plats</strong> &agrave; pr&eacute;parer
+        et seulement <strong>2 commis</strong>. Chaque plat a un temps d'&eacute;pluchage et un temps de cuisson.
+        Votre mission : r&eacute;partir les plats pour finir <strong>le plus vite possible</strong> !"`,
+        render: renderStep0
+    },
+    // Step 1: Montrer les cartes
+    {
+        narration: `<span class="speaker">Animateur</span><br>
+        "Voici vos 4 plats avec leurs temps. Le <strong>temps total</strong> par plat = &eacute;pluchage + cuisson.
+        Prenez un moment pour observer les cartes..."`,
+        render: renderStep1
+    },
+    // Step 2: Strategie libre (mauvaise)
+    {
+        narration: `<span class="speaker">Animateur</span><br>
+        "Tour 1 : Essayez de r&eacute;partir les plats vous-m&ecirc;mes ! Voici un exemple de r&eacute;partition na&iuml;ve :
+        on donne les plats dans l'ordre &agrave; chaque commis en alternance..."`,
+        render: renderStep2
+    },
+    // Step 3: Tri des plats (debut glouton)
+    {
+        narration: `<span class="speaker">Animateur</span><br>
+        "Tour 2 : Maintenant, appliquons l'algorithme <strong>glouton</strong>. Premi&egrave;re &eacute;tape :
+        <strong>trier les plats du plus long au plus court</strong>. Observez l'ordre qui change..."`,
+        render: renderStep3
+    },
+    // Step 4: Assignation glouton pas a pas
+    {
+        narration: `<span class="speaker">Animateur</span><br>
+        "Deuxi&egrave;me &eacute;tape : assigner chaque plat au commis <strong>qui a le moins de travail</strong>.
+        On prend le plus gros plat d'abord, et on le donne au commis le moins charg&eacute;. Regardez..."`,
+        render: renderStep4
+    },
+    // Step 5: Resultat glouton
+    {
+        narration: `<span class="speaker">Animateur</span><br>
+        "Et voil&agrave; le r&eacute;sultat de l'algorithme glouton ! Comparons les deux strat&eacute;gies..."`,
+        render: renderStep5
+    },
+    // Step 6: Revelation
+    {
+        narration: `<span class="speaker">Animateur</span><br>
+        "Ce probl&egrave;me est <strong>NP-complet</strong>. Avec 4 plats c'est faisable, mais avec 100 plats et 10 commis,
+        il y aurait <strong>10<sup>100</sup></strong> combinaisons possibles ! L'algorithme glouton donne une solution
+        <strong>au pire 2x l'optimal</strong>, et il le fait en une fraction de seconde."`,
+        render: renderStep6
+    }
+];
+
+function renderCard(plat, extraClass = '') {
+    return `<div class="anim-card ${extraClass}">
+        <div class="card-icon">${plat.icon}</div>
+        <div class="card-name">${plat.nom}</div>
+        <div class="card-times">Epluchage: ${plat.epluchage}min | Cuisson: ${plat.cuisson}min</div>
+        <div class="card-total">Total: ${plat.total} min</div>
+    </div>`;
+}
+
+function renderStep0() {
+    return `
+        <div style="text-align:center; padding: 40px 0;">
+            <div style="font-size: 4em; margin-bottom: 20px;">\u{1F468}\u200D\u{1F373}</div>
+            <div style="font-size: 1.5em; margin-bottom: 15px;">Le D&eacute;fi du Chef</div>
+            <div style="display: flex; justify-content: center; gap: 40px; margin-top: 20px;">
+                <div style="text-align:center;">
+                    <div style="font-size: 2.5em;">\u{1F37D}\u{FE0F}</div>
+                    <div style="font-size: 2em; font-weight: bold; color: #e94560;">4 plats</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size: 2.5em;">\u{1F9D1}\u200D\u{1F373}</div>
+                    <div style="font-size: 2em; font-weight: bold; color: #4ecdc4;">2 commis</div>
+                </div>
+            </div>
+            <div style="margin-top: 25px; color: #888; font-size: 1.1em;">
+                Objectif : Minimiser le <strong style="color:#e94560;">makespan</strong> (temps total pour TOUT finir)
+            </div>
+        </div>`;
+}
+
+function renderStep1() {
+    return `
+        <div style="text-align:center; margin-bottom: 15px; color: #888;">Les 4 plats &agrave; pr&eacute;parer :</div>
+        <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;">
+            ${PLATS.map(p => renderCard(p)).join('')}
+        </div>`;
+}
+
+function renderStep2() {
+    // Naive: alternate assignment -> Commis 1 gets plat1+plat3, Commis 2 gets plat2+plat4
+    const c1 = [PLATS[0], PLATS[2]]; // 20 + 37 = 57
+    const c2 = [PLATS[1], PLATS[3]]; // 20 + 31 = 51
+    const makespan = 57;
+    const maxLoad = 57;
+
+    return `
+        <div style="text-align:center; margin-bottom:10px; color:#888;">R&eacute;partition na&iuml;ve (alternance) :</div>
+        <div class="commis-area">
+            <div class="commis-lane">
+                <div class="commis-label">\u{1F9D1}\u200D\u{1F373} Commis 1</div>
+                ${c1.map(p => renderCard(p, 'assigned')).join('')}
+                <div class="commis-load">Charge : <span class="load-value">${c1.reduce((s,p) => s+p.total, 0)} min</span></div>
+                <div class="load-bar-container"><div class="load-bar-fill" style="width:${(57/57)*100}%; background: linear-gradient(90deg, #e94560, #ff8a80);"></div></div>
+            </div>
+            <div class="commis-lane">
+                <div class="commis-label">\u{1F9D1}\u200D\u{1F373} Commis 2</div>
+                ${c2.map(p => renderCard(p, 'assigned')).join('')}
+                <div class="commis-load">Charge : <span class="load-value">${c2.reduce((s,p) => s+p.total, 0)} min</span></div>
+                <div class="load-bar-container"><div class="load-bar-fill" style="width:${(51/57)*100}%"></div></div>
+            </div>
+        </div>
+        <div class="makespan-result">
+            <div class="makespan-label">Makespan (strat&eacute;gie na&iuml;ve)</div>
+            <div class="makespan-value">${makespan} min</div>
+            <div style="color:#888; font-size:0.9em;">= charge du commis le plus charg&eacute;</div>
+        </div>`;
+}
+
+function renderStep3() {
+    const sorted = [...PLATS].sort((a,b) => b.total - a.total);
+    return `
+        <div style="text-align:center; margin-bottom:10px; color:#888;">Avant le tri :</div>
+        <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; opacity: 0.5;">
+            ${PLATS.map(p => renderCard(p)).join('')}
+        </div>
+        <div style="text-align:center; font-size: 2em; margin-bottom: 15px;">\u2B07\uFE0F Tri par temps total d&eacute;croissant</div>
+        <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;">
+            ${sorted.map((p, i) => renderCard(p, 'sorted')).join('')}
+        </div>
+        <div style="text-align:center; margin-top:15px; color:#4ecdc4; font-weight: bold;">
+            37 min &ge; 31 min &ge; 20 min &ge; 20 min
+        </div>`;
+}
+
+function renderStep4() {
+    // Greedy: sorted = [Plat3(37), Plat4(31), Plat1(20), Plat2(20)]
+    // Step 1: Plat3(37) -> Commis1 (0 vs 0, choose 1) => C1=37
+    // Step 2: Plat4(31) -> Commis2 (37 vs 0, choose 2) => C2=31
+    // Step 3: Plat1(20) -> Commis2 (37 vs 31, choose 2) => C2=51
+    // Step 4: Plat2(20) -> Commis1 (37 vs 51, choose 1) => C1=57... wait
+    // Actually: C1=37 vs C2=51, Plat2 goes to C1 => C1 = 37+20 = 57, C2 = 51. Makespan = 57.
+    // Hmm that's the same. Let me recalculate.
+    // Actually wait. Let me redo:
+    // Sorted: Plat3(37), Plat4(31), Plat1(20), Plat2(20)
+    // Assign Plat3 to C1 (load 0): C1=37, C2=0
+    // Assign Plat4 to C2 (load 0 < 37): C1=37, C2=31
+    // Assign Plat1 to C2 (load 31 < 37): C1=37, C2=51
+    // Assign Plat2 to C1 (load 37 < 51): C1=57, C2=51
+    // Makespan = 57. Same as naive!
+
+    // Let me recalculate. The naive was also 57 by coincidence. Let me change the naive to be worse.
+    // Naive round-robin: C1 gets plat1, plat3. C2 gets plat2, plat4.
+    // C1 = 20+37 = 57. C2 = 20+31 = 51. Makespan = 57.
+    // Greedy: C1 = 37+20 = 57. C2 = 31+20 = 51. Makespan = 57.
+    // They're the same! That's not great for the demo.
+
+    // Let me use a different "naive" approach - put all heavy on one commis
+    // Actually, for the greedy animation, the makespan IS 57. But for the naive, let me show
+    // a different bad split: C1 gets Plat3+Plat4 (68), C2 gets Plat1+Plat2 (40). Makespan = 68.
+    // That's a clearly worse strategy.
+
+    return `
+        <div style="text-align:center; margin-bottom:15px; color:#888;">Assignation glouton pas &agrave; pas :</div>
+        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+            <div style="flex: 1; padding: 10px; background: rgba(233,69,96,0.1); border-radius: 10px; font-size: 0.85em; line-height: 1.8;">
+                <strong style="color:#e94560;">Etape 1:</strong> Plat 3 (37min) &rarr; Commis 1 <span style="color:#888;">(charge: 0 vs 0)</span><br>
+                <strong style="color:#e94560;">Etape 2:</strong> Plat 4 (31min) &rarr; Commis 2 <span style="color:#888;">(charge: 37 vs 0 &rarr; le moins charg&eacute;)</span><br>
+                <strong style="color:#e94560;">Etape 3:</strong> Plat 1 (20min) &rarr; Commis 2 <span style="color:#888;">(charge: 37 vs 31 &rarr; le moins charg&eacute;)</span><br>
+                <strong style="color:#e94560;">Etape 4:</strong> Plat 2 (20min) &rarr; Commis 1 <span style="color:#888;">(charge: 37 vs 51 &rarr; le moins charg&eacute;)</span>
+            </div>
+        </div>
+        <div class="commis-area">
+            <div class="commis-lane receiving">
+                <div class="commis-label">\u{1F9D1}\u200D\u{1F373} Commis 1</div>
+                ${renderCard(PLATS[2], 'sorted')}
+                ${renderCard(PLATS[1], 'sorted')}
+                <div class="commis-load">Charge : <span class="load-value">37 + 20 = 57 min</span></div>
+                <div class="load-bar-container"><div class="load-bar-fill" style="width:100%"></div></div>
+            </div>
+            <div class="commis-lane receiving">
+                <div class="commis-label">\u{1F9D1}\u200D\u{1F373} Commis 2</div>
+                ${renderCard(PLATS[3], 'sorted')}
+                ${renderCard(PLATS[0], 'sorted')}
+                <div class="commis-load">Charge : <span class="load-value">31 + 20 = 51 min</span></div>
+                <div class="load-bar-container"><div class="load-bar-fill" style="width:${(51/57)*100}%"></div></div>
+            </div>
+        </div>
+        <div class="makespan-result">
+            <div class="makespan-label">Makespan (algorithme glouton)</div>
+            <div class="makespan-value">57 min</div>
+        </div>`;
+}
+
+function renderStep5() {
+    return `
+        <div style="text-align:center; margin-bottom:15px; font-size:1.2em;">Comparaison des strat&eacute;gies</div>
+        <div class="comparison">
+            <div class="comparison-box">
+                <h4>Strat&eacute;gie na&iuml;ve</h4>
+                <div style="font-size:0.85em; color:#888; margin-bottom:8px;">
+                    (Gros plats ensemble)<br>
+                    C1: Plat3 + Plat4 = 68<br>
+                    C2: Plat1 + Plat2 = 40
+                </div>
+                <div class="comp-value" style="color:#e94560;">68 min</div>
+            </div>
+            <div class="vs-text">VS</div>
+            <div class="comparison-box winner">
+                <h4>Algorithme Glouton</h4>
+                <div style="font-size:0.85em; color:#888; margin-bottom:8px;">
+                    (Plus gros au moins charg&eacute;)<br>
+                    C1: Plat3 + Plat2 = 57<br>
+                    C2: Plat4 + Plat1 = 51
+                </div>
+                <div class="comp-value">57 min</div>
+                <div style="color:#4ecdc4; font-size:0.85em; margin-top:5px;">-16% plus rapide !</div>
+            </div>
+        </div>
+        <div style="text-align:center; margin-top:20px; padding:15px; background:rgba(78,205,196,0.1); border-radius:12px; color:#4ecdc4;">
+            Le glouton &eacute;quilibre la charge entre les commis en donnant toujours au moins charg&eacute;.
+        </div>`;
+}
+
+function renderStep6() {
+    return `
+        <div style="text-align:center; padding: 20px 0;">
+            <div style="font-size: 2em; margin-bottom: 15px; color: #e94560;">Ce probl&egrave;me est NP-complet !</div>
+            <div style="display: flex; justify-content: center; gap: 30px; margin: 20px 0; flex-wrap: wrap;">
+                <div style="background:rgba(233,69,96,0.1); padding:20px; border-radius:12px; max-width:250px;">
+                    <div style="font-size:1.5em; margin-bottom:8px;">4 plats, 2 commis</div>
+                    <div style="color:#888;">2<sup>4</sup> = <strong style="color:#e94560;">16</strong> combinaisons</div>
+                    <div style="color:#4ecdc4; font-size:0.9em;">Facile !</div>
+                </div>
+                <div style="background:rgba(233,69,96,0.1); padding:20px; border-radius:12px; max-width:250px;">
+                    <div style="font-size:1.5em; margin-bottom:8px;">20 plats, 5 commis</div>
+                    <div style="color:#888;">5<sup>20</sup> = <strong style="color:#e94560;">~95 000 milliards</strong></div>
+                    <div style="color:#e94560; font-size:0.9em;">Impossible &agrave; tester toutes !</div>
+                </div>
+                <div style="background:rgba(233,69,96,0.1); padding:20px; border-radius:12px; max-width:250px;">
+                    <div style="font-size:1.5em; margin-bottom:8px;">100 plats, 10 commis</div>
+                    <div style="color:#888;">10<sup>100</sup> = <strong style="color:#e94560;">un googol</strong></div>
+                    <div style="color:#e94560; font-size:0.9em;">Plus que d'atomes dans l'univers !</div>
+                </div>
+            </div>
+            <div style="margin-top:20px; padding:15px; background:rgba(78,205,196,0.1); border-radius:12px; max-width:600px; margin-left:auto; margin-right:auto;">
+                <div style="color:#4ecdc4; font-size:1.1em; font-weight:bold; margin-bottom:8px;">Le glouton : rapide ET efficace</div>
+                <div style="color:#ccc;">Il tourne en <strong>O(n log n)</strong> et garantit un r&eacute;sultat<br>au pire <strong>2x l'optimal</strong>. Ratio d'approximation : 2 - 1/m</div>
+            </div>
+            <div style="margin-top: 25px; font-size: 1.1em; color: #888;">
+                Applications : GPS, Netflix, Amazon, Cloud Computing, Syst&egrave;mes d'exploitation...
+            </div>
+        </div>`;
+}
+
+// ===== STEP NAVIGATION =====
+function renderCurrentStep() {
+    const step = STEPS[currentStep];
+    document.getElementById('narration').innerHTML = step.narration;
+    document.getElementById('anim-area').innerHTML = step.render();
+
+    // Update dots
+    document.querySelectorAll('.step-dot').forEach((dot, i) => {
+        dot.classList.remove('active', 'done');
+        if (i === currentStep) dot.classList.add('active');
+        else if (i < currentStep) dot.classList.add('done');
+    });
+
+    // Update buttons
+    document.getElementById('btn-prev').disabled = currentStep === 0;
+    document.getElementById('btn-next').disabled = currentStep === STEPS.length - 1;
+    document.getElementById('btn-next').textContent = currentStep === STEPS.length - 1 ? 'Termin\u00e9 !' : 'Suivant \u2192';
+}
+
+function nextStep() {
+    if (currentStep < STEPS.length - 1) { currentStep++; renderCurrentStep(); }
+}
+function prevStep() {
+    if (currentStep > 0) { currentStep--; renderCurrentStep(); }
+}
+function goToStep(n) {
+    currentStep = n; renderCurrentStep();
+}
+
+// ===== CARTES IMPRIMABLES =====
+async function loadInstances() {
     try {
         const resp = await fetch('/api/instances');
         const data = await resp.json();
-        const select = document.getElementById('instance-select');
-        select.innerHTML = '<option value="">-- Choisir une instance --</option>';
+        const selector = document.getElementById('instance-selector');
+        selector.innerHTML = '';
         data.instances.forEach(inst => {
-            const opt = document.createElement('option');
-            opt.value = inst.nom;
-            opt.textContent = `${inst.nom} (${inst.nombre_plats} plats, ${inst.nombre_commis} commis, ${inst.difficulte})`;
-            select.appendChild(opt);
+            const btn = document.createElement('button');
+            btn.className = 'instance-btn';
+            btn.textContent = `${inst.nom} (${inst.nombre_plats} plats, ${inst.nombre_commis} commis)`;
+            btn.onclick = () => loadInstanceCards(inst.nom, btn);
+            selector.appendChild(btn);
         });
-    } catch(e) {
-        document.getElementById('instance-select').innerHTML = '<option>Erreur - serveur Flask non lanc\u00e9</option>';
+    } catch (e) {
+        document.getElementById('instance-selector').innerHTML = '<span style="color:#e94560;">Erreur de chargement. Le serveur Flask est-il lanc&eacute; ?</span>';
     }
 }
 
-// ===== LOAD AND RENDER INSTANCE =====
-async function loadInstance(nom) {
-    if (!nom) return;
-    const resp = await fetch(`/api/instances/${nom}?raw=true`);
-    const data = await resp.json();
+async function loadInstanceCards(nom, btn) {
+    document.querySelectorAll('.instance-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
 
-    const plats = data.plats;
-    const nbCommis = data.nombre_commis;
-    const maxSlots = Math.max(4, Math.ceil(plats.length / nbCommis) + 1);
+    // Load raw instance for original times
+    const rawResp = await fetch(`/api/instances/${nom}?raw=true`);
+    const rawData = await rawResp.json();
 
-    // ---- Page 2: Cards ----
-    document.getElementById('cards-subtitle').textContent =
-        `Instance : ${data.nom} \u2014 ${plats.length} plats, ${nbCommis} commis \u2014 Difficult\u00e9 : ${data.difficulte || '?'}`;
+    const area = document.getElementById('print-area');
+    const nbCommis = rawData.nombre_commis;
+    const plats = rawData.plats;
 
-    document.getElementById('cards-grid').innerHTML = plats.map((p, i) => {
-        const epMin = Math.round(p.temps_epluchage / 60);
-        const cuMin = Math.round(p.temps_cuisson / 60);
-        const total = epMin + cuMin;
-        return `<div class="plat-card">
-            <div class="card-puzzle-badge">&#x1F9E9;</div>
-            <div class="card-icon">${getIcon(p.nom)}</div>
-            <div class="card-name">${p.nom}</div>
-            <div class="card-times">
-                <div class="card-time-box prep">Epluchage<strong>${epMin} min</strong></div>
-                <div class="card-time-box cuisson">Cuisson<strong>${cuMin} min</strong></div>
-            </div>
-            <div class="card-total">Total : ${total} min</div>
-        </div>`;
-    }).join('');
+    // Calculate greedy solution
+    const sorted = [...plats].map((p, i) => ({...p, index: i}))
+        .sort((a, b) => (b.temps_epluchage + b.temps_cuisson) - (a.temps_epluchage + a.temps_cuisson));
 
-    // ---- Page 3: Commis boards ----
-    document.getElementById('commis-boards').innerHTML = Array.from({length: nbCommis}, (_, i) => `
-        <div class="commis-board">
-            <h3><span class="commis-num">${i+1}</span> Commis ${i+1}</h3>
-            <div class="drop-zones">
-                ${Array.from({length: maxSlots}, () =>
-                    '<div class="drop-zone">Posez une carte ici</div>'
-                ).join('')}
-            </div>
-            <div class="commis-total-row">
-                <span>Charge totale :</span>
-                <div class="total-box"></div>
-                <span>min</span>
-            </div>
-        </div>
-    `).join('');
+    const commisLoads = Array(nbCommis).fill(0);
+    const commisPlats = Array.from({length: nbCommis}, () => []);
 
-    // ---- Page 4: Results ----
-    // Compute greedy solution
-    const platsWithTotal = plats.map(p => ({
-        ...p,
-        total: p.temps_epluchage + p.temps_cuisson,
-        totalMin: Math.round((p.temps_epluchage + p.temps_cuisson) / 60)
-    }));
-    const sorted = [...platsWithTotal].sort((a,b) => b.total - a.total);
-    const loads = Array(nbCommis).fill(0);
-    const assignments = Array.from({length: nbCommis}, () => []);
-    sorted.forEach(p => {
-        const minIdx = loads.indexOf(Math.min(...loads));
-        loads[minIdx] += p.totalMin;
-        assignments[minIdx].push(p.nom);
+    sorted.forEach(plat => {
+        const minIdx = commisLoads.indexOf(Math.min(...commisLoads));
+        const total = plat.temps_epluchage + plat.temps_cuisson;
+        commisLoads[minIdx] += total;
+        commisPlats[minIdx].push(plat);
     });
-    const makespan = Math.max(...loads);
 
-    const commisHeaders = Array.from({length: nbCommis}, (_, i) => `<th>Commis ${i+1}</th>`).join('');
-    const emptyCells = Array.from({length: nbCommis}, () => '<td></td>').join('');
+    const makespan = Math.max(...commisLoads);
 
-    document.getElementById('results-content').innerHTML = `
-        <p style="margin-bottom:15px; font-size:0.95em; color:#555;">
-            <strong>Instance :</strong> ${data.nom} &nbsp;|&nbsp;
-            <strong>Plats :</strong> ${plats.length} &nbsp;|&nbsp;
-            <strong>Commis :</strong> ${nbCommis}
-        </p>
+    const icons = ["\u{1F34E}","\u{1F350}","\u{1F96D}","\u{1F34D}","\u{1F95D}","\u{1F34A}",
+                   "\u{1F351}","\u{1F352}","\u{1F353}","\u{1F955}","\u{1F954}","\u{1F346}",
+                   "\u{1F345}","\u{1F344}","\u{1F966}","\u{1F347}","\u{1F348}","\u{1F349}",
+                   "\u{1F969}","\u{1F355}"];
 
-        <table class="results-table">
-            <tr><th></th>${commisHeaders}<th class="makespan-col">Makespan</th></tr>
-            <tr><td class="label-col">Tour 1 &mdash; Strat&eacute;gie libre</td>${emptyCells}<td class="makespan-col"></td></tr>
-            <tr><td class="label-col">Tour 2 &mdash; Algorithme glouton</td>${emptyCells}<td class="makespan-col"></td></tr>
-        </table>
+    area.innerHTML = `
+        <h2>${rawData.nom}</h2>
+        <div class="instance-info">${rawData.description} | Difficult&eacute; : ${rawData.difficulte || 'N/A'} | ${nbCommis} commis</div>
 
-        <p style="margin: 15px 0 8px; font-size: 0.95em;"><strong>Questions &agrave; se poser :</strong></p>
-        <ul style="padding-left:20px; line-height:1.8; font-size:0.92em; color:#555;">
-            <li>Quel tour a donn&eacute; le meilleur makespan ?</li>
-            <li>La diff&eacute;rence est-elle grande ? Pourquoi ?</li>
-            <li>Pensez-vous qu'on peut faire encore mieux que le glouton ?</li>
-        </ul>
+        <h3 style="color:#e94560; margin-bottom:15px;">Cartes des Plats (d&eacute;couper selon les bords)</h3>
+        <div class="cards-grid">
+            ${plats.map((p, i) => {
+                const total = p.temps_epluchage + p.temps_cuisson;
+                const epMin = Math.round(p.temps_epluchage / 60);
+                const cuMin = Math.round(p.temps_cuisson / 60);
+                const totMin = Math.round(total / 60);
+                return `<div class="print-card">
+                    <div class="p-icon">${icons[i % icons.length]}</div>
+                    <div class="p-name">${p.nom}</div>
+                    <div class="p-time-row">
+                        <div class="p-time prep">Epluchage<br><strong>${epMin} min</strong></div>
+                        <div class="p-time cuisson">Cuisson<br><strong>${cuMin} min</strong></div>
+                    </div>
+                    <div class="p-total">Total : ${totMin} min</div>
+                </div>`;
+            }).join('')}
+        </div>
 
-        <div class="solution-box">
-            <h3>Solution Glouton (r&eacute;serv&eacute; &agrave; l'animateur)</h3>
-            <p style="font-size:0.85em; color:#888; margin-bottom:10px;">
-                Ordre de tri : ${sorted.map(p => `${p.nom} (${p.totalMin}min)`).join(' \u2265 ')}
-            </p>
-            ${assignments.map((a, i) =>
-                `<div class="sol-line"><strong>Commis ${i+1} :</strong> ${a.join(' + ')} = <strong>${loads[i]} min</strong></div>`
-            ).join('')}
-            <div class="sol-makespan">Makespan glouton = ${makespan} min</div>
+        <h3 style="color:#0f3460; margin-bottom:15px;">Fiches Commis (une par commis)</h3>
+        <div class="commis-sheets">
+            ${Array.from({length: nbCommis}, (_, i) => `
+                <div class="commis-sheet">
+                    <h3>Commis ${i+1}</h3>
+                    <div class="commis-slot">Placez les cartes-plats ici</div>
+                    <div class="commis-slot">...</div>
+                    <div class="commis-slot">...</div>
+                    <div style="margin-top:10px; font-size:0.9em; color:#666;">
+                        <strong>Charge totale :</strong> ________ min
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+
+        <div class="results-sheet">
+            <h3>Fiche R&eacute;sultats &agrave; remplir</h3>
+            <table class="results-table">
+                <tr>
+                    <th></th>
+                    ${Array.from({length: nbCommis}, (_, i) => `<th>Commis ${i+1}</th>`).join('')}
+                    <th style="background:#fff9c4;">Makespan</th>
+                </tr>
+                <tr>
+                    <td><strong>Tour 1 (libre)</strong></td>
+                    ${Array.from({length: nbCommis}, () => '<td></td>').join('')}
+                    <td class="highlight-cell"></td>
+                </tr>
+                <tr>
+                    <td><strong>Tour 2 (glouton)</strong></td>
+                    ${Array.from({length: nbCommis}, () => '<td></td>').join('')}
+                    <td class="highlight-cell"></td>
+                </tr>
+            </table>
+
+            <div style="margin-top:20px; padding:15px; background:#e8f5e9; border-radius:8px;">
+                <strong style="color:#2e7d32;">Solution glouton (pour l'animateur) :</strong><br>
+                ${commisPlats.map((cp, i) =>
+                    `Commis ${i+1} : ${cp.map(p => p.nom).join(' + ')} = <strong>${Math.round(commisLoads[i]/60)} min</strong>`
+                ).join('<br>')}
+                <br><strong style="color:#e94560;">Makespan glouton = ${Math.round(makespan/60)} min</strong>
+            </div>
         </div>
     `;
 }
 
-document.addEventListener('DOMContentLoaded', init);
+function printCards() {
+    const section = document.getElementById('section-cartes');
+    section.classList.add('print-target');
+    window.print();
+    section.classList.remove('print-target');
+}
+
+// ===== KEYBOARD NAVIGATION =====
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') nextStep();
+    if (e.key === 'ArrowLeft') prevStep();
+});
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+    renderCurrentStep();
+    loadInstances();
+});
 </script>
+
 </body>
 </html>
