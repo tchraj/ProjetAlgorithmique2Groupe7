@@ -49,4 +49,3 @@ def dynamic_programming_scheduler(tasks, num_workers):
     # Pour la démonstration, nous allons appeler l'algorithme glouton.
     # Une véritable implémentation de la programmation dynamique serait beaucoup plus complexe.
     return greedy_scheduler(tasks, num_workers)
-
