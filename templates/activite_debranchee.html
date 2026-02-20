@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kit Activit&eacute; D&eacute;branch&eacute;e - Ordonnancement en Cuisine</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; color: #333; }
+
+        /* ===== SCREEN UI (hidden when printing) ===== */
+        .screen-ui {
+            background: #1a1a2e; color: #fff; padding: 20px 30px;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .screen-ui h1 { color: #e94560; font-size: 1.4em; margin-bottom: 8px; }
+        .screen-ui p { color: #aaa; font-size: 0.95em; margin-bottom: 15px; }
+        .screen-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .screen-btn {
+            padding: 10px 22px; border-radius: 20px; border: 2px solid #333;
+            background: transparent; color: #aaa; cursor: pointer; font-size: 0.9em;
+            transition: all 0.3s;
+        }
+        .screen-btn:hover { border-color: #e94560; color: #fff; }
+        .screen-btn.active { background: #e94560; border-color: #e94560; color: #fff; }
+        .print-all-btn {
+            padding: 10px 30px; border-radius: 20px; border: none;
+            background: #4ecdc4; color: #fff; cursor: pointer; font-size: 0.95em;
+            font-weight: bold; margin-left: auto;
+        }
+        .print-all-btn:hover { background: #3db8b0; }
+        .instance-select {
+            padding: 8px 14px; border-radius: 10px; border: 2px solid #333;
+            background: #16213e; color: #fff; font-size: 0.9em;
+        }
+
+        /* ===== PRINTABLE PAGES ===== */
+        .print-page {
+            width: 210mm; min-height: 297mm; margin: 20px auto;
+            background: #fff; padding: 15mm; box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            page-break-after: always; position: relative;
+        }
+        .print-page:last-child { page-break-after: avoid; }
+
+        /* ===== PAGE 1: REGLES DU JEU ===== */
+        .rules-header {
+            text-align: center; border-bottom: 3px solid #e94560;
+            padding-bottom: 15px; margin-bottom: 20px;
+        }
+        .rules-header h1 { font-size: 2em; color: #e94560; margin-bottom: 5px; }
+        .rules-header .subtitle { font-size: 1.1em; color: #666; }
+        .rules-header .team { font-size: 0.85em; color: #999; margin-top: 5px; }
+
+        .rules-section { margin-bottom: 18px; }
+        .rules-section h2 {
+            font-size: 1.15em; color: #fff; background: #e94560;
+            padding: 6px 14px; border-radius: 8px; display: inline-block;
+            margin-bottom: 8px;
+        }
+        .rules-section h2.green { background: #4ecdc4; }
+        .rules-section h2.blue { background: #0f3460; }
+
+        .rules-box {
+            border: 2px solid #eee; border-radius: 10px; padding: 12px 16px;
+            background: #fafafa; line-height: 1.7; font-size: 0.92em;
+        }
+        .rules-box ol, .rules-box ul { padding-left: 22px; }
+        .rules-box li { margin-bottom: 4px; }
+        .rules-box .highlight { background: #fff3cd; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .rules-box .keyword { color: #e94560; font-weight: bold; }
+
+        .materiel-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+        }
+        .materiel-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 12px; border: 1px solid #eee; border-radius: 8px;
+            font-size: 0.9em;
+        }
+        .materiel-item .m-icon { font-size: 1.5em; }
+
+        .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        /* ===== PAGE 2: CARTES PLATS ===== */
+        .cards-page-title {
+            text-align: center; font-size: 1.4em; color: #e94560;
+            margin-bottom: 5px; border-bottom: 2px solid #e94560; padding-bottom: 8px;
+        }
+        .cards-page-subtitle {
+            text-align: center; color: #888; font-size: 0.85em; margin-bottom: 15px;
+        }
+        /* Grille entourée de pointillés pour découpe facile */
+        #cards-grid {
+            border: 2px dashed #ccc;
+            padding: 14px;
+            border-radius: 8px;
+        }
+
+        .cards-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px 30px;
+        }
+        .plat-card {
+            border: 3px solid #e94560; border-radius: 14px; padding: 14px;
+            text-align: center; background: linear-gradient(180deg, #fff8f0 0%, #fff 100%);
+            position: relative; min-height: 160px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            margin-right: 14px; margin-bottom: 14px;
+        }
+        /* Tab puzzle — droite */
+        .plat-card::before {
+            content: '';
+            position: absolute;
+            width: 26px; height: 26px;
+            background: linear-gradient(135deg, #fff8f0, #fff);
+            border: 3px solid #e94560;
+            border-radius: 50%;
+            right: -17px; top: 42%;
+            z-index: 2;
+        }
+        /* Tab puzzle — bas */
+        .plat-card::after {
+            content: '';
+            position: absolute;
+            width: 26px; height: 26px;
+            background: linear-gradient(180deg, #fff8f0, #fff);
+            border: 3px solid #e94560;
+            border-radius: 50%;
+            bottom: -17px; left: 38%;
+            z-index: 2;
+        }
+        .plat-card .card-icon { font-size: 2.8em; margin-bottom: 6px; }
+        .plat-card .card-name {
+            font-size: 1.15em; font-weight: bold; color: #333; margin-bottom: 10px;
+            text-transform: capitalize;
+        }
+        .plat-card .card-times {
+            display: flex; gap: 8px; margin-bottom: 10px; width: 100%;
+            justify-content: center;
+        }
+        .card-time-box {
+            padding: 5px 10px; border-radius: 8px; font-size: 0.8em;
+            text-align: center; min-width: 70px;
+        }
+        .card-time-box.prep { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+        .card-time-box.cuisson { background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
+        .card-time-box strong { display: block; font-size: 1.3em; }
+
+        .card-total {
+            background: #e94560; color: #fff; padding: 5px 16px;
+            border-radius: 20px; font-weight: bold; font-size: 1.05em;
+        }
+        .card-cut-line { display: none; }
+        /* Encart puzzle en haut à gauche de chaque pièce */
+        .card-puzzle-badge {
+            position: absolute; top: 6px; left: 8px;
+            font-size: 1em; opacity: 0.4;
+        }
+
+        /* ===== PAGE 3: PLATEAUX COMMIS ===== */
+        .commis-board {
+            border: 3px solid #0f3460; border-radius: 14px;
+            padding: 18px; margin-bottom: 15px; background: #f8f9ff;
+            min-height: 100px;
+        }
+        .commis-board h3 {
+            color: #0f3460; font-size: 1.2em; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .commis-board h3 .commis-num {
+            background: #0f3460; color: #fff; width: 30px; height: 30px;
+            border-radius: 50%; display: inline-flex; align-items: center;
+            justify-content: center; font-size: 0.9em;
+        }
+        .drop-zones {
+            display: flex; gap: 10px; min-height: 80px;
+        }
+        .drop-zone {
+            flex: 1; border: 2px dashed #bbb; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: #ccc; font-style: italic; font-size: 0.85em;
+            min-height: 75px; background: #fff;
+        }
+        .commis-total-row {
+            display: flex; justify-content: flex-end; align-items: center;
+            gap: 10px; margin-top: 10px; font-size: 0.95em;
+        }
+        .total-box {
+            border: 2px solid #0f3460; border-radius: 8px; padding: 4px 20px;
+            min-width: 80px; text-align: center; background: #fff;
+            font-weight: bold; height: 30px;
+        }
+
+        /* ===== PAGE 4: FICHE RESULTATS ===== */
+        .results-table {
+            width: 100%; border-collapse: collapse; margin-bottom: 20px;
+        }
+        .results-table th, .results-table td {
+            border: 2px solid #ddd; padding: 12px 10px; text-align: center;
+            font-size: 0.95em;
+        }
+        .results-table th { background: #0f3460; color: #fff; }
+        .results-table td { min-height: 40px; height: 45px; }
+        .results-table .makespan-col { background: #fff9c4; font-weight: bold; }
+        .results-table .label-col { background: #f5f5f5; text-align: left; font-weight: bold; padding-left: 15px; }
+
+        .solution-box {
+            border: 2px solid #4ecdc4; border-radius: 12px; padding: 18px;
+            background: #f0fffe; margin-top: 15px;
+        }
+        .solution-box h3 { color: #4ecdc4; margin-bottom: 10px; }
+        .solution-box .sol-line { margin-bottom: 5px; line-height: 1.6; }
+        .solution-box .sol-makespan {
+            font-size: 1.3em; font-weight: bold; color: #e94560;
+            margin-top: 10px; text-align: center;
+            padding: 8px; background: #fff; border-radius: 8px;
+        }
+
+        /* ===== PAGE 5: QUESTIONS DEBAT ===== */
+        .question-card {
+            border: 2px solid #e94560; border-radius: 12px; padding: 16px;
+            margin-bottom: 12px; background: #fff;
+        }
+        .question-card .q-num {
+            display: inline-block; background: #e94560; color: #fff;
+            width: 28px; height: 28px; border-radius: 50%;
+            text-align: center; line-height: 28px; font-weight: bold;
+            margin-right: 8px; font-size: 0.9em;
+        }
+        .question-card .q-text { font-size: 1.05em; font-weight: bold; margin-bottom: 8px; }
+        .question-card .q-answer {
+            background: #f5f5f5; padding: 10px 14px; border-radius: 8px;
+            font-size: 0.9em; color: #555; border-left: 3px solid #4ecdc4;
+        }
+        .question-card .q-space {
+            border: 1px dashed #ccc; border-radius: 8px; min-height: 50px;
+            margin-top: 5px; background: #fafafa;
+        }
+
+        .algo-explain {
+            border: 2px solid #0f3460; border-radius: 12px; padding: 18px;
+            background: #f8f9ff; margin-bottom: 15px;
+        }
+        .algo-explain h3 { color: #0f3460; margin-bottom: 10px; }
+        .algo-steps { counter-reset: algo-step; padding-left: 0; list-style: none; }
+        .algo-steps li {
+            counter-increment: algo-step; padding: 8px 12px 8px 45px;
+            position: relative; margin-bottom: 6px; background: #fff;
+            border-radius: 8px; border: 1px solid #eee;
+        }
+        .algo-steps li::before {
+            content: counter(algo-step);
+            position: absolute; left: 10px; top: 8px;
+            background: #0f3460; color: #fff; width: 24px; height: 24px;
+            border-radius: 50%; text-align: center; line-height: 24px;
+            font-size: 0.8em; font-weight: bold;
+        }
+
+        /* ===== PRINT STYLES ===== */
+        @media print {
+            body { background: #fff; }
+            .screen-ui { display: none !important; }
+            .print-page { box-shadow: none; margin: 0; padding: 12mm; }
+        }
+
+        @media screen {
+            .print-page { margin-bottom: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SCREEN CONTROLS (hidden when printing) -->
+<div class="screen-ui">
+    <h1>Kit Activit&eacute; D&eacute;branch&eacute;e - Ordonnancement en Cuisine</h1>
+    <p>S&eacute;lectionnez une instance, puis imprimez (Ctrl+P) pour obtenir tout le mat&eacute;riel physique de l'atelier.</p>
+    <div class="screen-controls">
+        <span style="color:#888;">Instance :</span>
+        <select class="instance-select" id="instance-select" onchange="loadInstance(this.value)">
+            <option value="">Chargement...</option>
+        </select>
+        <button class="print-all-btn" onclick="window.print()">Imprimer le kit complet</button>
+    </div>
+</div>
+
+<!-- ===== PAGE 1 : REGLES DU JEU ===== -->
+<div class="print-page" id="page-rules">
+    <div class="rules-header">
+        <h1>Chef d'Orchestre en Cuisine</h1>
+        <div class="subtitle">Activit&eacute; d&eacute;branch&eacute;e - Ordonnancement et optimisation</div>
+        <div class="team">Groupe 7 - Polytech Nice SI4 - Algorithmique &amp; M&eacute;diation</div>
+    </div>
+
+    <div class="rules-section">
+        <h2>Le Sc&eacute;nario</h2>
+        <div class="rules-box">
+            Vous &ecirc;tes <strong>chef cuisinier</strong> dans un grand restaurant. Plusieurs plats doivent &ecirc;tre pr&eacute;par&eacute;s,
+            et vous disposez d'un nombre limit&eacute; de <strong>commis de cuisine</strong>.
+            Chaque plat n&eacute;cessite un <span class="keyword">temps d'&eacute;pluchage</span> puis un <span class="keyword">temps de cuisson</span>.
+            <br><br>
+            Votre mission : <span class="highlight">r&eacute;partir les plats entre les commis pour que TOUT soit termin&eacute; le plus vite possible !</span>
+            <br><br>
+            Le temps total (quand le dernier commis finit) s'appelle le <span class="keyword">makespan</span>.
+        </div>
+    </div>
+
+    <div class="rules-section">
+        <h2>Mat&eacute;riel</h2>
+        <div class="materiel-grid">
+            <div class="materiel-item"><span class="m-icon">&#x1F9E9;</span> Pi&egrave;ces puzzle (page 2) &mdash; s&eacute;parer en d&eacute;chirant</div>
+            <div class="materiel-item"><span class="m-icon">&#x1F9D1;&#x200D;&#x1F373;</span> Plateaux commis (page 3) &mdash; poser sur table</div>
+            <div class="materiel-item"><span class="m-icon">&#x1F4CB;</span> Fiche r&eacute;sultats (page 4) &mdash; une par groupe</div>
+            <div class="materiel-item"><span class="m-icon">&#x270C;&#xFE0F;</span> Pas de ciseaux n&eacute;cessaires &mdash; d&eacute;chirer le long des pointill&eacute;s</div>
+        </div>
+    </div>
+
+    <div class="two-cols">
+        <div class="rules-section">
+            <h2>Tour 1 : Strat&eacute;gie libre</h2>
+            <div class="rules-box">
+                <ol>
+                    <li>Prenez les pi&egrave;ces puzzle des plats</li>
+                    <li>R&eacute;partissez-les <strong>librement</strong> entre les commis</li>
+                    <li>Pour chaque commis, <strong>additionnez</strong> les temps totaux de ses plats</li>
+                    <li>Le <span class="keyword">makespan</span> = le temps du commis <strong>le plus charg&eacute;</strong></li>
+                    <li>Notez votre r&eacute;sultat sur la fiche</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="rules-section">
+            <h2 class="green">Tour 2 : Algorithme Glouton</h2>
+            <div class="rules-box">
+                <ol>
+                    <li><strong>Triez</strong> les pi&egrave;ces du temps total le plus grand au plus petit</li>
+                    <li>Prenez la premi&egrave;re pi&egrave;ce (la plus longue)</li>
+                    <li>Posez-la sur le commis qui a <strong>le moins de travail</strong></li>
+                    <li>R&eacute;p&eacute;tez pour chaque carte</li>
+                    <li>Calculez le makespan et comparez !</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="rules-section">
+        <h2 class="blue">Apr&egrave;s les 2 tours : Discussion</h2>
+        <div class="rules-box">
+            <ul>
+                <li>Qui a battu l'algorithme glouton au Tour 1 ?</li>
+                <li>Pourquoi le glouton marche bien ? &rarr; Il <strong>&eacute;quilibre la charge</strong> entre les commis</li>
+                <li>Est-il toujours optimal ? &rarr; <strong>Non !</strong> Ce probl&egrave;me est <span class="keyword">NP-complet</span></li>
+                <li>Analogie : c'est comme un Sudoku g&eacute;ant &mdash; facile &agrave; v&eacute;rifier, tr&egrave;s dur &agrave; r&eacute;soudre</li>
+                <li>Avec 100 plats et 10 commis : 10<sup>100</sup> combinaisons (plus que d'atomes dans l'univers !)</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- ===== PAGE 2 : CARTES PLATS (generated by JS) ===== -->
+<div class="print-page" id="page-cards">
+    <div class="cards-page-title">&#x1F9E9; Pi&egrave;ces Puzzle des Plats &mdash; s&eacute;parer en d&eacute;chirant le long des pointill&eacute;s</div>
+    <div class="cards-page-subtitle" id="cards-subtitle">S&eacute;lectionnez une instance</div>
+    <div class="cards-grid" id="cards-grid">
+        <div style="grid-column: 1/-1; text-align:center; padding: 60px; color:#aaa;">
+            S&eacute;lectionnez une instance en haut de page
+        </div>
+    </div>
+</div>
+
+<!-- ===== PAGE 3 : PLATEAUX COMMIS (generated by JS) ===== -->
+<div class="print-page" id="page-commis">
+    <div class="cards-page-title">Plateaux Commis &mdash; poser les cartes dessus</div>
+    <div class="cards-page-subtitle">Chaque commis a des emplacements pour recevoir les cartes-plats</div>
+    <div id="commis-boards">
+        <div style="text-align:center; padding: 60px; color:#aaa;">
+            S&eacute;lectionnez une instance en haut de page
+        </div>
+    </div>
+</div>
+
+<!-- ===== PAGE 4 : FICHE RESULTATS ===== -->
+<div class="print-page" id="page-results">
+    <div class="cards-page-title">Fiche R&eacute;sultats</div>
+    <div class="cards-page-subtitle">Nom du groupe : ________________&nbsp;&nbsp;&nbsp;&nbsp; Date : ________________</div>
+
+    <div id="results-content">
+        <div style="text-align:center; padding: 40px; color:#aaa;">
+            S&eacute;lectionnez une instance en haut de page
+        </div>
+    </div>
+</div>
+
+<!-- ===== PAGE 5 : EXPLICATION ALGORITHME + QUIZ ===== -->
+<div class="print-page" id="page-quiz">
+    <div class="cards-page-title">Fiche P&eacute;dagogique &mdash; Comprendre l'algorithme</div>
+    <div class="cards-page-subtitle">Pour l'animateur et les participants</div>
+
+    <div class="algo-explain">
+        <h3>L'algorithme Glouton (Least Loaded First)</h3>
+        <ol class="algo-steps">
+            <li><strong>Trier</strong> tous les plats par temps total d&eacute;croissant (le plus long d'abord)</li>
+            <li><strong>Prendre</strong> le premier plat de la liste (le plus long non assign&eacute;)</li>
+            <li><strong>Regarder</strong> quel commis a la charge la plus faible actuellement</li>
+            <li><strong>Assigner</strong> ce plat &agrave; ce commis (poser la carte sur son plateau)</li>
+            <li><strong>R&eacute;p&eacute;ter</strong> les &eacute;tapes 2-4 jusqu'&agrave; ce que tous les plats soient assign&eacute;s</li>
+        </ol>
+        <div style="margin-top:12px; padding:10px; background:#e8f5e9; border-radius:8px; font-size:0.9em;">
+            <strong>Pourquoi &ccedil;a marche ?</strong> En commen&ccedil;ant par les gros plats et en &eacute;quilibrant la charge,
+            on &eacute;vite de surcharger un seul commis. Garantie : au pire <strong>2x l'optimal</strong> (ratio 2 - 1/m).
+        </div>
+    </div>
+
+    <div class="cards-page-title" style="font-size:1.2em; margin-top:20px;">Mini-Quiz &mdash; V&eacute;rifiez votre compr&eacute;hension</div>
+
+    <div class="question-card">
+        <div class="q-text"><span class="q-num">1</span>L'algorithme glouton donne-t-il toujours LA meilleure solution possible ?</div>
+        <div class="q-space"></div>
+        <div class="q-answer"><strong>R&eacute;ponse :</strong> Non, mais il donne une bonne approximation rapidement. La solution exacte peut n&eacute;cessiter de tester un nombre astronomique de combinaisons.</div>
+    </div>
+
+    <div class="question-card">
+        <div class="q-text"><span class="q-num">2</span>Pourquoi commence-t-on par les plats les plus longs ?</div>
+        <div class="q-space"></div>
+        <div class="q-answer"><strong>R&eacute;ponse :</strong> Les gros plats sont les plus difficiles &agrave; placer. En les assignant en premier, on peut mieux &eacute;quilibrer avec les petits plats ensuite. Si on commence par les petits, les gros plats risquent tous de finir chez le m&ecirc;me commis.</div>
+    </div>
+
+    <div class="question-card">
+        <div class="q-text"><span class="q-num">3</span>Si vous avez 20 plats et 5 commis, combien de r&eacute;partitions diff&eacute;rentes existent ?</div>
+        <div class="q-space"></div>
+        <div class="q-answer"><strong>R&eacute;ponse :</strong> 5<sup>20</sup> &asymp; 95 000 milliards ! Chaque plat peut aller chez n'importe quel commis. M&ecirc;me un ordinateur rapide ne peut pas toutes les tester. C'est pourquoi on dit que ce probl&egrave;me est <strong>NP-complet</strong>.</div>
+    </div>
+
+    <div class="question-card">
+        <div class="q-text"><span class="q-num">4</span>Citez un exemple de la vie quotidienne o&ugrave; l'on retrouve ce probl&egrave;me d'ordonnancement.</div>
+        <div class="q-space"></div>
+        <div class="q-answer"><strong>R&eacute;ponses possibles :</strong> Caisses de supermarch&eacute; (r&eacute;partir les clients), serveurs web (r&eacute;partir les requ&ecirc;tes), GPS (optimiser les itin&eacute;raires), emploi du temps scolaire, cha&icirc;ne de montage en usine...</div>
+    </div>
+</div>
+
+<script>
+// ===== ICONS =====
+const ICONS = {
+    "pomme":"\u{1F34E}","poire":"\u{1F350}","mangue":"\u{1F96D}","ananas":"\u{1F34D}",
+    "kiwi":"\u{1F95D}","orange":"\u{1F34A}","p\u00eache":"\u{1F351}","abricot":"\u{1F351}",
+    "prune":"\u{1F351}","cerise":"\u{1F352}","fraise":"\u{1F353}","framboise":"\u{1F353}",
+    "myrtille":"\u{1FAD0}","melon":"\u{1F348}","past\u00e8que":"\u{1F349}","raisin":"\u{1F347}",
+    "litchi":"\u{1F352}","papaye":"\u{1F96D}","goyave":"\u{1F96D}","carotte":"\u{1F955}",
+    "pomme de terre":"\u{1F954}","courgette":"\u{1F96C}","aubergine":"\u{1F346}",
+    "poivron":"\u{1FAD1}","tomate":"\u{1F345}","concombre":"\u{1F96C}","radis":"\u{1F96C}",
+    "navet":"\u{1F96C}","c\u00e9leri":"\u{1F96C}","poireau":"\u{1F96C}",
+    "champignon":"\u{1F344}","brocoli":"\u{1F966}","chou-fleur":"\u{1F966}",
+    "haricot vert":"\u{1FAD8}","salade":"\u{1F957}","soupe":"\u{1F372}",
+    "pommes":"\u{1F34E}","mangues":"\u{1F96D}","tomates":"\u{1F345}","litchis":"\u{1F352}",
+    "default":"\u{1F37D}\u{FE0F}"
+};
+
+function getIcon(nom) {
+    return ICONS[nom.toLowerCase()] || ICONS["default"];
+}
+
+// ===== LOAD INSTANCES LIST =====
+async function init() {
+    try {
+        const resp = await fetch('/api/instances');
+        const data = await resp.json();
+        const select = document.getElementById('instance-select');
+        select.innerHTML = '<option value="">-- Choisir une instance --</option>';
+        data.instances.forEach(inst => {
+            const opt = document.createElement('option');
+            opt.value = inst.nom;
+            opt.textContent = `${inst.nom} (${inst.nombre_plats} plats, ${inst.nombre_commis} commis, ${inst.difficulte})`;
+            select.appendChild(opt);
+        });
+    } catch(e) {
+        document.getElementById('instance-select').innerHTML = '<option>Erreur - serveur Flask non lanc\u00e9</option>';
+    }
+}
+
+// ===== LOAD AND RENDER INSTANCE =====
+async function loadInstance(nom) {
+    if (!nom) return;
+    const resp = await fetch(`/api/instances/${nom}?raw=true`);
+    const data = await resp.json();
+
+    const plats = data.plats;
+    const nbCommis = data.nombre_commis;
+    const maxSlots = Math.max(4, Math.ceil(plats.length / nbCommis) + 1);
+
+    // ---- Page 2: Cards ----
+    document.getElementById('cards-subtitle').textContent =
+        `Instance : ${data.nom} \u2014 ${plats.length} plats, ${nbCommis} commis \u2014 Difficult\u00e9 : ${data.difficulte || '?'}`;
+
+    document.getElementById('cards-grid').innerHTML = plats.map((p, i) => {
+        const epMin = Math.round(p.temps_epluchage / 60);
+        const cuMin = Math.round(p.temps_cuisson / 60);
+        const total = epMin + cuMin;
+        return `<div class="plat-card">
+            <div class="card-puzzle-badge">&#x1F9E9;</div>
+            <div class="card-icon">${getIcon(p.nom)}</div>
+            <div class="card-name">${p.nom}</div>
+            <div class="card-times">
+                <div class="card-time-box prep">Epluchage<strong>${epMin} min</strong></div>
+                <div class="card-time-box cuisson">Cuisson<strong>${cuMin} min</strong></div>
+            </div>
+            <div class="card-total">Total : ${total} min</div>
+        </div>`;
+    }).join('');
+
+    // ---- Page 3: Commis boards ----
+    document.getElementById('commis-boards').innerHTML = Array.from({length: nbCommis}, (_, i) => `
+        <div class="commis-board">
+            <h3><span class="commis-num">${i+1}</span> Commis ${i+1}</h3>
+            <div class="drop-zones">
+                ${Array.from({length: maxSlots}, () =>
+                    '<div class="drop-zone">Posez une carte ici</div>'
+                ).join('')}
+            </div>
+            <div class="commis-total-row">
+                <span>Charge totale :</span>
+                <div class="total-box"></div>
+                <span>min</span>
+            </div>
+        </div>
+    `).join('');
+
+    // ---- Page 4: Results ----
+    // Compute greedy solution
+    const platsWithTotal = plats.map(p => ({
+        ...p,
+        total: p.temps_epluchage + p.temps_cuisson,
+        totalMin: Math.round((p.temps_epluchage + p.temps_cuisson) / 60)
+    }));
+    const sorted = [...platsWithTotal].sort((a,b) => b.total - a.total);
+    const loads = Array(nbCommis).fill(0);
+    const assignments = Array.from({length: nbCommis}, () => []);
+    sorted.forEach(p => {
+        const minIdx = loads.indexOf(Math.min(...loads));
+        loads[minIdx] += p.totalMin;
+        assignments[minIdx].push(p.nom);
+    });
+    const makespan = Math.max(...loads);
+
+    const commisHeaders = Array.from({length: nbCommis}, (_, i) => `<th>Commis ${i+1}</th>`).join('');
+    const emptyCells = Array.from({length: nbCommis}, () => '<td></td>').join('');
+
+    document.getElementById('results-content').innerHTML = `
+        <p style="margin-bottom:15px; font-size:0.95em; color:#555;">
+            <strong>Instance :</strong> ${data.nom} &nbsp;|&nbsp;
+            <strong>Plats :</strong> ${plats.length} &nbsp;|&nbsp;
+            <strong>Commis :</strong> ${nbCommis}
+        </p>
+
+        <table class="results-table">
+            <tr><th></th>${commisHeaders}<th class="makespan-col">Makespan</th></tr>
+            <tr><td class="label-col">Tour 1 &mdash; Strat&eacute;gie libre</td>${emptyCells}<td class="makespan-col"></td></tr>
+            <tr><td class="label-col">Tour 2 &mdash; Algorithme glouton</td>${emptyCells}<td class="makespan-col"></td></tr>
+        </table>
+
+        <p style="margin: 15px 0 8px; font-size: 0.95em;"><strong>Questions &agrave; se poser :</strong></p>
+        <ul style="padding-left:20px; line-height:1.8; font-size:0.92em; color:#555;">
+            <li>Quel tour a donn&eacute; le meilleur makespan ?</li>
+            <li>La diff&eacute;rence est-elle grande ? Pourquoi ?</li>
+            <li>Pensez-vous qu'on peut faire encore mieux que le glouton ?</li>
+        </ul>
+
+        <div class="solution-box">
+            <h3>Solution Glouton (r&eacute;serv&eacute; &agrave; l'animateur)</h3>
+            <p style="font-size:0.85em; color:#888; margin-bottom:10px;">
+                Ordre de tri : ${sorted.map(p => `${p.nom} (${p.totalMin}min)`).join(' \u2265 ')}
+            </p>
+            ${assignments.map((a, i) =>
+                `<div class="sol-line"><strong>Commis ${i+1} :</strong> ${a.join(' + ')} = <strong>${loads[i]} min</strong></div>`
+            ).join('')}
+            <div class="sol-makespan">Makespan glouton = ${makespan} min</div>
+        </div>
+    `;
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
