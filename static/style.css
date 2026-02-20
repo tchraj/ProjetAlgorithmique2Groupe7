@@ -80,7 +80,7 @@ body {
     justify-content: space-between;
     background: linear-gradient(135deg, rgba(255,234,167,0.95), rgba(253,203,110,0.95));
     backdrop-filter: blur(10px);
-    padding: 12px 20px;
+    padding: 12px 20px 12px 70px;
     border-radius: var(--border-radius-lg);
     border: var(--border-cartoon);
     box-shadow: var(--shadow-cartoon);
@@ -178,20 +178,96 @@ body {
 }
 
 /* ================================================
+   Burger Button
+   ================================================ */
+.burger-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1600;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #FDCB6E, #F9CA24);
+    border: 3px solid #2D3436;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    box-shadow: var(--shadow-cartoon);
+    transition: all 0.3s var(--transition-bounce);
+}
+
+.burger-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+}
+
+.burger-btn.active {
+    background: linear-gradient(135deg, #FF6B6B, #EE5A5A);
+}
+
+.burger-line {
+    width: 24px;
+    height: 3px;
+    background: #2D3436;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.burger-btn.active .burger-line:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 6px);
+}
+.burger-btn.active .burger-line:nth-child(2) {
+    opacity: 0;
+}
+.burger-btn.active .burger-line:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -6px);
+}
+
+/* ================================================
+   Panel Overlay Backdrop
+   ================================================ */
+.panel-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    z-index: 1400;
+}
+
+.panel-overlay.visible {
+    display: block;
+}
+
+/* ================================================
    Panel Load Balancer
    ================================================ */
 .panel-loadbalancer {
-    width: 200px;
-    flex-shrink: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,234,167,0.95));
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 260px;
+    height: 100vh;
+    z-index: 1500;
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,234,167,0.98));
     backdrop-filter: blur(10px);
-    border-radius: var(--border-radius-lg);
-    border: var(--border-cartoon);
-    box-shadow: var(--shadow-cartoon);
-    padding: 15px;
+    border-right: var(--border-cartoon);
+    box-shadow: 6px 0 20px rgba(0,0,0,0.2);
+    padding: 70px 15px 15px;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    overflow-y: auto;
+    transition: left 0.3s var(--transition-bounce);
+}
+
+.panel-loadbalancer.open {
+    left: 0;
 }
 
 .panel-loadbalancer h2 {
@@ -278,6 +354,57 @@ body {
 .control-btn.pause { background: linear-gradient(135deg, #FDCB6E, #F9CA24); }
 .control-btn.reset { background: linear-gradient(135deg, #B2BEC3, #DFE6E9); }
 
+/* Timer selector */
+.timer-selector {
+    padding-bottom: 10px;
+    border-bottom: 2px dashed #FDCB6E;
+}
+
+.timer-selector label {
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    display: block;
+    margin-bottom: 8px;
+}
+
+.timer-buttons { display: flex; gap: 5px; }
+
+.timer-btn {
+    flex: 1;
+    padding: 8px;
+    background: white;
+    border: 2px solid #DFE6E9;
+    border-radius: 8px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.timer-btn.active {
+    background: linear-gradient(135deg, #FDCB6E, #F9CA24);
+    border-color: #2D3436;
+}
+
+.timer-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Timer warning states */
+.hud-timer.timer-warning {
+    background: #FFF5E0;
+    border-color: #FDCB6E;
+    color: #E17055;
+}
+
+.hud-timer.timer-critical {
+    background: linear-gradient(135deg, #FF6B6B, #EE5A5A);
+    border-color: #2D3436;
+    color: white;
+    animation: countdown-panic 0.3s infinite;
+}
+
 .speed-control {
     padding-top: 10px;
     border-top: 2px dashed #FDCB6E;
@@ -343,13 +470,503 @@ body {
     overflow: hidden;
 }
 
-.station[data-type="preparation"] { background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(232,218,255,0.92)); }
-.station[data-type="cuisson"] { background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,224,224,0.92)); }
-.station[data-type="dressage"] { background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(213,245,227,0.92)); }
+/* ================================================
+   Station Préparation — Marble Countertop
+   ================================================ */
+.station[data-type="preparation"] {
+    background:
+        repeating-linear-gradient(
+            135deg,
+            rgba(180,170,160,0.08) 0px,
+            transparent 2px,
+            transparent 20px
+        ),
+        linear-gradient(180deg, #F5F0EB, #EDE5DC 30%, #E8DDD3 70%, #DDD2C6);
+    border-color: #B8A99A;
+    border-width: 4px;
+    border-radius: 16px;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.5);
+    position: relative;
+    overflow: visible;
+}
+
+/* Marble veins decoration */
+.station[data-type="preparation"]::before {
+    content: '';
+    position: absolute;
+    top: 30%;
+    left: 5%;
+    width: 60%;
+    height: 40%;
+    background:
+        linear-gradient(125deg, transparent 40%, rgba(180,170,160,0.12) 42%, transparent 44%),
+        linear-gradient(155deg, transparent 55%, rgba(160,150,140,0.1) 57%, transparent 59%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.station[data-type="preparation"]::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,0.15), transparent 60%);
+    z-index: 0;
+    pointer-events: none;
+    border-radius: 12px;
+}
+
+.station[data-type="preparation"] .station-header {
+    background: linear-gradient(180deg, #6B8F71, #5A7D60);
+    margin: -12px -12px 8px -12px;
+    padding: 10px 12px;
+    border-radius: 12px 12px 0 0;
+    border-bottom: 3px solid #4A6B50;
+    position: relative;
+    z-index: 1;
+}
+
+.station[data-type="preparation"] .station-name { color: #F0FFF0; }
+.station[data-type="preparation"] .station-icon { font-size: 1.6rem; filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.2)); }
+.station[data-type="preparation"] .station-capacity {
+    background: #5A7D60;
+    border: 1px solid #4A6B50;
+    color: white;
+}
+
+.station[data-type="preparation"] .station-load-bar {
+    background: #D5CCC3;
+    border-color: #B8A99A;
+    position: relative;
+    z-index: 1;
+}
+
+.station[data-type="preparation"] .station-load-bar .load-fill {
+    background: linear-gradient(90deg, #6B8F71, #88B892);
+}
+
+/* Cutting board active area — light wood with knife marks */
+.station[data-type="preparation"] .station-active {
+    background:
+        repeating-linear-gradient(
+            90deg,
+            rgba(0,0,0,0.015) 0px,
+            rgba(0,0,0,0.015) 1px,
+            transparent 1px,
+            transparent 14px
+        ),
+        linear-gradient(180deg, #F2E6D4, #E8D9C4);
+    border: 3px solid #C4B5A2;
+    border-radius: 10px;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.1), inset 0 -1px 0 rgba(255,255,255,0.3);
+    position: relative;
+    z-index: 1;
+}
+
+.station[data-type="preparation"] .station-queue {
+    background: rgba(107,143,113,0.1);
+    border-color: #B8A99A;
+    position: relative;
+    z-index: 1;
+}
+
+.station[data-type="preparation"] .station-queue::before {
+    color: #6B8F71;
+}
+
+.station[data-type="preparation"][data-status="normal"] { border-color: #6B8F71; }
+.station[data-type="preparation"][data-status="loaded"] { border-color: #FDCB6E; }
+.station[data-type="preparation"][data-status="saturated"] { border-color: #E17055; }
+
+/* ================================================
+   Station Cuisson — Brick Pizza Oven
+   ================================================ */
+.station[data-type="cuisson"] {
+    background:
+        /* Brick pattern */
+        repeating-linear-gradient(
+            0deg,
+            transparent 0px,
+            transparent 22px,
+            rgba(0,0,0,0.12) 22px,
+            rgba(0,0,0,0.12) 24px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent 0px,
+            transparent 44px,
+            rgba(0,0,0,0.08) 44px,
+            rgba(0,0,0,0.08) 46px
+        ),
+        /* Offset brick row */
+        repeating-linear-gradient(
+            0deg,
+            transparent 0px,
+            transparent 22px,
+            transparent 22px,
+            transparent 48px
+        ),
+        /* Base terracotta color */
+        linear-gradient(180deg, #C75B39, #B84E2E 25%, #A84428 50%, #983D24 75%, #8A3520);
+    border-color: #7A2E1A;
+    border-width: 4px;
+    border-radius: 16px;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.35), inset 0 2px 0 rgba(255,200,150,0.1);
+    position: relative;
+    overflow: visible;
+}
+
+/* Arch shape decoration at top — gives pizza oven dome feel */
+.station[data-type="cuisson"]::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 15%;
+    right: 15%;
+    height: 12px;
+    background: linear-gradient(180deg, #D4704A, #C75B39);
+    border-radius: 50% 50% 0 0;
+    border: 3px solid #7A2E1A;
+    border-bottom: none;
+    z-index: 2;
+    box-shadow: 0 -2px 6px rgba(0,0,0,0.15);
+}
+
+/* Warm ambient glow from the oven mouth */
+.station[data-type="cuisson"]::after {
+    content: '';
+    position: absolute;
+    bottom: 10%;
+    left: 10%;
+    right: 10%;
+    height: 45%;
+    background: radial-gradient(ellipse at 50% 100%, rgba(255,120,40,0.12), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    border-radius: 0 0 10px 10px;
+    animation: oven-ambient 4s ease-in-out infinite;
+}
+
+@keyframes oven-ambient {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+}
+
+.station[data-type="cuisson"] .station-header {
+    background: linear-gradient(180deg, #8B3A22, #7A2E1A);
+    margin: -12px -12px 8px -12px;
+    padding: 10px 12px;
+    border-radius: 12px 12px 0 0;
+    border-bottom: 3px solid #5E2214;
+    position: relative;
+    z-index: 3;
+}
+
+.station[data-type="cuisson"] .station-icon { font-size: 1.6rem; filter: brightness(1.3) drop-shadow(0 0 3px rgba(255,100,30,0.5)); }
+.station[data-type="cuisson"] .station-name { color: #FFD9B3; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+.station[data-type="cuisson"] .station-capacity {
+    background: linear-gradient(135deg, #E8734A, #D4603A);
+    border: 1px solid #B84E2E;
+    color: #FFF3E0;
+}
+
+.station[data-type="cuisson"] .station-load-bar {
+    background: #5E2214;
+    border-color: #7A2E1A;
+    position: relative;
+    z-index: 1;
+}
+
+.station[data-type="cuisson"] .station-load-bar .load-fill {
+    background: linear-gradient(90deg, #FF8C42, #FF5722);
+}
+
+/* Oven mouth — the cooking area looks like a dark stone cavity with fire */
+.station[data-type="cuisson"] .station-active {
+    background:
+        radial-gradient(ellipse at 50% 100%, rgba(255,80,20,0.08) 0%, transparent 60%),
+        linear-gradient(180deg, #1A0F08, #2A1810 40%, #221208);
+    border: 3px solid #5E2214;
+    border-radius: 12px 12px 8px 8px;
+    box-shadow:
+        inset 0 0 20px rgba(0,0,0,0.7),
+        inset 0 0 40px rgba(255,80,20,0.05),
+        inset 0 -8px 20px rgba(255,100,30,0.08);
+    position: relative;
+    z-index: 1;
+}
+
+/* Ember coals at the bottom */
+.station[data-type="cuisson"] .station-active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 8%;
+    right: 8%;
+    height: 35%;
+    background:
+        radial-gradient(ellipse at 25% 90%, rgba(255,80,20,0.2), transparent 50%),
+        radial-gradient(ellipse at 75% 85%, rgba(255,60,10,0.15), transparent 50%),
+        radial-gradient(ellipse at 50% 95%, rgba(255,100,30,0.18), transparent 45%);
+    border-radius: 0 0 6px 6px;
+    animation: ember-coals 3s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes ember-coals {
+    0%, 100% { opacity: 0.4; }
+    33% { opacity: 0.7; }
+    66% { opacity: 0.5; }
+}
+
+/* Active cooking — fire intensifies */
+.station[data-type="cuisson"] .station-active:not(:empty) {
+    background:
+        radial-gradient(ellipse at 50% 90%, rgba(255,100,30,0.15) 0%, transparent 55%),
+        linear-gradient(180deg, #2A1810, #3A2218 40%, #2E1810);
+    box-shadow:
+        inset 0 0 20px rgba(0,0,0,0.5),
+        inset 0 0 50px rgba(255,100,30,0.12),
+        inset 0 -12px 30px rgba(255,80,20,0.15);
+}
+
+.station[data-type="cuisson"] .station-active:not(:empty)::after {
+    animation: ember-coals-active 1.5s ease-in-out infinite;
+}
+
+@keyframes ember-coals-active {
+    0%, 100% {
+        opacity: 0.6;
+        background:
+            radial-gradient(ellipse at 25% 90%, rgba(255,80,20,0.3), transparent 50%),
+            radial-gradient(ellipse at 75% 85%, rgba(255,60,10,0.25), transparent 50%),
+            radial-gradient(ellipse at 50% 95%, rgba(255,120,40,0.3), transparent 45%);
+    }
+    50% {
+        opacity: 1;
+        background:
+            radial-gradient(ellipse at 30% 88%, rgba(255,100,30,0.45), transparent 50%),
+            radial-gradient(ellipse at 70% 82%, rgba(255,80,20,0.35), transparent 50%),
+            radial-gradient(ellipse at 50% 92%, rgba(255,140,50,0.4), transparent 45%);
+    }
+}
+
+.station[data-type="cuisson"] .station-queue {
+    background: rgba(255,200,150,0.06);
+    border-color: #7A2E1A;
+    position: relative;
+    z-index: 1;
+}
+
+.station[data-type="cuisson"] .station-queue::before {
+    color: #D4704A;
+}
+
+.station[data-type="cuisson"][data-status="normal"] { border-color: #A84428; }
+.station[data-type="cuisson"][data-status="loaded"] { border-color: #FF8C42; box-shadow: 4px 4px 0px rgba(0,0,0,0.35), 0 0 10px rgba(255,140,50,0.2); }
+.station[data-type="cuisson"][data-status="saturated"] {
+    border-color: #FF5722;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.35), 0 0 25px rgba(255,87,34,0.4);
+    animation: brick-overheat 0.3s infinite;
+}
+
+@keyframes brick-overheat {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-1px); }
+    75% { transform: translateX(1px); }
+}
+
+/* ================================================
+   Station Dressage — Fine Dining Porcelain
+   ================================================ */
+.station[data-type="dressage"] {
+    background: linear-gradient(180deg, #FEFEFE, #F8F6F4 20%, #F2EFEC 60%, #EDE9E5);
+    border-color: #C9B99A;
+    border-width: 4px;
+    border-radius: 16px;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.15), inset 0 2px 0 rgba(255,255,255,0.8);
+    position: relative;
+    overflow: visible;
+}
+
+/* Subtle gold trim accent */
+.station[data-type="dressage"]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 12px;
+    border: 1px solid rgba(201,185,154,0.3);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Decorative plate outline watermark */
+.station[data-type="dressage"]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border: 2px dashed rgba(201,185,154,0.2);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.station[data-type="dressage"] .station-header {
+    background: linear-gradient(180deg, #C9B99A, #B8A889);
+    margin: -12px -12px 8px -12px;
+    padding: 10px 12px;
+    border-radius: 12px 12px 0 0;
+    border-bottom: 3px solid #A89878;
+    position: relative;
+    z-index: 1;
+}
+
+.station[data-type="dressage"] .station-name {
+    color: #FFF8F0;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.station[data-type="dressage"] .station-icon {
+    font-size: 1.6rem;
+    filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.15));
+}
+
+.station[data-type="dressage"] .station-capacity {
+    background: linear-gradient(135deg, #C9B99A, #B8A889);
+    border: 1px solid #A89878;
+    color: white;
+}
+
+.station[data-type="dressage"] .station-load-bar {
+    background: #E8E2DB;
+    border-color: #C9B99A;
+    position: relative;
+    z-index: 1;
+}
+
+.station[data-type="dressage"] .station-load-bar .load-fill {
+    background: linear-gradient(90deg, #C9B99A, #DDD0B8);
+}
+
+/* Porcelain serving surface */
+.station[data-type="dressage"] .station-active {
+    background: linear-gradient(180deg, #FFFFFF, #FAF9F7);
+    border: 3px solid #DDD5CA;
+    border-radius: 10px;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.05), inset 0 -1px 0 rgba(255,255,255,0.5);
+    position: relative;
+    z-index: 1;
+}
+
+/* Sparkle shine on porcelain */
+.station[data-type="dressage"] .station-active::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+    box-shadow:
+        0 0 6px rgba(201,185,154,0.4),
+        -20px 15px 0 rgba(201,185,154,0.2),
+        15px 25px 0 rgba(201,185,154,0.15);
+    pointer-events: none;
+    animation: porcelain-shine 4s ease-in-out infinite;
+    z-index: 2;
+}
+
+@keyframes porcelain-shine {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}
+
+.station[data-type="dressage"] .station-queue {
+    background: rgba(201,185,154,0.08);
+    border-color: #DDD5CA;
+    position: relative;
+    z-index: 1;
+}
+
+.station[data-type="dressage"] .station-queue::before {
+    color: #B8A889;
+}
+
+.station[data-type="dressage"][data-status="normal"] { border-color: #C9B99A; }
+.station[data-type="dressage"][data-status="loaded"] { border-color: #FDCB6E; }
+.station[data-type="dressage"][data-status="saturated"] { border-color: #E17055; }
+
+/* ================================================
+   Flow Arrows between stations
+   ================================================ */
+.flow-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    flex-shrink: 0;
+    gap: 4px;
+}
+
+.flow-arrow-line {
+    width: 3px;
+    height: 0;
+    flex: 1;
+    max-height: 50px;
+    background: repeating-linear-gradient(
+        180deg,
+        #B2BEC3 0px,
+        #B2BEC3 6px,
+        transparent 6px,
+        transparent 12px
+    );
+    display: none;
+}
+
+.flow-arrow-head {
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-left: 14px solid #B2BEC3;
+    filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.1));
+    animation: arrow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes arrow-pulse {
+    0%, 100% { opacity: 0.5; transform: translateX(0); }
+    50% { opacity: 1; transform: translateX(3px); }
+}
+
+.flow-arrow-label {
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.55rem;
+    color: #B2BEC3;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    letter-spacing: 1px;
+    display: none;
+}
 
 .station[data-status="normal"] { border-color: var(--color-normal); }
 .station[data-status="loaded"] { border-color: var(--color-loaded); animation: wiggle 0.5s infinite; }
 .station[data-status="saturated"] { border-color: var(--color-saturated); animation: shake 0.3s infinite; }
+
+.station[data-type="cuisson"][data-status="normal"] { border-color: #888; }
+.station[data-type="cuisson"][data-status="loaded"] { border-color: #FF8C42; }
+.station[data-type="cuisson"][data-status="saturated"] { border-color: #FF4422; }
 
 @keyframes wiggle {
     0%, 100% { transform: rotate(0deg); }
@@ -777,19 +1394,6 @@ body {
    ================================================ */
 @media (max-width: 1000px) {
     .main-content { flex-direction: column; }
-
-    .panel-loadbalancer {
-        width: 100%;
-        flex-direction: row;
-        flex-wrap: wrap;
-        padding: 10px;
-    }
-
-    .panel-loadbalancer h2 { display: none; }
-    .algo-list { flex-direction: row; flex: 1; overflow-x: auto; }
-    .game-controls { flex-direction: row; margin-top: 0; }
-    .control-btn { flex: 1; padding: 10px; }
-    .speed-control { display: none; }
 }
 
 /* ================================================
@@ -1254,28 +1858,4 @@ body {
     100% { transform: scale(1) rotate(0deg); }
 }
 
-/* ================================================
-   Station Cooking Animation
-   ================================================ */
-.station[data-type="cuisson"] .station-active:not(:empty)::after {
-    content: '';
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 30px;
-    background: linear-gradient(to top, transparent, rgba(255,100,100,0.3));
-    animation: heat-wave 1s ease-in-out infinite;
-    pointer-events: none;
-    border-radius: 50%;
-}
-
-@keyframes heat-wave {
-    0%, 100% { opacity: 0.3; transform: translateX(-50%) scaleY(1); }
-    50% { opacity: 0.6; transform: translateX(-50%) scaleY(1.3); }
-}
-
-.station[data-type="cuisson"] {
-    position: relative;
-}
+/* Oven glow is now handled inline in the station cuisson section above */
