@@ -164,6 +164,18 @@ body {
     color: white;
 }
 
+.tagline-sub { font-family: Nunito,sans-serif; font-size:.95rem; color:rgba(255,255,255,.75); font-weight:600; margin-top:6px; max-width:420px; line-height:1.5; }
+.menu-row { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+.menu-btn .btn-text { display:flex; flex-direction:column; align-items:flex-start; gap:2px; }
+.menu-btn .btn-title { font-family:"Fredoka One",cursive; font-size:1.1rem; line-height:1.2; }
+.menu-btn .btn-desc { font-family:Nunito,sans-serif; font-size:.75rem; font-weight:700; opacity:.75; line-height:1.2; }
+.menu-btn { min-width:230px; max-width:260px; padding:16px 24px; gap:12px; justify-content:flex-start; }
+.btn-primary-action { background:linear-gradient(135deg,#FF6B6B,#EE5A5A); color:white; }
+.btn-secondary-action { background:linear-gradient(135deg,#A29BFE,#6C5CE7); color:white; }
+.btn-pedagogy { background:linear-gradient(135deg,#FDCB6E,#F9CA24); color:#2D3436; }
+.btn-debranchee { background:linear-gradient(135deg,#00B894,#55EFC4); color:#2D3436; }
+.landing-logo h1 { font-size:2.6rem; }
+
 .algo-icon { font-size: 1.2rem; }
 .algo-name { font-family: 'Fredoka One', cursive; font-size: 0.9rem; }
 
@@ -1859,3 +1871,4 @@ body {
 }
 
 /* Oven glow is now handled inline in the station cuisson section above */
+/* Nouveau menu — coller a la fin de style.css */
