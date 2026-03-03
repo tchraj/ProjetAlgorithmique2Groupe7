@@ -136,14 +136,14 @@ class InstanceValidator:
         elif not isinstance(plat["nom"], str) or not plat["nom"].strip():
             erreurs.append(f"Plat {index + 1}: le nom doit être une chaîne non vide")
         
-        if "temps_epluchage" not in plat:
-            erreurs.append(f"Plat {index + 1} ({plat.get('nom', '?')}): champ 'temps_epluchage' manquant")
-        elif not isinstance(plat["temps_epluchage"], (int, float)):
-            erreurs.append(f"Plat {index + 1} ({plat.get('nom', '?')}): 'temps_epluchage' doit être un nombre")
-        elif plat["temps_epluchage"] < self.MIN_TEMPS:
-            erreurs.append(f"Plat {index + 1} ({plat.get('nom', '?')}): temps_epluchage ne peut pas être négatif")
-        elif plat["temps_epluchage"] > self.MAX_TEMPS:
-            erreurs.append(f"Plat {index + 1} ({plat.get('nom', '?')}): temps_epluchage trop élevé ({plat['temps_epluchage']}s > {self.MAX_TEMPS}s)")
+        if "temps_prep" not in plat:
+            erreurs.append(f"Plat {index + 1} ({plat.get('nom', '?')}): champ 'temps_prep' manquant")
+        elif not isinstance(plat["temps_prep"], (int, float)):
+            erreurs.append(f"Plat {index + 1} ({plat.get('nom', '?')}): 'temps_prep' doit être un nombre")
+        elif plat["temps_prep"] < self.MIN_TEMPS:
+            erreurs.append(f"Plat {index + 1} ({plat.get('nom', '?')}): temps_prep ne peut pas être négatif")
+        elif plat["temps_prep"] > self.MAX_TEMPS:
+            erreurs.append(f"Plat {index + 1} ({plat.get('nom', '?')}): temps_prep trop élevé ({plat['temps_prep']}s > {self.MAX_TEMPS}s)")
         
         if "temps_cuisson" not in plat:
             erreurs.append(f"Plat {index + 1} ({plat.get('nom', '?')}): champ 'temps_cuisson' manquant")
@@ -171,7 +171,7 @@ class InstanceValidator:
         
         # Vérifier si tous les plats ont des temps nuls
         tous_nuls = all(
-            plat.get("temps_epluchage", 0) == 0 and plat.get("temps_cuisson", 0) == 0
+            plat.get("temps_prep", 0) == 0 and plat.get("temps_cuisson", 0) == 0
             for plat in plats
         )
         if tous_nuls:
@@ -179,7 +179,7 @@ class InstanceValidator:
         
         # Vérifier l'équilibre charge/commis
         temps_totaux = [
-            plat.get("temps_epluchage", 0) + plat.get("temps_cuisson", 0)
+            plat.get("temps_prep", 0) + plat.get("temps_cuisson", 0)
             for plat in plats
         ]
         temps_total = sum(temps_totaux)
@@ -220,9 +220,9 @@ class InstanceValidator:
         Returns:
             Dictionnaire de statistiques
         """
-        temps_epluchage = [plat.get("temps_epluchage", 0) for plat in plats]
+        temps_prep = [plat.get("temps_prep", 0) for plat in plats]
         temps_cuisson = [plat.get("temps_cuisson", 0) for plat in plats]
-        temps_totaux = [e + c for e, c in zip(temps_epluchage, temps_cuisson)]
+        temps_totaux = [e + c for e, c in zip(temps_prep, temps_cuisson)]
         
         temps_total = sum(temps_totaux)
         
@@ -230,7 +230,7 @@ class InstanceValidator:
             "nombre_plats": len(plats),
             "nombre_commis": nombre_commis,
             "temps_total_travail": temps_total,
-            "temps_total_epluchage": sum(temps_epluchage),
+            "temps_total_epluchage": sum(temps_prep),
             "temps_total_cuisson": sum(temps_cuisson),
             "temps_moyen_par_plat": temps_total / len(plats) if plats else 0,
             "temps_max_plat": max(temps_totaux) if temps_totaux else 0,

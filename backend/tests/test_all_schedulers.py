@@ -17,9 +17,9 @@ from schedulers.neh_scheduler import NEHScheduler
 def test_exemple_simple_tous_algos():
     """Test que tous les algorithmes produisent un résultat valide"""
     plats = [
-        Plat(1, "Plat 1", temps_epluchage=10, temps_cuisson=15),
-        Plat(2, "Plat 2", temps_epluchage=8, temps_cuisson=12),
-        Plat(3, "Plat 3", temps_epluchage=5, temps_cuisson=10)
+        Plat(1, "Plat 1", temps_prep=10, temps_cuisson=15),
+        Plat(2, "Plat 2", temps_prep=8, temps_cuisson=12),
+        Plat(3, "Plat 3", temps_prep=5, temps_cuisson=10)
     ]
 
     stations = {'commis': 2, 'fours': 2}
@@ -61,7 +61,7 @@ def test_exemple_simple_tous_algos():
 
 def test_cas_trivial():
     """Test avec un seul plat"""
-    plats = [Plat(1, "Plat unique", temps_epluchage=10, temps_cuisson=20)]
+    plats = [Plat(1, "Plat unique", temps_prep=10, temps_cuisson=20)]
     stations = {'commis': 1, 'fours': 1}
 
     algorithmes = [
@@ -82,7 +82,7 @@ def test_cas_trivial():
 def test_multi_stations():
     """Test avec plusieurs stations"""
     plats = [
-        Plat(i, f"Plat {i}", temps_epluchage=10+i, temps_cuisson=15+i)
+        Plat(i, f"Plat {i}", temps_prep=10+i, temps_cuisson=15+i)
         for i in range(1, 6)
     ]
 
@@ -107,11 +107,11 @@ def test_multi_stations():
 def test_neh_qualite():
     """Test que NEH donne de bons résultats (souvent proche de Johnson)"""
     plats = [
-        Plat(1, "Plat 1", temps_epluchage=15, temps_cuisson=17),
-        Plat(2, "Plat 2", temps_epluchage=11, temps_cuisson=16),
-        Plat(3, "Plat 3", temps_epluchage=0, temps_cuisson=12),
-        Plat(4, "Plat 4", temps_epluchage=8, temps_cuisson=14),
-        Plat(5, "Plat 5", temps_epluchage=12, temps_cuisson=10)
+        Plat(1, "Plat 1", temps_prep=15, temps_cuisson=17),
+        Plat(2, "Plat 2", temps_prep=11, temps_cuisson=16),
+        Plat(3, "Plat 3", temps_prep=0, temps_cuisson=12),
+        Plat(4, "Plat 4", temps_prep=8, temps_cuisson=14),
+        Plat(5, "Plat 5", temps_prep=12, temps_cuisson=10)
     ]
 
     stations = {'commis': 1, 'fours': 1}
@@ -134,9 +134,9 @@ def test_neh_qualite():
 def test_palmer_vs_johnson():
     """Test que Palmer donne des résultats raisonnables"""
     plats = [
-        Plat(1, "Plat 1", temps_epluchage=20, temps_cuisson=5),
-        Plat(2, "Plat 2", temps_epluchage=5, temps_cuisson=20),
-        Plat(3, "Plat 3", temps_epluchage=10, temps_cuisson=10)
+        Plat(1, "Plat 1", temps_prep=20, temps_cuisson=5),
+        Plat(2, "Plat 2", temps_prep=5, temps_cuisson=20),
+        Plat(3, "Plat 3", temps_prep=10, temps_cuisson=10)
     ]
 
     stations = {'commis': 1, 'fours': 1}

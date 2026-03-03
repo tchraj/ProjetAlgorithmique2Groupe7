@@ -161,7 +161,7 @@ Structure JSON d'une instance :
   "plats": [
     {
       "nom": "plat_1",
-      "temps_epluchage": 900,  // en secondes
+      "temps_prep": 900,  // en secondes
       "temps_cuisson": 1200
     }
   ],

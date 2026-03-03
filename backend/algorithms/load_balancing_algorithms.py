@@ -35,17 +35,3 @@ def greedy_scheduler(tasks, num_workers):
     makespan = max(worker['time'] for worker in workers)
 
     return workers, makespan
-
-def dynamic_programming_scheduler(tasks, num_workers):
-    """
-    Résout le problème d'ordonnancement à l'aide de la programmation dynamique.
-    Ceci est pour un nombre fixe de travailleurs et est NP-difficile, donc seulement réalisable pour de petites instances.
-    Pour ce projet, nous allons simuler une approche plus simple car une véritable solution DP
-    est très complexe à mettre en œuvre correctement.
-
-    Cette fonction fournira une solution de base et pourra être étendue.
-    Pour l'instant, elle renverra le même résultat que l'algorithme glouton pour des raisons de simplicité.
-    """
-    # Pour la démonstration, nous allons appeler l'algorithme glouton.
-    # Une véritable implémentation de la programmation dynamique serait beaucoup plus complexe.
-    return greedy_scheduler(tasks, num_workers)

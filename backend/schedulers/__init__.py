@@ -1,15 +1,14 @@
+# backend/schedulers/__init__.py
 from schedulers.base_scheduler import BaseScheduler
 from schedulers.johnson_scheduler import JohnsonScheduler
-from schedulers.palmer_scheduler import PalmerScheduler
+from schedulers.lpt_scheduler import LPTScheduler
 from schedulers.neh_scheduler import NEHScheduler
-from schedulers.cds_scheduler import CDSScheduler
 from schedulers.fifo_scheduler import FIFOScheduler
 
 __all__ = [
-    'BaseScheduler',
-    'JohnsonScheduler',
-    'PalmerScheduler',
-    'NEHScheduler',
-    'CDSScheduler',
-    'FIFOScheduler'
+    "BaseScheduler",
+    "JohnsonScheduler",
+    "LPTScheduler",
+    "NEHScheduler",
+    "FIFOScheduler",
 ]

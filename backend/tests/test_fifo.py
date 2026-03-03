@@ -13,9 +13,9 @@ from schedulers.fifo_scheduler import FIFOScheduler
 def test_fifo_ordre_preserved():
     """Vérifie que FIFO préserve l'ordre d'arrivée"""
     plats = [
-        Plat(1, "Premier", temps_epluchage=10*60, temps_cuisson=15*60),
-        Plat(2, "Deuxième", temps_epluchage=5*60, temps_cuisson=20*60),
-        Plat(3, "Troisième", temps_epluchage=15*60, temps_cuisson=10*60)
+        Plat(1, "Premier", temps_prep=10*60, temps_cuisson=15*60),
+        Plat(2, "Deuxième", temps_prep=5*60, temps_cuisson=20*60),
+        Plat(3, "Troisième", temps_prep=15*60, temps_cuisson=10*60)
     ]
 
     scheduler = FIFOScheduler()
@@ -31,9 +31,9 @@ def test_fifo_ordre_preserved():
 def test_fifo_exemple_1():
     """Test FIFO sur l'exemple 1 de l'énoncé"""
     plats = [
-        Plat(1, "Plat 1", temps_epluchage=15*60, temps_cuisson=17*60),
-        Plat(2, "Plat 2", temps_epluchage=11*60, temps_cuisson=16*60),
-        Plat(3, "Plat 3", temps_epluchage=0, temps_cuisson=12*60)
+        Plat(1, "Plat 1", temps_prep=15*60, temps_cuisson=17*60),
+        Plat(2, "Plat 2", temps_prep=11*60, temps_cuisson=16*60),
+        Plat(3, "Plat 3", temps_prep=0, temps_cuisson=12*60)
     ]
 
     scheduler = FIFOScheduler()
@@ -53,8 +53,8 @@ def test_fifo_vs_optimal():
     """Vérifie que FIFO donne généralement un résultat sous-optimal"""
     # Exemple où FIFO n'est pas optimal
     plats = [
-        Plat(1, "Long", temps_epluchage=20*60, temps_cuisson=20*60),    # Long
-        Plat(2, "Court", temps_epluchage=5*60, temps_cuisson=5*60)      # Court
+        Plat(1, "Long", temps_prep=20*60, temps_cuisson=20*60),    # Long
+        Plat(2, "Court", temps_prep=5*60, temps_cuisson=5*60)      # Court
     ]
 
     from schedulers.johnson_scheduler import JohnsonScheduler
@@ -72,10 +72,10 @@ def test_fifo_vs_optimal():
 def test_fifo_multi_stations():
     """Test FIFO avec plusieurs commis et fours"""
     plats = [
-        Plat(1, "Plat A", temps_epluchage=10*60, temps_cuisson=15*60),
-        Plat(2, "Plat B", temps_epluchage=8*60, temps_cuisson=20*60),
-        Plat(3, "Plat C", temps_epluchage=12*60, temps_cuisson=10*60),
-        Plat(4, "Plat D", temps_epluchage=5*60, temps_cuisson=18*60)
+        Plat(1, "Plat A", temps_prep=10*60, temps_cuisson=15*60),
+        Plat(2, "Plat B", temps_prep=8*60, temps_cuisson=20*60),
+        Plat(3, "Plat C", temps_prep=12*60, temps_cuisson=10*60),
+        Plat(4, "Plat D", temps_prep=5*60, temps_cuisson=18*60)
     ]
 
     scheduler = FIFOScheduler()
@@ -95,7 +95,7 @@ def test_fifo_multi_stations():
 def test_fifo_cas_limite_1_plat():
     """Test avec un seul plat"""
     plats = [
-        Plat(1, "Unique", temps_epluchage=10*60, temps_cuisson=15*60)
+        Plat(1, "Unique", temps_prep=10*60, temps_cuisson=15*60)
     ]
 
     scheduler = FIFOScheduler()
@@ -119,8 +119,8 @@ def test_fifo_cas_limite_liste_vide():
 def test_fifo_coherence_temps():
     """Vérifie que les temps sont cohérents dans le planning"""
     plats = [
-        Plat(1, "Plat A", temps_epluchage=10*60, temps_cuisson=15*60),
-        Plat(2, "Plat B", temps_epluchage=8*60, temps_cuisson=20*60)
+        Plat(1, "Plat A", temps_prep=10*60, temps_cuisson=15*60),
+        Plat(2, "Plat B", temps_prep=8*60, temps_cuisson=20*60)
     ]
 
     scheduler = FIFOScheduler()
@@ -156,9 +156,9 @@ def test_fifo_coherence_temps():
 def test_fifo_baseline():
     """FIFO doit servir de baseline : généralement le moins performant"""
     plats = [
-        Plat(3, "C", temps_epluchage=15*60, temps_cuisson=10*60),
-        Plat(1, "A", temps_epluchage=5*60, temps_cuisson=20*60),
-        Plat(2, "B", temps_epluchage=10*60, temps_cuisson=15*60)
+        Plat(3, "C", temps_prep=15*60, temps_cuisson=10*60),
+        Plat(1, "A", temps_prep=5*60, temps_cuisson=20*60),
+        Plat(2, "B", temps_prep=10*60, temps_cuisson=15*60)
     ]
 
     # FIFO garde l'ordre 3, 1, 2
