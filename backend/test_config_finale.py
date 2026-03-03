@@ -20,9 +20,9 @@ def test_configuration_finale():
 
     # Exemple 1 de l'énoncé
     plats = [
-        Plat(1, "Plat 1", temps_epluchage=15*60, temps_cuisson=17*60),
-        Plat(2, "Plat 2", temps_epluchage=11*60, temps_cuisson=16*60),
-        Plat(3, "Plat 3", temps_epluchage=0, temps_cuisson=12*60)
+        Plat(1, "Plat 1", temps_prep=15*60, temps_cuisson=17*60),
+        Plat(2, "Plat 2", temps_prep=11*60, temps_cuisson=16*60),
+        Plat(3, "Plat 3", temps_prep=0, temps_cuisson=12*60)
     ]
 
     # Configuration finale des algorithmes

@@ -90,9 +90,9 @@ def exemple_1():
     print("=" * 80)
 
     plats = [
-        Plat(1, "Plat 1 (Ratatouille)", temps_epluchage=15*60, temps_cuisson=17*60),
-        Plat(2, "Plat 2 (Gratin)", temps_epluchage=11*60, temps_cuisson=16*60),
-        Plat(3, "Plat 3 (Salade)", temps_epluchage=0, temps_cuisson=12*60)
+        Plat(1, "Plat 1 (Ratatouille)", temps_prep=15*60, temps_cuisson=17*60),
+        Plat(2, "Plat 2 (Gratin)", temps_prep=11*60, temps_cuisson=16*60),
+        Plat(3, "Plat 3 (Salade)", temps_prep=0, temps_cuisson=12*60)
     ]
 
     schedulers = [
@@ -125,11 +125,11 @@ def exemple_2():
     print("=" * 80)
 
     plats = [
-        Plat(1, "Soupe à l'oignon", temps_epluchage=10*60, temps_cuisson=25*60),
-        Plat(2, "Poulet rôti", temps_epluchage=15*60, temps_cuisson=45*60),
-        Plat(3, "Tarte aux pommes", temps_epluchage=20*60, temps_cuisson=30*60),
-        Plat(4, "Gratin dauphinois", temps_epluchage=18*60, temps_cuisson=35*60),
-        Plat(5, "Salade César", temps_epluchage=8*60, temps_cuisson=5*60)
+        Plat(1, "Soupe à l'oignon", temps_prep=10*60, temps_cuisson=25*60),
+        Plat(2, "Poulet rôti", temps_prep=15*60, temps_cuisson=45*60),
+        Plat(3, "Tarte aux pommes", temps_prep=20*60, temps_cuisson=30*60),
+        Plat(4, "Gratin dauphinois", temps_prep=18*60, temps_cuisson=35*60),
+        Plat(5, "Salade César", temps_prep=8*60, temps_cuisson=5*60)
     ]
 
     schedulers = [
@@ -164,25 +164,25 @@ def exemple_3():
         {
             'nom': 'Petite instance (2 plats)',
             'plats': [
-                Plat(1, "Entrée", temps_epluchage=5*60, temps_cuisson=10*60),
-                Plat(2, "Plat principal", temps_epluchage=15*60, temps_cuisson=20*60)
+                Plat(1, "Entrée", temps_prep=5*60, temps_cuisson=10*60),
+                Plat(2, "Plat principal", temps_prep=15*60, temps_cuisson=20*60)
             ],
             'stations': {'commis': 1, 'fours': 1}
         },
         {
             'nom': 'Instance moyenne (4 plats)',
             'plats': [
-                Plat(1, "Soupe", temps_epluchage=8*60, temps_cuisson=15*60),
-                Plat(2, "Poisson", temps_epluchage=12*60, temps_cuisson=18*60),
-                Plat(3, "Légumes", temps_epluchage=10*60, temps_cuisson=12*60),
-                Plat(4, "Dessert", temps_epluchage=15*60, temps_cuisson=25*60)
+                Plat(1, "Soupe", temps_prep=8*60, temps_cuisson=15*60),
+                Plat(2, "Poisson", temps_prep=12*60, temps_cuisson=18*60),
+                Plat(3, "Légumes", temps_prep=10*60, temps_cuisson=12*60),
+                Plat(4, "Dessert", temps_prep=15*60, temps_cuisson=25*60)
             ],
             'stations': {'commis': 2, 'fours': 1}
         },
         {
             'nom': 'Grande instance (6 plats)',
             'plats': [
-                Plat(i, f"Plat {i}", temps_epluchage=(5 + i*2)*60, temps_cuisson=(10 + i*3)*60)
+                Plat(i, f"Plat {i}", temps_prep=(5 + i*2)*60, temps_cuisson=(10 + i*3)*60)
                 for i in range(1, 7)
             ],
             'stations': {'commis': 2, 'fours': 2}

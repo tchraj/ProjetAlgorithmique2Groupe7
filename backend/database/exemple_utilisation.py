@@ -19,9 +19,9 @@ def exemple_1_sauvegarder_instance():
     with DatabaseManager() as db:
         # Créer des plats
         plats_data = [
-            {"id": 1, "nom": "Plat 1", "temps_epluchage": 15*60, "temps_cuisson": 17*60},
-            {"id": 2, "nom": "Plat 2", "temps_epluchage": 11*60, "temps_cuisson": 16*60},
-            {"id": 3, "nom": "Plat 3", "temps_epluchage": 0, "temps_cuisson": 12*60}
+            {"id": 1, "nom": "Plat 1", "temps_prep": 15*60, "temps_cuisson": 17*60},
+            {"id": 2, "nom": "Plat 2", "temps_prep": 11*60, "temps_cuisson": 16*60},
+            {"id": 3, "nom": "Plat 3", "temps_prep": 0, "temps_cuisson": 12*60}
         ]
 
         # Sauvegarder l'instance
@@ -56,7 +56,7 @@ def exemple_2_executer_et_sauvegarder():
 
         # Convertir en objets Plat
         plats = [
-            Plat(p['id'], p['nom'], p['temps_epluchage'], p['temps_cuisson'])
+            Plat(p['id'], p['nom'], p['temps_prep'], p['temps_cuisson'])
             for p in instance['plats']
         ]
 

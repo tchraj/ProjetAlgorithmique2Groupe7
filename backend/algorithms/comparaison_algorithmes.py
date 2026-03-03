@@ -1,7 +1,3 @@
-# backend/algorithms/comparaison_algorithmes.py
-"""
-Script de comparaison des performances des différents algorithmes d'ordonnancement
-"""
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -17,7 +13,6 @@ from typing import List, Dict, Any
 
 
 class ComparateurAlgorithmes:
-    """Compare les performances de différents algorithmes d'ordonnancement"""
 
     def __init__(self):
         self.algorithmes = [
@@ -29,12 +24,6 @@ class ComparateurAlgorithmes:
         ]
 
     def comparer(self, plats: List[Plat], stations: Dict[str, int]) -> Dict[str, Any]:
-        """
-        Compare tous les algorithmes sur une instance donnée
-
-        Returns:
-            Dictionnaire avec les résultats de chaque algorithme
-        """
         resultats = {}
 
         for algo in self.algorithmes:
@@ -139,9 +128,9 @@ def exemple_comparaison_1():
     print("="*80)
 
     plats = [
-        Plat(1, "Plat 1", temps_epluchage=15, temps_cuisson=17),
-        Plat(2, "Plat 2", temps_epluchage=11, temps_cuisson=16),
-        Plat(3, "Plat 3", temps_epluchage=0, temps_cuisson=12)
+        Plat(1, "Plat 1", temps_prep=15, temps_cuisson=17),
+        Plat(2, "Plat 2", temps_prep=11, temps_cuisson=16),
+        Plat(3, "Plat 3", temps_prep=0, temps_cuisson=12)
     ]
 
     stations = {'commis': 1, 'fours': 1}
@@ -158,16 +147,16 @@ def exemple_comparaison_2():
     print("="*80)
 
     plats = [
-        Plat(1, "Plat 1", temps_epluchage=20, temps_cuisson=15),
-        Plat(2, "Plat 2", temps_epluchage=15, temps_cuisson=20),
-        Plat(3, "Plat 3", temps_epluchage=10, temps_cuisson=25),
-        Plat(4, "Plat 4", temps_epluchage=25, temps_cuisson=10),
-        Plat(5, "Plat 5", temps_epluchage=12, temps_cuisson=18),
-        Plat(6, "Plat 6", temps_epluchage=18, temps_cuisson=12),
-        Plat(7, "Plat 7", temps_epluchage=8, temps_cuisson=22),
-        Plat(8, "Plat 8", temps_epluchage=22, temps_cuisson=8),
-        Plat(9, "Plat 9", temps_epluchage=14, temps_cuisson=16),
-        Plat(10, "Plat 10", temps_epluchage=16, temps_cuisson=14)
+        Plat(1, "Plat 1", temps_prep=20, temps_cuisson=15),
+        Plat(2, "Plat 2", temps_prep=15, temps_cuisson=20),
+        Plat(3, "Plat 3", temps_prep=10, temps_cuisson=25),
+        Plat(4, "Plat 4", temps_prep=25, temps_cuisson=10),
+        Plat(5, "Plat 5", temps_prep=12, temps_cuisson=18),
+        Plat(6, "Plat 6", temps_prep=18, temps_cuisson=12),
+        Plat(7, "Plat 7", temps_prep=8, temps_cuisson=22),
+        Plat(8, "Plat 8", temps_prep=22, temps_cuisson=8),
+        Plat(9, "Plat 9", temps_prep=14, temps_cuisson=16),
+        Plat(10, "Plat 10", temps_prep=16, temps_cuisson=14)
     ]
 
     stations = {'commis': 3, 'fours': 2}
@@ -185,7 +174,7 @@ def exemple_comparaison_3():
 
     plats = [
         Plat(i, f"Plat {i}",
-             temps_epluchage=10 + (i * 3) % 20,
+             temps_prep=10 + (i * 3) % 20,
              temps_cuisson=15 + (i * 5) % 25)
         for i in range(1, 16)
     ]

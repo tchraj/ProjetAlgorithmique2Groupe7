@@ -120,7 +120,7 @@ class InstanceManager:
             nom = plat["nom"]
             # Pour l'instant, on additionne épluchage et cuisson
             # Dans une version avancée, on gérera la contrainte de précédence
-            temps_total = plat["temps_epluchage"] + plat["temps_cuisson"]
+            temps_total = plat["temps_prep"] + plat["temps_cuisson"]
             tasks[nom] = temps_total
         
         num_workers = instance["nombre_commis"]
@@ -140,7 +140,7 @@ class InstanceManager:
         lignes = []
         for plat in instance["plats"]:
             nom = plat["nom"]
-            temps_total = plat["temps_epluchage"] + plat["temps_cuisson"]
+            temps_total = plat["temps_prep"] + plat["temps_cuisson"]
             lignes.append(f"{nom}, {temps_total}")
         
         return "\n".join(lignes)

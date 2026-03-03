@@ -1,6 +1,16 @@
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'backend'))
 from flask import Flask, render_template, request, jsonify
-from algorithms import greedy_scheduler, dynamic_programming_scheduler
-from instance_loader import InstanceManager
+# Import des algorithmes et du gestionnaire d'instances depuis le package backend.algorithms
+from algorithms.load_balancing_algorithms import greedy_scheduler
+from algorithms.instance_loader import InstanceManager
+from schedulers.johnson_scheduler import JohnsonScheduler
+from schedulers.lpt_scheduler     import LPTScheduler
+from schedulers.neh_scheduler     import NEHScheduler
+from schedulers.fifo_scheduler    import FIFOScheduler
+from schedulers.brute_force_scheduler import BruteForceScheduler
+from models.plat                  import Plat
+import time as time_module
 import heapq
 import math
 
@@ -17,6 +27,14 @@ PLATS_CATALOGUE = {
     'D': {'nom': 'Plat gastronomique', 'prep': 20, 'cuisson': 25, 'dressage': 10, 'priorite': 'vip', 'deadline': 45},
     'E': {'nom': 'Burger', 'prep': 7, 'cuisson': 10, 'dressage': 3, 'priorite': 'normale', 'deadline': 20},
     'F': {'nom': 'Soupe', 'prep': 12, 'cuisson': 18, 'dressage': 4, 'priorite': 'basse', 'deadline': 35}
+}
+
+SCHEDULERS = {
+    'johnson': JohnsonScheduler(),
+    'neh':     NEHScheduler(),
+    'lpt':     LPTScheduler(),
+    'fifo':    FIFOScheduler(),
+    'brute':   BruteForceScheduler(),
 }
 
 @app.route('/')
@@ -157,8 +175,6 @@ def schedule():
 
     if algorithm == 'greedy':
         workers, makespan = greedy_scheduler(tasks, num_workers)
-    elif algorithm == 'dp':
-        workers, makespan = dynamic_programming_scheduler(tasks, num_workers)
     else:
         return jsonify({'error': 'Algorithme non valide.'}), 400
 
@@ -166,6 +182,143 @@ def schedule():
         'workers': workers,
         'makespan': makespan
     })
+
+
+@app.route('/compare')
+def compare():
+    """Page de comparaison des algorithmes."""
+    return render_template('compare.html')
+
+
+@app.route('/api/compare', methods=['POST'])
+def api_compare():
+    """
+    Compare plusieurs algorithmes sur une même instance.
+
+    Body JSON attendu :
+    {
+        "plats": [
+            {"nom": "Plat A", "prep": 15, "cuisson": 17},
+            ...
+        ],
+        "nb_commis": 1,
+        "nb_fours":  1,
+        "algos": ["johnson", "neh", "lpt", "fifo"]
+    }
+
+    Retourne :
+    {
+        "resultats": {
+            "johnson": {
+                "makespan": 2700,
+                "temps_execution": 0.00012,
+                "est_optimal": true,
+                "ordre": ["Plat C", "Plat B", "Plat A"],
+                "schedule_commis": [...],
+                "schedule_fours":  [...]
+            },
+            ...
+        },
+        "meilleur_algo":       "johnson",
+        "meilleur_makespan":   2700,
+        "est_optimal_garanti": true,
+        "nb_commis": 1,
+        "nb_fours":  1
+    }
+    """
+    data       = request.get_json(force=True)
+    plats_raw  = data.get('plats', [])
+    nb_commis  = max(1, int(data.get('nb_commis', 1)))
+    nb_fours   = max(1, int(data.get('nb_fours',  1)))
+    algos_req  = data.get('algos', list(SCHEDULERS.keys()))
+
+    # ── Validation ───────────────────────────────────────
+    if not plats_raw:
+        return jsonify({'error': 'Aucun plat fourni.'}), 400
+
+    if len(plats_raw) > 30:
+        return jsonify({'error': 'Maximum 30 plats par comparaison.'}), 400
+
+    # ── Construire les objets Plat ────────────────────────
+    plats = []
+    for i, p in enumerate(plats_raw):
+        try:
+            nom     = str(p.get('nom', f'Plat {i+1}')).strip() or f'Plat {i+1}'
+            prep    = max(0, int(p.get('prep',    0))) * 60  # minutes → secondes
+            cuisson = max(0, int(p.get('cuisson', 0))) * 60
+            plats.append(Plat(id=i, nom=nom, temps_prep=prep, temps_cuisson=cuisson))
+        except (ValueError, TypeError):
+            return jsonify({'error': f'Plat {i+1} : données invalides.'}), 400
+
+    stations = {'commis': nb_commis, 'fours': nb_fours}
+
+    # ── Lancer chaque algorithme ──────────────────────────
+    resultats = {}
+
+    for nom_algo in algos_req:
+        scheduler = SCHEDULERS.get(nom_algo)
+        if not scheduler:
+            continue  # algo inconnu → on ignore silencieusement
+
+        t0      = time_module.perf_counter()
+        resultat = scheduler.schedule(plats, stations)
+        elapsed  = time_module.perf_counter() - t0
+
+        # Sérialiser le planning pour le JSON
+        resultats[nom_algo] = {
+            'makespan':        resultat['makespan'],
+            'temps_execution': elapsed,
+            'est_optimal':     resultat.get('est_optimal', False),
+            'ordre':           [p.nom for p in resultat['ordre']],
+            'schedule_commis': _serialiser_schedule(resultat['schedule_commis']),
+            'schedule_fours':  _serialiser_schedule(resultat['schedule_fours']),
+        }
+
+    if not resultats:
+        return jsonify({'error': 'Aucun algorithme valide sélectionné.'}), 400
+
+    # ── Trouver le meilleur ───────────────────────────────
+    meilleur_algo     = min(resultats, key=lambda k: resultats[k]['makespan'])
+    meilleur_makespan = resultats[meilleur_algo]['makespan']
+
+    # L'optimal est garanti seulement si Johnson est le meilleur ET 1+1
+    est_optimal_garanti = (
+        'johnson' in resultats
+        and nb_commis == 1
+        and nb_fours  == 1
+    )
+
+    # Ajouter le ratio par rapport au meilleur pour chaque algo
+    for r in resultats.values():
+        r['ratio'] = round(r['makespan'] / meilleur_makespan, 4) if meilleur_makespan > 0 else 1.0
+
+    return jsonify({
+        'resultats':           resultats,
+        'meilleur_algo':       meilleur_algo,
+        'meilleur_makespan':   meilleur_makespan,
+        'est_optimal_garanti': est_optimal_garanti,
+        'nb_commis':           nb_commis,
+        'nb_fours':            nb_fours,
+    })
+
+
+def _serialiser_schedule(schedule_liste):
+    """
+    Convertit les objets Plat dans le planning en dicts JSON-sérialisables.
+    schedule_liste : List[List[{'plat': Plat, 'debut': int, 'fin': int}]]
+    """
+    resultat = []
+    for station in schedule_liste:
+        taches = []
+        for tache in station:
+            p = tache['plat']
+            taches.append({
+                'plat':  {'nom': p.nom, 'id': p.id},
+                'debut': tache['debut'],
+                'fin':   tache['fin'],
+            })
+        resultat.append(taches)
+    return resultat
 
 # ================================================
 # API Instances - Rendre les instances générées utilisables par le front
@@ -191,13 +344,13 @@ ICON_PAR_DEFAUT = "\U0001F37D\uFE0F"
 
 def convertir_plat_pour_frontend(plat_backend, index):
     """
-    Convertit un plat du format instance (temps_epluchage/temps_cuisson en secondes)
+    Convertit un plat du format instance (temps_prep/temps_cuisson en secondes)
     vers le format attendu par le frontend (prep/cuisson/dressage en secondes de jeu).
 
     Règle de conversion : temps réels (secondes) / 60 → secondes de jeu
     Cela rend les instances jouables (900s réelles = 15s de jeu).
     """
-    prep = max(1, round(plat_backend["temps_epluchage"] / 60))
+    prep = max(1, round(plat_backend["temps_prep"] / 60))
     cuisson = round(plat_backend["temps_cuisson"] / 60)
 
     # Dressage : ~25% du temps de préparation, entre 2 et 10 secondes de jeu
@@ -237,7 +390,7 @@ def convertir_plat_pour_frontend(plat_backend, index):
         "priorite": priorite,
         "deadline": deadline,
         # Garder les temps originaux pour référence
-        "temps_epluchage_original": plat_backend["temps_epluchage"],
+        "temps_prep_original": plat_backend["temps_prep"],
         "temps_cuisson_original": plat_backend["temps_cuisson"]
     }
 
@@ -269,7 +422,7 @@ def list_instances():
 def get_instance(nom):
     """
     Retourne une instance spécifique convertie au format frontend.
-    Le paramètre ?raw=true retourne le format brut (temps_epluchage/temps_cuisson).
+    Le paramètre ?raw=true retourne le format brut (temps_prep/temps_cuisson).
     """
     instance = instance_manager.obtenir_instance_par_nom(nom)
     if not instance:

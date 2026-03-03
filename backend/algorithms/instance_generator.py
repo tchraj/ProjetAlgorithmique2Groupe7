@@ -1,9 +1,3 @@
-"""
-Générateur d'instances pour le problème d'ordonnancement de cuisine
-Ordonnancement, Cuisine et approximations
-
-"""
-
 import random
 import json
 from typing import Dict, List, Tuple
@@ -32,9 +26,9 @@ class Instance:
     
     def calculer_statistiques(self) -> Dict:
         """Calcule les statistiques de l'instance"""
-        temps_epluchage = [p["temps_epluchage"] for p in self.plats]
+        temps_prep = [p["temps_prep"] for p in self.plats]
         temps_cuisson = [p["temps_cuisson"] for p in self.plats]
-        temps_totaux = [p["temps_epluchage"] + p["temps_cuisson"] for p in self.plats]
+        temps_totaux = [p["temps_prep"] + p["temps_cuisson"] for p in self.plats]
         
         return {
             "nombre_plats": len(self.plats),
@@ -94,13 +88,13 @@ class InstanceGenerator:
         
         for i, ingredient in enumerate(ingredients):
             # Temps d'épluchage entre 5 et 20 minutes
-            temps_epluchage = random.randint(5, 20) * 60
+            temps_prep = random.randint(5, 20) * 60
             # Temps de cuisson entre 5 et 30 minutes
             temps_cuisson = random.randint(5, 30) * 60
             
             plats.append({
                 "nom": ingredient,
-                "temps_epluchage": temps_epluchage,
+                "temps_prep": temps_prep,
                 "temps_cuisson": temps_cuisson
             })
         
@@ -141,7 +135,7 @@ class InstanceGenerator:
         variation = 0.3  # 30% de variation
         
         for ingredient in ingredients:
-            temps_epluchage = int(random.gauss(
+            temps_prep = int(random.gauss(
                 temps_moyen_epluchage, 
                 temps_moyen_epluchage * variation
             ))
@@ -151,12 +145,12 @@ class InstanceGenerator:
             ))
             
             # S'assurer que les temps sont positifs et raisonnables
-            temps_epluchage = max(60, min(temps_epluchage, 30 * 60))
+            temps_prep = max(60, min(temps_prep, 30 * 60))
             temps_cuisson = max(60, min(temps_cuisson, 40 * 60))
             
             plats.append({
                 "nom": ingredient,
-                "temps_epluchage": temps_epluchage,
+                "temps_prep": temps_prep,
                 "temps_cuisson": temps_cuisson
             })
         
@@ -197,16 +191,16 @@ class InstanceGenerator:
         for i, ingredient in enumerate(ingredients):
             if i < nombre_plats_longs:
                 # Plats longs
-                temps_epluchage = random.randint(20, 40) * 60
+                temps_prep = random.randint(20, 40) * 60
                 temps_cuisson = random.randint(30, 60) * 60
             else:
                 # Plats courts
-                temps_epluchage = random.randint(2, 8) * 60
+                temps_prep = random.randint(2, 8) * 60
                 temps_cuisson = random.randint(5, 15) * 60
             
             plats.append({
                 "nom": ingredient,
-                "temps_epluchage": temps_epluchage,
+                "temps_prep": temps_prep,
                 "temps_cuisson": temps_cuisson
             })
         
@@ -245,12 +239,12 @@ class InstanceGenerator:
         ingredients = random.sample(self.FRUITS + self.LEGUMES, nombre_plats)
         
         for ingredient in ingredients:
-            temps_epluchage = random.randint(8, 25) * 60
+            temps_prep = random.randint(8, 25) * 60
             temps_cuisson = random.randint(10, 35) * 60
             
             plats.append({
                 "nom": ingredient,
-                "temps_epluchage": temps_epluchage,
+                "temps_prep": temps_prep,
                 "temps_cuisson": temps_cuisson
             })
         

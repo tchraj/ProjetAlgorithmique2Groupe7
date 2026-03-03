@@ -18,9 +18,9 @@ from services.comparison_service import ComparisonService
 def test_comparison_basic():
     """Test basique de comparaison entre plusieurs algorithmes"""
     plats = [
-        Plat(1, "Plat 1", temps_epluchage=15*60, temps_cuisson=17*60),
-        Plat(2, "Plat 2", temps_epluchage=11*60, temps_cuisson=16*60),
-        Plat(3, "Plat 3", temps_epluchage=0, temps_cuisson=12*60)
+        Plat(1, "Plat 1", temps_prep=15*60, temps_cuisson=17*60),
+        Plat(2, "Plat 2", temps_prep=11*60, temps_cuisson=16*60),
+        Plat(3, "Plat 3", temps_prep=0, temps_cuisson=12*60)
     ]
 
     schedulers = [
@@ -53,9 +53,9 @@ def test_comparison_basic():
 def test_comparison_avec_optimal():
     """Test de comparaison avec makespan optimal fourni"""
     plats = [
-        Plat(1, "Plat 1", temps_epluchage=15*60, temps_cuisson=17*60),
-        Plat(2, "Plat 2", temps_epluchage=11*60, temps_cuisson=16*60),
-        Plat(3, "Plat 3", temps_epluchage=0, temps_cuisson=12*60)
+        Plat(1, "Plat 1", temps_prep=15*60, temps_cuisson=17*60),
+        Plat(2, "Plat 2", temps_prep=11*60, temps_cuisson=16*60),
+        Plat(3, "Plat 3", temps_prep=0, temps_cuisson=12*60)
     ]
 
     schedulers = [
@@ -82,8 +82,8 @@ def test_comparison_avec_optimal():
 def test_comparison_meilleur_algorithme():
     """Vérifie que le meilleur algorithme est correctement identifié"""
     plats = [
-        Plat(1, "Plat A", temps_epluchage=10*60, temps_cuisson=15*60),
-        Plat(2, "Plat B", temps_epluchage=8*60, temps_cuisson=20*60)
+        Plat(1, "Plat A", temps_prep=10*60, temps_cuisson=15*60),
+        Plat(2, "Plat B", temps_prep=8*60, temps_cuisson=20*60)
     ]
 
     schedulers = [
@@ -113,8 +113,8 @@ def test_comparison_meilleur_algorithme():
 def test_comparison_statistiques():
     """Test des statistiques calculées"""
     plats = [
-        Plat(1, "Plat 1", temps_epluchage=10*60, temps_cuisson=10*60),
-        Plat(2, "Plat 2", temps_epluchage=10*60, temps_cuisson=10*60)
+        Plat(1, "Plat 1", temps_prep=10*60, temps_cuisson=10*60),
+        Plat(2, "Plat 2", temps_prep=10*60, temps_cuisson=10*60)
     ]
 
     schedulers = [
@@ -143,17 +143,17 @@ def test_comparison_batch():
         {
             'nom': 'instance_1',
             'plats': [
-                Plat(1, "Plat A", temps_epluchage=10*60, temps_cuisson=15*60),
-                Plat(2, "Plat B", temps_epluchage=8*60, temps_cuisson=12*60)
+                Plat(1, "Plat A", temps_prep=10*60, temps_cuisson=15*60),
+                Plat(2, "Plat B", temps_prep=8*60, temps_cuisson=12*60)
             ],
             'stations': {'commis': 1, 'fours': 1}
         },
         {
             'nom': 'instance_2',
             'plats': [
-                Plat(1, "Plat C", temps_epluchage=5*60, temps_cuisson=10*60),
-                Plat(2, "Plat D", temps_epluchage=12*60, temps_cuisson=8*60),
-                Plat(3, "Plat E", temps_epluchage=7*60, temps_cuisson=14*60)
+                Plat(1, "Plat C", temps_prep=5*60, temps_cuisson=10*60),
+                Plat(2, "Plat D", temps_prep=12*60, temps_cuisson=8*60),
+                Plat(3, "Plat E", temps_prep=7*60, temps_cuisson=14*60)
             ],
             'stations': {'commis': 2, 'fours': 1}
         }
@@ -190,15 +190,15 @@ def test_comparison_batch_avec_optimaux():
         {
             'nom': 'instance_facile',
             'plats': [
-                Plat(1, "Plat A", temps_epluchage=10*60, temps_cuisson=10*60)
+                Plat(1, "Plat A", temps_prep=10*60, temps_cuisson=10*60)
             ],
             'stations': {'commis': 1, 'fours': 1}
         },
         {
             'nom': 'instance_moyenne',
             'plats': [
-                Plat(1, "Plat B", temps_epluchage=15*60, temps_cuisson=20*60),
-                Plat(2, "Plat C", temps_epluchage=10*60, temps_cuisson=15*60)
+                Plat(1, "Plat B", temps_prep=15*60, temps_cuisson=20*60),
+                Plat(2, "Plat C", temps_prep=10*60, temps_cuisson=15*60)
             ],
             'stations': {'commis': 1, 'fours': 1}
         }
@@ -241,7 +241,7 @@ def test_comparison_liste_vide():
 def test_comparison_temps_execution():
     """Vérifie que les temps d'exécution sont mesurés"""
     plats = [
-        Plat(i, f"Plat {i}", temps_epluchage=10*60, temps_cuisson=10*60)
+        Plat(i, f"Plat {i}", temps_prep=10*60, temps_cuisson=10*60)
         for i in range(1, 11)  # 10 plats
     ]
 
@@ -261,9 +261,9 @@ def test_comparison_temps_execution():
 def test_comparison_coherence_ratios():
     """Vérifie la cohérence des ratios calculés"""
     plats = [
-        Plat(1, "Plat 1", temps_epluchage=15*60, temps_cuisson=20*60),
-        Plat(2, "Plat 2", temps_epluchage=10*60, temps_cuisson=15*60),
-        Plat(3, "Plat 3", temps_epluchage=12*60, temps_cuisson=18*60)
+        Plat(1, "Plat 1", temps_prep=15*60, temps_cuisson=20*60),
+        Plat(2, "Plat 2", temps_prep=10*60, temps_cuisson=15*60),
+        Plat(3, "Plat 3", temps_prep=12*60, temps_cuisson=18*60)
     ]
 
     schedulers = [

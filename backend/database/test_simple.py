@@ -14,7 +14,7 @@ try:
 
     # Sauvegarder une instance
     plats = [
-        {"id": 1, "nom": "Test 1", "temps_epluchage": 600, "temps_cuisson": 900}
+        {"id": 1, "nom": "Test 1", "temps_prep": 600, "temps_cuisson": 900}
     ]
 
     instance_id = db.sauvegarder_instance(

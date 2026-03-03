@@ -26,11 +26,11 @@ Ce projet implémente plusieurs algorithmes d'ordonnancement pour le problème d
 **Principe** :
 ```
 1. Partitionner les plats :
-   - Set1 : plats où temps_epluchage < temps_cuisson
-   - Set2 : plats où temps_epluchage >= temps_cuisson
+   - Set1 : plats où temps_prep < temps_cuisson
+   - Set2 : plats où temps_prep >= temps_cuisson
 
 2. Trier :
-   - Set1 par temps_epluchage croissant
+   - Set1 par temps_prep croissant
    - Set2 par temps_cuisson décroissant
 
 3. Ordre optimal = Set1 + Set2
@@ -143,7 +143,7 @@ print(f"Makespan optimal: {resultat['makespan']}")
 **Principe** :
 ```
 1. Calculer le "slope index" pour chaque plat :
-   slope_i = temps_epluchage - temps_cuisson
+   slope_i = temps_prep - temps_cuisson
 
 2. Trier par slope décroissant
 
@@ -243,7 +243,7 @@ python -m pytest tests/test_johnson.py -v
 ## 🔍 Notes Techniques
 
 ### Attributs des plats
-- `temps_epluchage` : temps de préparation (en secondes)
+- `temps_prep` : temps de préparation (en secondes)
 - `temps_cuisson` : temps de cuisson (en secondes)
 
 ### Structure des résultats

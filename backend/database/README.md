@@ -89,8 +89,8 @@ db = DatabaseManager()
 
 # Sauvegarder une instance
 plats = [
-    {"id": 1, "nom": "Plat 1", "temps_epluchage": 900, "temps_cuisson": 1020},
-    {"id": 2, "nom": "Plat 2", "temps_epluchage": 660, "temps_cuisson": 960}
+    {"id": 1, "nom": "Plat 1", "temps_prep": 900, "temps_cuisson": 1020},
+    {"id": 2, "nom": "Plat 2", "temps_prep": 660, "temps_cuisson": 960}
 ]
 
 instance_id = db.sauvegarder_instance(
@@ -120,7 +120,7 @@ instance = db.charger_instance_par_nom("mon_test")
 
 # Convertir en objets Plat
 plats = [
-    Plat(p['id'], p['nom'], p['temps_epluchage'], p['temps_cuisson'])
+    Plat(p['id'], p['nom'], p['temps_prep'], p['temps_cuisson'])
     for p in instance['plats']
 ]
 

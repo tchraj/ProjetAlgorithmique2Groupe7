@@ -7,9 +7,9 @@ from schedulers.johnson_scheduler import JohnsonScheduler
 def test_exemple_1():
     """Exemple 1 de l'énoncé : 3 plats, 1 commis, 1 four"""
     plats = [
-        Plat(1, "Plat 1", temps_epluchage=15, temps_cuisson=17),
-        Plat(2, "Plat 2", temps_epluchage=11, temps_cuisson=16),
-        Plat(3, "Plat 3", temps_epluchage=0, temps_cuisson=12)
+        Plat(1, "Plat 1", temps_prep=15, temps_cuisson=17),
+        Plat(2, "Plat 2", temps_prep=11, temps_cuisson=16),
+        Plat(3, "Plat 3", temps_prep=0, temps_cuisson=12)
     ]
 
     scheduler = JohnsonScheduler()
@@ -28,9 +28,9 @@ def test_exemple_1():
 def test_exemple_2_sujet():
     """Test avec l'Exemple 2 du sujet (ppage 3)"""
     plats = [
-        Plat(1, "Plat 1", temps_epluchage=16, temps_cuisson=10),
-        Plat(2, "Plat 2", temps_epluchage=14, temps_cuisson=14),
-        Plat(3, "Plat 3", temps_epluchage=11, temps_cuisson=8)
+        Plat(1, "Plat 1", temps_prep=16, temps_cuisson=10),
+        Plat(2, "Plat 2", temps_prep=14, temps_cuisson=14),
+        Plat(3, "Plat 3", temps_prep=11, temps_cuisson=8)
     ]
 
     scheduler = JohnsonScheduler()
@@ -46,10 +46,10 @@ def test_exemple_2_sujet():
 def test_multi_stations():
     """Test avec 2 commis et 2 fours"""
     plats = [
-        Plat(1, "Plat 1", temps_epluchage=10, temps_cuisson=15),
-        Plat(2, "Plat 2", temps_epluchage=8, temps_cuisson=12),
-        Plat(3, "Plat 3", temps_epluchage=12, temps_cuisson=10),
-        Plat(4, "Plat 4", temps_epluchage=5, temps_cuisson=8)
+        Plat(1, "Plat 1", temps_prep=10, temps_cuisson=15),
+        Plat(2, "Plat 2", temps_prep=8, temps_cuisson=12),
+        Plat(3, "Plat 3", temps_prep=12, temps_cuisson=10),
+        Plat(4, "Plat 4", temps_prep=5, temps_cuisson=8)
     ]
 
     scheduler = JohnsonScheduler()

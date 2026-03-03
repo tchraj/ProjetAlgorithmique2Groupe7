@@ -13,9 +13,9 @@ from schedulers.neh_scheduler import NEHScheduler
 def test_neh_exemple_1():
     """Test NEH sur l'exemple 1 de l'énoncé : 3 plats, 1 commis, 1 four"""
     plats = [
-        Plat(1, "Plat 1", temps_epluchage=15*60, temps_cuisson=17*60),
-        Plat(2, "Plat 2", temps_epluchage=11*60, temps_cuisson=16*60),
-        Plat(3, "Plat 3", temps_epluchage=0, temps_cuisson=12*60)
+        Plat(1, "Plat 1", temps_prep=15*60, temps_cuisson=17*60),
+        Plat(2, "Plat 2", temps_prep=11*60, temps_cuisson=16*60),
+        Plat(3, "Plat 3", temps_prep=0, temps_cuisson=12*60)
     ]
 
     scheduler = NEHScheduler()
@@ -34,11 +34,11 @@ def test_neh_exemple_1():
 def test_neh_multi_stations():
     """Test NEH avec plusieurs commis et fours"""
     plats = [
-        Plat(1, "Plat A", temps_epluchage=10*60, temps_cuisson=15*60),
-        Plat(2, "Plat B", temps_epluchage=8*60, temps_cuisson=20*60),
-        Plat(3, "Plat C", temps_epluchage=12*60, temps_cuisson=10*60),
-        Plat(4, "Plat D", temps_epluchage=5*60, temps_cuisson=18*60),
-        Plat(5, "Plat E", temps_epluchage=15*60, temps_cuisson=12*60)
+        Plat(1, "Plat A", temps_prep=10*60, temps_cuisson=15*60),
+        Plat(2, "Plat B", temps_prep=8*60, temps_cuisson=20*60),
+        Plat(3, "Plat C", temps_prep=12*60, temps_cuisson=10*60),
+        Plat(4, "Plat D", temps_prep=5*60, temps_cuisson=18*60),
+        Plat(5, "Plat E", temps_prep=15*60, temps_cuisson=12*60)
     ]
 
     scheduler = NEHScheduler()
@@ -58,9 +58,9 @@ def test_neh_multi_stations():
 def test_neh_tri_initial():
     """Vérifie que NEH commence bien par trier par temps total décroissant"""
     plats = [
-        Plat(1, "Court", temps_epluchage=5*60, temps_cuisson=5*60),      # Total: 10
-        Plat(2, "Moyen", temps_epluchage=10*60, temps_cuisson=15*60),    # Total: 25
-        Plat(3, "Long", temps_epluchage=20*60, temps_cuisson=20*60)      # Total: 40
+        Plat(1, "Court", temps_prep=5*60, temps_cuisson=5*60),      # Total: 10
+        Plat(2, "Moyen", temps_prep=10*60, temps_cuisson=15*60),    # Total: 25
+        Plat(3, "Long", temps_prep=20*60, temps_cuisson=20*60)      # Total: 40
     ]
 
     scheduler = NEHScheduler()
@@ -76,7 +76,7 @@ def test_neh_tri_initial():
 def test_neh_cas_limite_1_plat():
     """Test avec un seul plat"""
     plats = [
-        Plat(1, "Unique", temps_epluchage=10*60, temps_cuisson=15*60)
+        Plat(1, "Unique", temps_prep=10*60, temps_cuisson=15*60)
     ]
 
     scheduler = NEHScheduler()
@@ -100,8 +100,8 @@ def test_neh_cas_limite_liste_vide():
 def test_neh_coherence_temps():
     """Vérifie que les temps sont cohérents dans le planning"""
     plats = [
-        Plat(1, "Plat A", temps_epluchage=10*60, temps_cuisson=15*60),
-        Plat(2, "Plat B", temps_epluchage=8*60, temps_cuisson=20*60)
+        Plat(1, "Plat A", temps_prep=10*60, temps_cuisson=15*60),
+        Plat(2, "Plat B", temps_prep=8*60, temps_cuisson=20*60)
     ]
 
     scheduler = NEHScheduler()

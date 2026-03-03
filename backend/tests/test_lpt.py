@@ -13,9 +13,9 @@ from schedulers.lpt_scheduler import LPTScheduler
 def test_lpt_ordre_decroissant():
     """Vérifie que LPT trie bien par temps total décroissant"""
     plats = [
-        Plat(1, "Court", temps_epluchage=5*60, temps_cuisson=5*60),      # Total: 10min
-        Plat(2, "Moyen", temps_epluchage=10*60, temps_cuisson=15*60),    # Total: 25min
-        Plat(3, "Long", temps_epluchage=20*60, temps_cuisson=20*60)      # Total: 40min
+        Plat(1, "Court", temps_prep=5*60, temps_cuisson=5*60),      # Total: 10min
+        Plat(2, "Moyen", temps_prep=10*60, temps_cuisson=15*60),    # Total: 25min
+        Plat(3, "Long", temps_prep=20*60, temps_cuisson=20*60)      # Total: 40min
     ]
 
     scheduler = LPTScheduler()
@@ -31,9 +31,9 @@ def test_lpt_ordre_decroissant():
 def test_lpt_exemple_1():
     """Test LPT sur l'exemple 1 de l'énoncé : 3 plats, 1 commis, 1 four"""
     plats = [
-        Plat(1, "Plat 1", temps_epluchage=15*60, temps_cuisson=17*60),  # Total: 32min
-        Plat(2, "Plat 2", temps_epluchage=11*60, temps_cuisson=16*60),  # Total: 27min
-        Plat(3, "Plat 3", temps_epluchage=0, temps_cuisson=12*60)       # Total: 12min
+        Plat(1, "Plat 1", temps_prep=15*60, temps_cuisson=17*60),  # Total: 32min
+        Plat(2, "Plat 2", temps_prep=11*60, temps_cuisson=16*60),  # Total: 27min
+        Plat(3, "Plat 3", temps_prep=0, temps_cuisson=12*60)       # Total: 12min
     ]
 
     scheduler = LPTScheduler()
@@ -52,11 +52,11 @@ def test_lpt_exemple_1():
 def test_lpt_multi_stations():
     """Test LPT avec plusieurs commis et fours"""
     plats = [
-        Plat(1, "Plat A", temps_epluchage=10*60, temps_cuisson=15*60),
-        Plat(2, "Plat B", temps_epluchage=8*60, temps_cuisson=20*60),
-        Plat(3, "Plat C", temps_epluchage=12*60, temps_cuisson=10*60),
-        Plat(4, "Plat D", temps_epluchage=5*60, temps_cuisson=18*60),
-        Plat(5, "Plat E", temps_epluchage=15*60, temps_cuisson=12*60)
+        Plat(1, "Plat A", temps_prep=10*60, temps_cuisson=15*60),
+        Plat(2, "Plat B", temps_prep=8*60, temps_cuisson=20*60),
+        Plat(3, "Plat C", temps_prep=12*60, temps_cuisson=10*60),
+        Plat(4, "Plat D", temps_prep=5*60, temps_cuisson=18*60),
+        Plat(5, "Plat E", temps_prep=15*60, temps_cuisson=12*60)
     ]
 
     scheduler = LPTScheduler()
@@ -76,7 +76,7 @@ def test_lpt_multi_stations():
 def test_lpt_equilibrage_charge():
     """Vérifie que LPT équilibre bien la charge entre les stations"""
     plats = [
-        Plat(i, f"Plat {i}", temps_epluchage=10*60, temps_cuisson=10*60)
+        Plat(i, f"Plat {i}", temps_prep=10*60, temps_cuisson=10*60)
         for i in range(1, 7)  # 6 plats identiques
     ]
 
@@ -93,7 +93,7 @@ def test_lpt_equilibrage_charge():
 def test_lpt_cas_limite_1_plat():
     """Test avec un seul plat"""
     plats = [
-        Plat(1, "Unique", temps_epluchage=10*60, temps_cuisson=15*60)
+        Plat(1, "Unique", temps_prep=10*60, temps_cuisson=15*60)
     ]
 
     scheduler = LPTScheduler()
@@ -117,8 +117,8 @@ def test_lpt_cas_limite_liste_vide():
 def test_lpt_coherence_temps():
     """Vérifie que les temps sont cohérents dans le planning"""
     plats = [
-        Plat(1, "Plat A", temps_epluchage=10*60, temps_cuisson=15*60),
-        Plat(2, "Plat B", temps_epluchage=8*60, temps_cuisson=20*60)
+        Plat(1, "Plat A", temps_prep=10*60, temps_cuisson=15*60),
+        Plat(2, "Plat B", temps_prep=8*60, temps_cuisson=20*60)
     ]
 
     scheduler = LPTScheduler()
@@ -154,9 +154,9 @@ def test_lpt_coherence_temps():
 def test_lpt_temps_egaux():
     """Test avec des plats ayant le même temps total"""
     plats = [
-        Plat(1, "Plat A", temps_epluchage=15*60, temps_cuisson=5*60),   # Total: 20min
-        Plat(2, "Plat B", temps_epluchage=10*60, temps_cuisson=10*60),  # Total: 20min
-        Plat(3, "Plat C", temps_epluchage=5*60, temps_cuisson=15*60)    # Total: 20min
+        Plat(1, "Plat A", temps_prep=15*60, temps_cuisson=5*60),   # Total: 20min
+        Plat(2, "Plat B", temps_prep=10*60, temps_cuisson=10*60),  # Total: 20min
+        Plat(3, "Plat C", temps_prep=5*60, temps_cuisson=15*60)    # Total: 20min
     ]
 
     scheduler = LPTScheduler()
