@@ -470,7 +470,82 @@ def generate_instance():
 
     return jsonify(convertir_instance_pour_frontend(instance))
 
+@app.route('/jouer')
+def jouer():
+    """Page mode humain — tester sa propre solution."""
+    return render_template('jouer.html')
+
+
+@app.route('/api/jouer', methods=['POST'])
+def api_jouer():
+    """
+    Calcule le makespan de l'ordre humain ET de Johnson pour comparaison.
+
+    Body JSON :
+    {
+        "plats":       [{"nom": "Plat A", "prep": 15, "cuisson": 17}, ...],
+        "ordre_human": [2, 1, 0],   ← indices dans l'ordre choisi par l'utilisateur
+        "nb_commis":   1,
+        "nb_fours":    1
+    }
+    """
+    data       = request.get_json(force=True)
+    plats_raw  = data.get('plats', [])
+    ordre_idx  = data.get('ordre_human', [])
+    nb_commis  = max(1, int(data.get('nb_commis', 1)))
+    nb_fours   = max(1, int(data.get('nb_fours',  1)))
+
+    if not plats_raw:
+        return jsonify({'error': 'Aucun plat fourni.'}), 400
+
+    # Construire les objets Plat
+    plats = []
+    for i, p in enumerate(plats_raw):
+        nom     = str(p.get('nom', f'Plat {i+1}')).strip()
+        prep    = max(0, int(p.get('prep',    0))) * 60
+        cuisson = max(0, int(p.get('cuisson', 0))) * 60
+        plats.append(Plat(id=i, nom=nom, temps_prep=prep, temps_cuisson=cuisson))
+
+    stations = {'commis': nb_commis, 'fours': nb_fours}
+
+    # ── Ordre humain ──────────────────────────────────────
+    try:
+        plats_human = [plats[i] for i in ordre_idx]
+    except IndexError:
+        return jsonify({'error': 'Indices d\'ordre invalides.'}), 400
+
+    scheduler_johnson = SCHEDULERS['johnson']
+
+    # Calculer avec l'ordre humain via FIFO (respecte l'ordre donné)
+    fifo = SCHEDULERS['fifo']
+    res_human = fifo.schedule(plats_human, stations)
+
+    # Calculer avec Johnson
+    res_johnson = SCHEDULERS['johnson'].schedule(plats, stations)
+
+    return jsonify({
+        'makespan_human':   res_human['makespan'],
+        'makespan_johnson': res_johnson['makespan'],
+        'ordre_human':      [p.nom for p in plats_human],
+        'ordre_johnson':    [p.nom for p in res_johnson['ordre']],
+        'schedule_human': {
+            'makespan':        res_human['makespan'],
+            'schedule_commis': _serialiser_schedule(res_human['schedule_commis']),
+            'schedule_fours':  _serialiser_schedule(res_human['schedule_fours']),
+        },
+        'schedule_johnson': {
+            'makespan':        res_johnson['makespan'],
+            'schedule_commis': _serialiser_schedule(res_johnson['schedule_commis']),
+            'schedule_fours':  _serialiser_schedule(res_johnson['schedule_fours']),
+        },
+    })
+
+@app.route('/complexite')
+def complexite():
+    return render_template('complexite.html')
+
+
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', debug=False)
 

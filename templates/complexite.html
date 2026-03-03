@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pourquoi c'est difficile ? — Kitchen Scheduler</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent:  #FF6B6B;
+      --green:   #00B894;
+      --purple:  #A29BFE;
+      --yellow:  #FDCB6E;
+      --blue:    #74B9FF;
+      --dark:    #2D3436;
+      --muted:   #636E72;
+      --shadow:  4px 4px 0px rgba(0,0,0,0.18);
+      --shadow-lg:6px 6px 0px rgba(0,0,0,0.2);
+      --bounce:  cubic-bezier(0.68,-0.55,0.265,1.55);
+      --r: 15px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-image: url('/static/assets/background.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: var(--dark);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex; align-items: center; gap: 16px;
+      padding: 14px 28px;
+      background: linear-gradient(135deg,rgba(255,234,167,.97),rgba(253,203,110,.97));
+      border-bottom: 3px solid var(--dark);
+      box-shadow: var(--shadow);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .back-btn {
+      font-family: 'Fredoka One', cursive; font-size: 15px;
+      color: var(--dark); text-decoration: none;
+      background: white; border: 2px solid var(--dark);
+      border-radius: 10px; padding: 6px 14px;
+      box-shadow: var(--shadow);
+      transition: transform .2s var(--bounce);
+    }
+    .back-btn:hover { transform: translateY(-2px); }
+    .header-title { font-family: 'Fredoka One', cursive; font-size: 22px; color: var(--accent); }
+    .header-badge {
+      background: white; border: 2px solid var(--dark);
+      border-radius: 20px; padding: 4px 14px;
+      font-family: 'Fredoka One', cursive; font-size: 13px; color: var(--muted);
+      margin-left: auto;
+    }
+
+    /* ── Page layout ── */
+    .page { max-width: 860px; margin: 0 auto; padding: 32px 24px 80px; display: flex; flex-direction: column; gap: 28px; }
+
+    /* ── Cards ── */
+    .card {
+      background: linear-gradient(180deg,rgba(255,255,255,.97),rgba(255,248,220,.97));
+      border: 3px solid var(--dark); border-radius: var(--r);
+      padding: 28px 32px; box-shadow: var(--shadow-lg);
+    }
+    .card-title {
+      font-family: 'Fredoka One', cursive; font-size: 24px;
+      color: var(--accent); margin-bottom: 8px;
+    }
+    .card-sub { font-size: 15px; font-weight: 600; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+
+    /* ── Section 1 : Histoire ── */
+    .story-blocks { display: flex; flex-direction: column; gap: 16px; }
+    .story-block {
+      display: flex; gap: 16px; align-items: flex-start;
+      background: white; border: 2px solid #DFE6E9;
+      border-radius: 12px; padding: 16px 20px;
+      box-shadow: 3px 3px 0 rgba(0,0,0,.07);
+      transition: transform .2s var(--bounce);
+    }
+    .story-block:hover { transform: translateX(4px); }
+    .story-icon { font-size: 36px; flex-shrink: 0; }
+    .story-block h3 { font-family: 'Fredoka One', cursive; font-size: 17px; margin-bottom: 4px; }
+    .story-block p  { font-size: 14px; font-weight: 600; color: var(--muted); line-height: 1.6; }
+    .story-block strong { color: var(--dark); }
+    .story-block.highlight { border-color: var(--accent); background: rgba(255,107,107,.05); }
+
+    /* ── Section 2 : Table factorielle ── */
+    .slider-row {
+      display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .slider-row label { font-family: 'Fredoka One', cursive; font-size: 16px; white-space: nowrap; }
+    input[type="range"] {
+      flex: 1; min-width: 160px;
+      -webkit-appearance: none; height: 8px;
+      background: linear-gradient(90deg, var(--green) var(--pct,30%), #DFE6E9 var(--pct,30%));
+      border-radius: 4px; border: 2px solid var(--dark);
+      outline: none; cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 26px; height: 26px;
+      border-radius: 50%; background: var(--accent);
+      border: 3px solid var(--dark); cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+    .n-display {
+      font-family: 'Fredoka One', cursive; font-size: 32px;
+      color: var(--accent); min-width: 48px; text-align: center;
+    }
+
+    .fact-result {
+      background: white; border: 3px solid var(--dark);
+      border-radius: var(--r); padding: 20px 24px;
+      text-align: center; box-shadow: var(--shadow-lg);
+      transition: all .3s var(--bounce);
+      margin-bottom: 16px;
+    }
+    .fact-number {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(20px, 4vw, 36px);
+      word-break: break-all; line-height: 1.3;
+      transition: color .3s;
+    }
+    .fact-label { font-size: 13px; font-weight: 700; color: var(--muted); margin-top: 6px; }
+    .fact-time {
+      margin-top: 12px; font-family: 'Fredoka One', cursive;
+      font-size: 15px; padding: 8px 16px;
+      border-radius: 20px; display: inline-block;
+      border: 2px solid var(--dark);
+    }
+
+    .fact-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .fact-table th {
+      font-family: 'Fredoka One', cursive; font-size: 12px;
+      color: var(--muted); padding: 8px 12px;
+      text-align: left; border-bottom: 2px solid var(--dark);
+      background: rgba(253,203,110,.3); text-transform: uppercase;
+    }
+    .fact-table td { padding: 10px 12px; border-bottom: 1px dashed rgba(45,52,54,.12); font-weight: 700; }
+    .fact-table tr:last-child td { border-bottom: none; }
+    .fact-table tr.highlight-row td { background: rgba(255,107,107,.08); }
+    .fact-table .verdict {
+      font-family: 'Fredoka One', cursive; font-size: 12px;
+      padding: 3px 10px; border-radius: 20px;
+      border: 2px solid var(--dark); display: inline-block;
+    }
+    .v-ok   { background: rgba(0,184,148,.15);  color: var(--green);  border-color: var(--green); }
+    .v-warn { background: rgba(253,203,110,.3);  color: #b7860b; border-color: var(--yellow); }
+    .v-bad  { background: rgba(255,107,107,.15); color: var(--accent); border-color: var(--accent); }
+    .v-dead { background: rgba(45,52,54,.08);    color: var(--muted);  border-color: #DFE6E9; }
+
+    /* ── Section 3 : Graphe ── */
+    canvas { display: block; width: 100%; border-radius: 12px; border: 2px solid var(--dark); background: white; }
+    .legend { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 12px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-family: 'Fredoka One', cursive; font-size: 14px; }
+    .legend-dot { width: 16px; height: 5px; border-radius: 3px; }
+
+    /* ── Section 4 : Démo force brute ── */
+    .demo-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .demo-controls label { font-family: 'Fredoka One', cursive; font-size: 15px; }
+    .n-btns { display: flex; gap: 8px; }
+    .n-btn {
+      width: 42px; height: 42px;
+      background: white; border: 2px solid var(--dark);
+      border-radius: 10px; font-family: 'Fredoka One', cursive;
+      font-size: 16px; cursor: pointer; box-shadow: var(--shadow);
+      transition: all .2s var(--bounce);
+    }
+    .n-btn:hover  { transform: translateY(-2px); border-color: var(--accent); }
+    .n-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+    .btn-demo {
+      background: linear-gradient(135deg, var(--purple), #7c7ce8);
+      color: white; border: 3px solid var(--dark);
+      border-radius: 12px; padding: 12px 24px;
+      font-family: 'Fredoka One', cursive; font-size: 16px;
+      cursor: pointer; box-shadow: var(--shadow-lg);
+      transition: all .2s var(--bounce);
+    }
+    .btn-demo:hover    { transform: translateY(-2px); }
+    .btn-demo:disabled { background: #DFE6E9; color: var(--muted); cursor: not-allowed; transform: none; }
+
+    .demo-output {
+      background: #2D3436; color: #55EFC4;
+      border-radius: 12px; border: 2px solid var(--dark);
+      padding: 16px 20px; font-family: 'Courier New', monospace;
+      font-size: 13px; min-height: 120px; line-height: 1.8;
+      overflow-y: auto; max-height: 280px;
+      box-shadow: inset 2px 2px 8px rgba(0,0,0,.3);
+    }
+    .demo-output .line-perm { color: #74B9FF; }
+    .demo-output .line-best { color: #FDCB6E; }
+    .demo-output .line-done { color: #55EFC4; font-weight: bold; }
+    .demo-output .line-warn { color: #FF7675; }
+
+    .progress-bar-wrap {
+      background: #DFE6E9; border: 2px solid var(--dark);
+      border-radius: 20px; height: 20px; margin: 12px 0;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; background: linear-gradient(90deg, var(--green), var(--purple));
+      border-radius: 20px; transition: width .1s;
+      display: flex; align-items: center; justify-content: flex-end;
+      padding-right: 8px;
+    }
+    .progress-label { font-family: 'Fredoka One', cursive; font-size: 11px; color: white; white-space: nowrap; }
+
+    /* ── Conclusion ── */
+    .conclusion-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .concl-card {
+      background: white; border: 2px solid var(--dark);
+      border-radius: 12px; padding: 16px 20px;
+      box-shadow: var(--shadow);
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .concl-card .concl-icon { font-size: 32px; }
+    .concl-card h3 { font-family: 'Fredoka One', cursive; font-size: 16px; }
+    .concl-card p  { font-size: 13px; font-weight: 600; color: var(--muted); line-height: 1.6; }
+    .concl-card.green-card { border-color: var(--green); background: rgba(0,184,148,.06); }
+    .concl-card.purple-card{ border-color: var(--purple); background: rgba(162,155,254,.06); }
+    .concl-card.yellow-card{ border-color: var(--yellow); background: rgba(253,203,110,.1); }
+    .concl-card.red-card   { border-color: var(--accent); background: rgba(255,107,107,.06); }
+
+    @media (max-width: 600px) {
+      .conclusion-grid { grid-template-columns: 1fr; }
+      .orders-compare  { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <a href="/" class="back-btn">← Menu</a>
+  <span class="header-title">🧠 Pourquoi c'est si difficile ?</span>
+  <span class="header-badge">NP-difficile</span>
+</header>
+
+<div class="page">
+
+  <!-- ── 1. L'histoire ── -->
+  <div class="card">
+    <div class="card-title">🍳 Le problème du chef cuisinier</div>
+    <div class="card-sub">Imagine que tu dois préparer plusieurs plats. Dans quel ordre les cuisiner pour finir le plus vite possible ? Simple en apparence… mais matematiquement, c'est un cauchemar !</div>
+
+    <div class="story-blocks">
+      <div class="story-block">
+        <div class="story-icon">😌</div>
+        <div>
+          <h3>Avec 3 plats, c'est facile</h3>
+          <p>Tu peux essayer <strong>tous les ordres possibles</strong> à la main : ABC, ACB, BAC, BCA, CAB, CBA. Seulement <strong>6 combinaisons</strong>. En 2 minutes tu trouves le meilleur.</p>
+        </div>
+      </div>
+      <div class="story-block">
+        <div class="story-icon">😰</div>
+        <div>
+          <h3>Avec 10 plats, ça devient fou</h3>
+          <p>Il y a <strong>3 628 800 ordres différents</strong> à tester. Un ordinateur peut le faire, mais ça commence à prendre du temps.</p>
+        </div>
+      </div>
+      <div class="story-block highlight">
+        <div class="story-icon">💀</div>
+        <div>
+          <h3>Avec 20 plats, c'est impossible</h3>
+          <p>Il y aurait <strong>2 432 902 008 176 640 000</strong> ordres à tester. Même l'ordinateur le plus puissant du monde ne pourrait pas tous les tester avant la fin de l'univers. C'est ce qu'on appelle un problème <strong>NP-difficile</strong>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 2. Table factorielle interactive ── -->
+  <div class="card">
+    <div class="card-title">🔢 Combien d'ordres possibles ?</div>
+    <div class="card-sub">Déplace le curseur pour voir comment le nombre d'ordres explose avec le nombre de plats.</div>
+
+    <div class="slider-row">
+      <label>Nombre de plats :</label>
+      <input type="range" id="slider-n" min="1" max="20" value="3" oninput="majSlider(this.value)">
+      <div class="n-display" id="n-val">3</div>
+    </div>
+
+    <div class="fact-result" id="fact-result">
+      <div class="fact-number" id="fact-number">6</div>
+      <div class="fact-label" id="fact-label">ordres possibles à tester</div>
+      <div class="fact-time" id="fact-time">⚡ Instantané</div>
+    </div>
+
+    <table class="fact-table">
+      <thead>
+        <tr>
+          <th>Plats (n)</th>
+          <th>Ordres possibles (n!)</th>
+          <th>Temps estimé</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody id="fact-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- ── 3. Graphe ── -->
+  <div class="card">
+    <div class="card-title">📈 La courbe qui explose</div>
+    <div class="card-sub">Compare la croissance factorielle (n!) avec des croissances plus raisonnables. Tu vas voir pourquoi les mathématiciens ont eu peur.</div>
+
+    <canvas id="chart" height="320"></canvas>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#FF6B6B;"></div> n! (factoriel — force brute)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#A29BFE;"></div> 2ⁿ (exponentiel)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FDCB6E;"></div> n² (polynomial — algorithmes rapides)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#00B894;"></div> n (linéaire — idéal)</div>
+    </div>
+  </div>
+
+  <!-- ── 4. Démo force brute en direct ── -->
+  <div class="card">
+    <div class="card-title">⚙️ Force brute en direct</div>
+    <div class="card-sub">Lance la simulation et observe l'ordinateur tester chaque ordre un par un. Essaie d'augmenter le nombre de plats pour voir quand ça devient lent !</div>
+
+    <div class="demo-controls">
+      <label>Nombre de plats :</label>
+      <div class="n-btns">
+        <button class="n-btn active" onclick="setDemoN(4,this)">4</button>
+        <button class="n-btn" onclick="setDemoN(6,this)">6</button>
+        <button class="n-btn" onclick="setDemoN(8,this)">8</button>
+        <button class="n-btn" onclick="setDemoN(10,this)">10</button>
+      </div>
+      <button class="btn-demo" id="btn-demo" onclick="lancerDemo()">▶ Lancer la simulation</button>
+      <button class="btn-demo" id="btn-stop" onclick="stopDemo()" style="display:none;background:linear-gradient(135deg,#FF6B6B,#EE5A5A);">⏹ Arrêter</button>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%">
+        <span class="progress-label" id="progress-label"></span>
+      </div>
+    </div>
+
+    <div class="demo-output" id="demo-output">
+      <span style="color:#636E72;">// Lance la simulation pour voir la force brute en action…</span>
+    </div>
+  </div>
+
+  <!-- ── 5. Conclusion ── -->
+  <div class="card">
+    <div class="card-title">💡 Alors, quelle solution ?</div>
+    <div class="card-sub">Puisqu'on ne peut pas tout tester, les informaticiens ont inventé des algorithmes intelligents qui trouvent de très bonnes solutions rapidement.</div>
+
+    <div class="conclusion-grid">
+      <div class="concl-card red-card">
+        <div class="concl-icon">💀</div>
+        <h3>Force brute</h3>
+        <p>Teste tous les ordres. <strong>Garanti optimal</strong> mais impossible au-delà de ~10 plats. Complexité : <strong>O(n!)</strong></p>
+      </div>
+      <div class="concl-card green-card">
+        <div class="concl-icon">⚡</div>
+        <h3>Algorithme de Johnson</h3>
+        <p>Règle simple : trier par (prep - cuisson). <strong>Garanti optimal</strong> pour 1 commis + 1 four. Complexité : <strong>O(n log n)</strong></p>
+      </div>
+      <div class="concl-card yellow-card">
+        <div class="concl-icon">🤏</div>
+        <h3>NEH & LPT</h3>
+        <p>Heuristiques : pas toujours optimaux, mais <strong>très proches</strong> en une fraction de seconde. Utiles pour plusieurs fours.</p>
+      </div>
+      <div class="concl-card purple-card">
+        <div class="concl-icon">🏆</div>
+        <h3>Le message clé</h3>
+        <p>Les problèmes NP-difficiles sont partout : emplois du temps, livraisons, ADN… Les algorithmes d'approximation sont essentiels en informatique réelle.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Utilitaires ───────────────────────────────────────────
+function fact(n) {
+  if (n <= 1) return 1n;
+  return BigInt(n) * fact(n - 1);
+}
+
+function formatBig(n) {
+  const s = n.toString();
+  if (s.length <= 9) return Number(n).toLocaleString('fr');
+  if (s.length <= 15) return s.slice(0,3) + '…' + ` (${s.length} chiffres)`;
+  return `10^${s.length - 1} (${s.length} chiffres)`;
+}
+
+function tempsEstime(n) {
+  // Hypothèse : 10 millions de permutations/seconde
+  const perSecond = 10_000_000n;
+  const f = fact(n);
+  if (f < perSecond) return { txt: '⚡ Instantané', cls: 'v-ok' };
+  const sec = f / perSecond;
+  if (sec < 60n)   return { txt: `~${sec}s`, cls: 'v-ok' };
+  if (sec < 3600n) return { txt: `~${sec/60n} min`, cls: 'v-warn' };
+  const h = sec / 3600n;
+  if (h < 24n)    return { txt: `~${h}h`, cls: 'v-warn' };
+  const j = h / 24n;
+  if (j < 365n)   return { txt: `~${j} jours`, cls: 'v-bad' };
+  const y = j / 365n;
+  if (y < 1_000_000n) return { txt: `~${y.toLocaleString()} ans`, cls: 'v-bad' };
+  return { txt: `~${formatBig(y)} ans 💀`, cls: 'v-dead' };
+}
+
+// ── Slider factoriel ──────────────────────────────────────
+function majSlider(val) {
+  val = parseInt(val);
+  document.getElementById('n-val').textContent = val;
+  const f = fact(val);
+  const t = tempsEstime(val);
+
+  // Couleur dynamique
+  let color = '#00B894';
+  if (val >= 10) color = '#FDCB6E';
+  if (val >= 13) color = '#FF6B6B';
+  if (val >= 16) color = '#2D3436';
+
+  const num = document.getElementById('fact-number');
+  num.textContent = formatBig(f);
+  num.style.color = color;
+
+  document.getElementById('fact-label').textContent =
+    `ordres possibles à tester pour ${val} plat${val>1?'s':''}`;
+
+  const timeEl = document.getElementById('fact-time');
+  timeEl.textContent = t.txt;
+  timeEl.style.background = t.cls === 'v-ok' ? 'rgba(0,184,148,.15)'
+    : t.cls === 'v-warn' ? 'rgba(253,203,110,.3)'
+    : t.cls === 'v-bad'  ? 'rgba(255,107,107,.15)'
+    : 'rgba(45,52,54,.1)';
+  timeEl.style.borderColor = color;
+
+  // Mettre à jour le slider gradient
+  const slider = document.getElementById('slider-n');
+  const pct = ((val - 1) / 19 * 100).toFixed(0);
+  slider.style.setProperty('--pct', pct + '%');
+
+  construireTable(val);
+}
+
+function construireTable(nActif) {
+  const rows = [2,3,4,5,6,7,8,10,12,15,20];
+  const tbody = document.getElementById('fact-tbody');
+  tbody.innerHTML = '';
+  rows.forEach(n => {
+    const f = fact(n);
+    const t = tempsEstime(n);
+    const tr = document.createElement('tr');
+    if (n === nActif) tr.classList.add('highlight-row');
+    tr.innerHTML = `
+      <td>${n} plat${n>1?'s':''} ${n===nActif?'← toi':''}</td>
+      <td style="font-family:'Courier New',monospace;">${formatBig(f)}</td>
+      <td style="font-family:'Fredoka One',cursive;">${t.txt.replace('⚡ ','')}</td>
+      <td><span class="verdict ${t.cls}">${
+        t.cls==='v-ok'   ? '✅ Faisable' :
+        t.cls==='v-warn' ? '⚠️ Long'    :
+        t.cls==='v-bad'  ? '❌ Impossible' : '💀 Fin de l\'univers'
+      }</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── Graphe ────────────────────────────────────────────────
+function dessinerGraphe() {
+  const canvas = document.getElementById('chart');
+  const W = canvas.offsetWidth || 760;
+  const H = 320;
+  canvas.width  = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  const pad = { t:20, r:20, b:40, l:60 };
+  const w = W - pad.l - pad.r;
+  const h = H - pad.t - pad.b;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Fond
+  ctx.fillStyle = '#FFFDF5';
+  ctx.fillRect(0, 0, W, H);
+
+  // Valeurs normalisées sur 1..12
+  const ns = Array.from({length:12}, (_,i) => i+1);
+  const maxVal = 12; // n=12
+
+  const curves = [
+    { fn: n => n,       color:'#00B894', label:'n',   width:2 },
+    { fn: n => n*n,     color:'#FDCB6E', label:'n²',  width:2 },
+    { fn: n => Math.pow(2,n), color:'#A29BFE', label:'2ⁿ', width:2.5 },
+    { fn: n => {        // n! approximé via Stirling pour éviter overflow
+        if (n <= 12) {
+          let f=1; for(let i=2;i<=n;i++) f*=i; return f;
+        }
+        return Infinity;
+      }, color:'#FF6B6B', label:'n!', width:3 },
+  ];
+
+  // Calculer max global (hors Infinity)
+  let globalMax = 0;
+  curves.forEach(c => {
+    ns.forEach(n => {
+      const v = c.fn(n);
+      if (isFinite(v)) globalMax = Math.max(globalMax, v);
+    });
+  });
+
+  const scaleX = n => pad.l + (n - 1) / (maxVal - 1) * w;
+  const scaleY = v => {
+    if (!isFinite(v) || v > globalMax) return pad.t;
+    return H - pad.b - (v / globalMax) * h;
+  };
+
+  // Grille
+  ctx.strokeStyle = '#DFE6E9';
+  ctx.lineWidth = 1;
+  for (let i=0; i<=5; i++) {
+    const y = pad.t + (h/5)*i;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W-pad.r, y); ctx.stroke();
+  }
+  ns.forEach(n => {
+    const x = scaleX(n);
+    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, H-pad.b); ctx.stroke();
+  });
+
+  // Axes
+  ctx.strokeStyle = '#2D3436'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, H-pad.b); ctx.lineTo(W-pad.r, H-pad.b); ctx.stroke();
+
+  // Labels axe X
+  ctx.fillStyle = '#636E72'; ctx.font = 'bold 12px Nunito, sans-serif'; ctx.textAlign = 'center';
+  ns.forEach(n => { ctx.fillText(n, scaleX(n), H-pad.b+18); });
+  ctx.fillText('Nombre de plats (n)', pad.l + w/2, H-2);
+
+  // Courbes
+  curves.forEach(c => {
+    ctx.beginPath();
+    ctx.strokeStyle = c.color;
+    ctx.lineWidth   = c.width;
+    ctx.lineJoin    = 'round';
+    let first = true;
+    ns.forEach(n => {
+      const v = c.fn(n);
+      if (!isFinite(v) || v > globalMax * 1.05) return;
+      const x = scaleX(n), y = scaleY(v);
+      if (first) { ctx.moveTo(x, y); first = false; }
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Point terminal
+    const lastN = ns.filter(n => isFinite(c.fn(n)) && c.fn(n) <= globalMax).pop();
+    if (lastN) {
+      ctx.beginPath();
+      ctx.arc(scaleX(lastN), scaleY(c.fn(lastN)), 5, 0, Math.PI*2);
+      ctx.fillStyle = c.color; ctx.fill();
+      ctx.strokeStyle = '#2D3436'; ctx.lineWidth=1.5; ctx.stroke();
+    }
+  });
+
+  // Annotation "explosion ici !" sur la courbe n!
+  const nExplosion = 8;
+  const xE = scaleX(nExplosion);
+  const factVal = (() => { let f=1; for(let i=2;i<=nExplosion;i++) f*=i; return f; })();
+  const yE = scaleY(factVal);
+  ctx.fillStyle = '#FF6B6B';
+  ctx.font = 'bold 13px Fredoka One, cursive';
+  ctx.textAlign = 'left';
+  ctx.fillText('💥 ça explose !', xE + 8, yE - 8);
+}
+
+// ── Démo force brute ──────────────────────────────────────
+let demoN = 4;
+let demoRunning = false;
+let demoStop = false;
+
+function setDemoN(n, btn) {
+  demoN = n;
+  document.querySelectorAll('.n-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// Génère les permutations
+function* permutations(arr) {
+  if (arr.length <= 1) { yield [...arr]; return; }
+  for (let i = 0; i < arr.length; i++) {
+    const rest = [...arr.slice(0,i), ...arr.slice(i+1)];
+    for (const p of permutations(rest)) yield [arr[i], ...p];
+  }
+}
+
+// Makespan simplifié (1 commis, 1 four)
+function makespan(ordre) {
+  let finPrep = 0, finFour = 0;
+  for (const p of ordre) {
+    finPrep += p.prep;
+    finFour = Math.max(finFour, finPrep) + p.cuisson;
+  }
+  return finFour;
+}
+
+async function lancerDemo() {
+  demoStop = false;
+  document.getElementById('btn-demo').style.display = 'none';
+  document.getElementById('btn-stop').style.display = 'inline-flex';
+
+  // Générer des plats aléatoires
+  const plats = Array.from({length: demoN}, (_, i) => ({
+    nom: `Plat ${String.fromCharCode(65+i)}`,
+    prep: Math.floor(Math.random()*15)+5,
+    cuisson: Math.floor(Math.random()*15)+5,
+  }));
+
+  const total = (() => { let f=1; for(let i=2;i<=demoN;i++) f*=i; return f; })();
+  const out = document.getElementById('demo-output');
+  const prog = document.getElementById('progress-fill');
+  const progLbl = document.getElementById('progress-label');
+
+  out.innerHTML = `<span style="color:#FDCB6E;">// ${demoN} plats — ${total.toLocaleString('fr')} ordres à tester…</span>\n\n`;
+  out.innerHTML += plats.map(p => `<span class="line-perm">  ${p.nom}: prép ${p.prep}min, cuisson ${p.cuisson}min</span>`).join('\n') + '\n\n';
+
+  let best = Infinity, bestOrdre = null, count = 0;
+  const t0 = performance.now();
+  const BATCH = demoN <= 6 ? 1 : demoN <= 8 ? 50 : 500;
+  const MAX_LINES = 60;
+  let linesShown = 0;
+
+  for (const perm of permutations(plats)) {
+    if (demoStop) break;
+    const ms = makespan(perm);
+    count++;
+    if (ms < best) {
+      best = ms;
+      bestOrdre = [...perm];
+      const line = document.createElement('div');
+      line.className = 'line-best';
+      line.textContent = `✨ Nouvel optimal : [${perm.map(p=>p.nom).join('→')}] = ${ms} min`;
+      out.appendChild(line);
+      out.scrollTop = out.scrollHeight;
+    } else if (linesShown < MAX_LINES && (demoN <= 6 || count % Math.max(1, Math.floor(total/20)) === 0)) {
+      const line = document.createElement('div');
+      line.className = 'line-perm';
+      line.textContent = `  [${perm.map(p=>p.nom).join('→')}] → ${ms} min`;
+      out.appendChild(line);
+      linesShown++;
+      out.scrollTop = out.scrollHeight;
+    }
+
+    // Mise à jour progression
+    const pct = (count / total * 100).toFixed(1);
+    prog.style.width = pct + '%';
+    progLbl.textContent = `${count.toLocaleString('fr')} / ${total.toLocaleString('fr')}`;
+
+    // Yield toutes les BATCH itérations pour ne pas bloquer l'UI
+    if (count % BATCH === 0) {
+      await new Promise(r => setTimeout(r, 0));
+    }
+  }
+
+  const duree = ((performance.now() - t0) / 1000).toFixed(2);
+  prog.style.width = '100%';
+
+  const done = document.createElement('div');
+  done.className = 'line-done';
+  done.innerHTML = demoStop
+    ? `\n⏹ Simulation arrêtée après ${count.toLocaleString('fr')} permutations.`
+    : `\n✅ Terminé ! ${total.toLocaleString('fr')} ordres testés en ${duree}s.\n🏆 Optimal : [${bestOrdre.map(p=>p.nom).join('→')}] = ${best} min`;
+  out.appendChild(done);
+  out.scrollTop = out.scrollHeight;
+
+  if (demoN >= 8 && !demoStop) {
+    const warn = document.createElement('div');
+    warn.className = 'line-warn';
+    warn.textContent = `\n⚠️ Pour ${demoN+4} plats, il faudrait ${(()=>{let f=1;for(let i=2;i<=demoN+4;i++)f*=i;return f;})().toLocaleString('fr')} tests… tu attends ?`;
+    out.appendChild(warn);
+  }
+
+  document.getElementById('btn-demo').style.display = 'inline-flex';
+  document.getElementById('btn-stop').style.display = 'none';
+}
+
+function stopDemo() {
+  demoStop = true;
+}
+
+// ── Init ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  majSlider(3);
+  dessinerGraphe();
+  window.addEventListener('resize', dessinerGraphe);
+});
+</script>
+</body>
+</html>

@@ -12,44 +12,61 @@
         <div class="landing-content">
             <div class="landing-logo">
                 <span class="logo-icon">🍳</span>
-                <h1>Kitchen Load Balancer</h1>
-                <p class="tagline">Apprenez le load balancing en cuisinant !</p>
+                <h1>Ordonnancement &amp; Cuisine</h1>
+                <p class="tagline">Dans quel ordre cuisiner pour finir le plus vite possible ?</p>
+                <p class="tagline-sub">Explore, joue, et comprends pourquoi c'est un problème impossible à résoudre parfaitement !</p>
             </div>
 
             <div class="landing-menu">
-                <button class="menu-btn play-btn" id="btn-play">
-                    <span class="btn-emoji">▶️</span>
-                    <span>Jouer</span>
-                </button>
-                <button class="menu-btn tutorial-btn" id="btn-tutorial">
-                    <span class="btn-emoji">📚</span>
-                    <span>Tutoriel</span>
-                </button>
-                <button class="menu-btn compare-btn" id="btn-compare" onclick="window.location.href='/compare'">
-                    <span class="btn-emoji">🔬</span>
-                    <span>Comparer les algos</span>
-                </button>
-                <button class="menu-btn options-btn" id="btn-options">
-                    <span class="btn-emoji">⚙️</span>
-                    <span>Options</span>
-                </button>
+                <div class="menu-row">
+                    <button class="menu-btn btn-primary-action" onclick="window.location.href='/jouer'">
+                        <span class="btn-emoji">🧑‍🍳</span>
+                        <div class="btn-text">
+                            <span class="btn-title">Tester ma solution</span>
+                            <span class="btn-desc">Ordonne les plats toi-même</span>
+                        </div>
+                    </button>
+                    <button class="menu-btn btn-secondary-action" onclick="window.location.href='/compare'">
+                        <span class="btn-emoji">🔬</span>
+                        <div class="btn-text">
+                            <span class="btn-title">Comparer les algos</span>
+                            <span class="btn-desc">Johnson, NEH, LPT, Force brute…</span>
+                        </div>
+                    </button>
+                </div>
+                <div class="menu-row">
+                    <button class="menu-btn btn-pedagogy" onclick="window.location.href='/complexite'">
+                        <span class="btn-emoji">🧠</span>
+                        <div class="btn-text">
+                            <span class="btn-title">Pourquoi c'est difficile ?</span>
+                            <span class="btn-desc">NP-difficile expliqué</span>
+                        </div>
+                    </button>
+                    <button class="menu-btn btn-debranchee" onclick="window.location.href='/activite-debranchee'">
+                        <span class="btn-emoji">🃏</span>
+                        <div class="btn-text">
+                            <span class="btn-title">Activité débranchée</span>
+                            <span class="btn-desc">Joue sans ordinateur !</span>
+                        </div>
+                    </button>
+                </div>
             </div>
 
             <div class="landing-footer">
-                <p>🎓 Projet Algorithmique - Load Balancing</p>
+                <p>🎓 Projet Algorithmique — SI4 Polytech Nice · Groupe 7</p>
             </div>
         </div>
 
-        <!-- Animated kitchen items -->
         <div class="floating-items">
-            <span class="float-item" style="--delay: 0s; --x: 10%;">🍕</span>
-            <span class="float-item" style="--delay: 1s; --x: 25%;">🍔</span>
-            <span class="float-item" style="--delay: 2s; --x: 40%;">🥗</span>
-            <span class="float-item" style="--delay: 0.5s; --x: 55%;">🍜</span>
-            <span class="float-item" style="--delay: 1.5s; --x: 70%;">🥘</span>
-            <span class="float-item" style="--delay: 2.5s; --x: 85%;">🍰</span>
+            <span class="float-item" style="--delay: 0s;   --x: 8%;" >🍕</span>
+            <span class="float-item" style="--delay: 1.2s; --x: 22%;">🥗</span>
+            <span class="float-item" style="--delay: 0.4s; --x: 38%;">🍜</span>
+            <span class="float-item" style="--delay: 2s;   --x: 54%;">🥘</span>
+            <span class="float-item" style="--delay: 0.8s; --x: 68%;">🍰</span>
+            <span class="float-item" style="--delay: 1.6s; --x: 83%;">🥩</span>
+            <span class="float-item" style="--delay: 2.4s; --x: 92%;">🍔</span>
         </div>
-    </div>
+    </div>v>
 
     <!-- Tutorial Overlay -->
     <div class="tutorial-overlay" id="tutorial-overlay">
