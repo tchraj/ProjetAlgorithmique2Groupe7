@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ordonnancement & Cuisine</title>
+    <title>Kitchen Load Balancer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -34,12 +34,19 @@
                         </div>
                     </button>
                 </div>
-                <div class="menu-row menu-row-single">
+                <div class="menu-row">
                     <button class="menu-btn btn-pedagogy" onclick="window.location.href='/complexite'">
                         <span class="btn-emoji">🧠</span>
                         <div class="btn-text">
                             <span class="btn-title">Pourquoi c'est difficile ?</span>
                             <span class="btn-desc">NP-difficile expliqué</span>
+                        </div>
+                    </button>
+                    <button class="menu-btn btn-debranchee" onclick="window.location.href='/activite-debranchee'">
+                        <span class="btn-emoji">🃏</span>
+                        <div class="btn-text">
+                            <span class="btn-title">Activité débranchée</span>
+                            <span class="btn-desc">Joue sans ordinateur !</span>
                         </div>
                     </button>
                 </div>
@@ -59,7 +66,7 @@
             <span class="float-item" style="--delay: 1.6s; --x: 83%;">🥩</span>
             <span class="float-item" style="--delay: 2.4s; --x: 92%;">🍔</span>
         </div>
-    </div>
+    </div>v>
 
     <!-- Tutorial Overlay -->
     <div class="tutorial-overlay" id="tutorial-overlay">
