@@ -159,29 +159,75 @@
     }
 
     /* ── Étape 1 : saisie ── */
-    .presets {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+    /* ── Presets row ── */
+    .presets-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
       margin-bottom: 24px;
+      flex-wrap: wrap;
     }
-
+    .preset-select-wrap { flex: 1; min-width: 220px; }
+    .preset-select-label {
+      display: block;
+      font-family: 'Fredoka One', cursive;
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 6px;
+    }
+    .preset-select-btns {
+      display: flex;
+      gap: 8px;
+    }
     .preset-btn {
+      flex: 1;
       background: white;
       border: 2px solid var(--dark);
-      border-radius: 12px;
-      padding: 12px 8px;
+      border-radius: 10px;
+      padding: 8px 6px;
       font-family: 'Fredoka One', cursive;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
       box-shadow: var(--shadow);
       transition: all .2s var(--bounce);
       text-align: center;
     }
-    .preset-btn small { display: block; font-family: 'Nunito', sans-serif; font-size: 11px; color: var(--muted); }
-    .preset-btn:hover  { transform: translateY(-3px); border-color: var(--accent); }
+    .preset-btn small { display: block; font-family: 'Nunito', sans-serif; font-size: 10px; color: var(--muted); }
+    .preset-btn:hover  { transform: translateY(-2px); border-color: var(--accent); }
     .preset-btn.active { background: linear-gradient(135deg, var(--accent), #EE5A5A); color: white; border-color: var(--accent); }
     .preset-btn.active small { color: rgba(255,255,255,.8); }
+
+    .preset-divider {
+      font-family: 'Fredoka One', cursive;
+      font-size: 14px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    /* Bouton générer */
+    .btn-generate {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, #A29BFE, #6C5CE7);
+      color: white;
+      border: 3px solid var(--dark);
+      border-radius: 14px;
+      padding: 12px 20px;
+      cursor: pointer;
+      box-shadow: var(--shadow-lg);
+      transition: all .25s var(--bounce);
+      flex-shrink: 0;
+    }
+    .btn-generate:hover { transform: translateY(-3px) rotate(-1deg); box-shadow: 6px 8px 0 rgba(0,0,0,.2); }
+    .btn-generate:active { transform: scale(.96); }
+    .btn-generate.loading { opacity: .7; cursor: wait; }
+    .generate-icon { font-size: 28px; line-height: 1; }
+    .generate-text { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
+    .generate-title { font-family: 'Fredoka One', cursive; font-size: 15px; }
+    .generate-sub { font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700; opacity: .8; }
 
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
 
@@ -754,16 +800,29 @@
     <div class="card-title">🍽️ Crée ton menu</div>
     <div class="card-sub">Choisis un exemple ou saisis tes propres plats, puis définis le nombre de cuisiniers et de fours.</div>
 
-    <div class="section-label">⚡ Exemples de l'énoncé</div>
-    <div class="presets">
-      <button class="preset-btn" onclick="chargerPreset(1)">
-        Exemple 1<small>3 plats · 1 commis · 1 four</small>
-      </button>
-      <button class="preset-btn" onclick="chargerPreset(2)">
-        Exemple 2<small>3 plats · 1 commis · 1 four</small>
-      </button>
-      <button class="preset-btn" onclick="chargerPreset(3)">
-        Exemple 3<small>6 plats · 1 commis · 1 four</small>
+    <div class="section-label">⚡ Charger un menu</div>
+    <div class="presets-row">
+      <div class="preset-select-wrap">
+        <label class="preset-select-label">📋 Exemples de menus</label>
+        <div class="preset-select-btns">
+          <button class="preset-btn" onclick="chargerPreset(1)">
+            Exemple 1<small>3 plats · 1 commis</small>
+          </button>
+          <button class="preset-btn" onclick="chargerPreset(2)">
+            Exemple 2<small>3 plats · 1 commis</small>
+          </button>
+          <button class="preset-btn" onclick="chargerPreset(3)">
+            Exemple 3<small>6 plats · 1 commis</small>
+          </button>
+        </div>
+      </div>
+      <div class="preset-divider">ou</div>
+      <button class="btn-generate" onclick="genererMenuAleatoire()" id="btn-generate">
+        <span class="generate-icon">🎲</span>
+        <span class="generate-text">
+          <span class="generate-title">Générer un menu</span>
+          <span class="generate-sub">Instance aléatoire</span>
+        </span>
       </button>
     </div>
 
@@ -925,12 +984,12 @@ const PRESETS = {
     {nom:'Plat 3', prep:11, cuisson:8 },
   ], commis:1, fours:1 },
   3: { plats: [
-    {nom:'Plat 1', prep:8,  cuisson:12},
-    {nom:'Plat 2', prep:12, cuisson:8 },
-    {nom:'Plat 3', prep:17, cuisson:20},
-    {nom:'Plat 4', prep:19, cuisson:17},
-    {nom:'Plat 5', prep:19, cuisson:20},
-    {nom:'Plat 6', prep:19, cuisson:12},
+    {nom:'Salade', prep:8,  cuisson:12},
+    {nom:'Pates', prep:12, cuisson:8 },
+    {nom:'Viande', prep:17, cuisson:20},
+    {nom:'Gateau', prep:19, cuisson:17},
+    {nom:'Soupe', prep:19, cuisson:20},
+    {nom:'Omelette', prep:19, cuisson:12},
   ], commis:1, fours:1 },
 };
 
@@ -967,6 +1026,81 @@ function chargerPreset(n) {
   p.plats.forEach(pl => ajouterLigne(pl.nom, pl.prep, pl.cuisson));
   document.getElementById('nb-commis').value = p.commis;
   document.getElementById('nb-fours').value  = p.fours;
+}
+
+// ── Génération instance aléatoire ────────────────────────────
+async function genererMenuAleatoire() {
+  const btn = document.getElementById('btn-generate');
+  btn.classList.add('loading');
+  btn.querySelector('.generate-icon').textContent = '⏳';
+
+  try {
+    const types = ['simple', 'equilibree', 'difficile'];
+    const type  = types[Math.floor(Math.random() * types.length)];
+    const nb_plats   = Math.floor(Math.random() * 4) + 4; // 4 à 7 plats
+    const nb_commis  = 1;
+    const nb_fours   = 1;
+
+    const resp = await fetch('/api/instances/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, nb_plats, nb_commis, nb_fours })
+    });
+
+    if (!resp.ok) throw new Error(`Erreur ${resp.status}`);
+    const data = await resp.json();
+
+    // Vider la sélection des presets
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+
+    // Remplir le tableau avec les plats générés
+    const tbody = document.getElementById('plats-tbody');
+    tbody.innerHTML = '';
+    rowId = 0;
+
+    const plats = data.plats || data.instance?.plats || [];
+    plats.forEach(p => {
+      // Les temps peuvent être en secondes (backend) ou en minutes (converti)
+      const prep    = p.temps_prep    !== undefined ? Math.round(p.temps_prep / 60)    : (p.prep    || 0);
+      const cuisson = p.temps_cuisson !== undefined ? Math.round(p.temps_cuisson / 60) : (p.cuisson || 0);
+      ajouterLigne(p.nom || p.name || 'Plat', prep, cuisson);
+    });
+
+    document.getElementById('nb-commis').value = data.nombre_commis || nb_commis;
+    document.getElementById('nb-fours').value  = nb_fours;
+
+    const diffLabel = { simple: '😊 Facile', equilibree: '🤔 Moyen', difficile: '🔥 Difficile' };
+    showToast(`Menu généré ! ${plats.length} plats · ${diffLabel[type] || type}`, 'success');
+
+  } catch(err) {
+    // Fallback : générer localement si l'API échoue
+    genererMenuLocal();
+  } finally {
+    btn.classList.remove('loading');
+    btn.querySelector('.generate-icon').textContent = '🎲';
+  }
+}
+
+function genererMenuLocal() {
+  const NOMS = ['🍕 Pizza','🥗 Salade','🍝 Pâtes','🥩 Viande','🍰 Gâteau',
+                '🍲 Soupe','🍳 Omelette','🥘 Tajine','🍜 Ramen','🥐 Quiche'];
+  const nbPlats = Math.floor(Math.random() * 4) + 4;
+  const choix   = [...NOMS].sort(() => Math.random() - .5).slice(0, nbPlats);
+
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  const tbody = document.getElementById('plats-tbody');
+  tbody.innerHTML = '';
+  rowId = 0;
+
+  choix.forEach(nom => {
+    const prep    = Math.floor(Math.random() * 16) + 2;  // 2–17 min
+    const cuisson = Math.floor(Math.random() * 26) + 5;  // 5–30 min
+    ajouterLigne(nom, prep, cuisson);
+  });
+
+  document.getElementById('nb-commis').value = 1;
+  document.getElementById('nb-fours').value  = 1;
+  showToast(`Menu généré localement ! ${nbPlats} plats`, 'success');
 }
 
 // ── Table plats ───────────────────────────────────────────
