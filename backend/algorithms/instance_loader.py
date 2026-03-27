@@ -6,7 +6,12 @@ Permet de charger et utiliser les instances générées dans l'interface web
 
 import json
 import os
+import sys
 from typing import List, Dict, Optional
+
+# Permettre l'import de Plat quel que soit le répertoire d'exécution
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from models.plat import Plat
 
 
 class InstanceManager:
@@ -106,26 +111,27 @@ class InstanceManager:
     
     def convertir_instance_pour_algorithme(self, instance: Dict) -> tuple:
         """
-        Convertit une instance au format attendu par les algorithmes
-        
+        Convertit une instance au format attendu par les schedulers.
+
         Args:
             instance: Instance à convertir
-        
+
         Returns:
-            Tuple (tasks_dict, num_workers) pour les algorithmes
+            Tuple (plats, nb_commis, nb_fours) où plats est une List[Plat]
         """
-        tasks = {}
-        
-        for plat in instance["plats"]:
-            nom = plat["nom"]
-            # Pour l'instant, on additionne épluchage et cuisson
-            # Dans une version avancée, on gérera la contrainte de précédence
-            temps_total = plat["temps_prep"] + plat["temps_cuisson"]
-            tasks[nom] = temps_total
-        
-        num_workers = instance["nombre_commis"]
-        
-        return tasks, num_workers
+        plats = []
+        for i, p in enumerate(instance["plats"]):
+            plats.append(Plat(
+                id=i,
+                nom=p["nom"],
+                temps_prep=p["temps_prep"],
+                temps_cuisson=p["temps_cuisson"],
+            ))
+
+        nb_commis = instance.get("nombre_commis", 1)
+        nb_fours = instance.get("nombre_fours", 1)
+
+        return plats, nb_commis, nb_fours
     
     def convertir_instance_pour_affichage(self, instance: Dict) -> str:
         """
@@ -252,10 +258,10 @@ if __name__ == "__main__":
         print(f"   Description: {instance['description']}")
         
         # Convertir pour l'algorithme
-        tasks, workers = manager.convertir_instance_pour_algorithme(instance)
+        plats_obj, nb_commis, nb_fours = manager.convertir_instance_pour_algorithme(instance)
         print(f"\n   Format pour algorithme:")
-        print(f"   - Tâches: {tasks}")
-        print(f"   - Commis: {workers}")
+        print(f"   - Plats: {plats_obj}")
+        print(f"   - Commis: {nb_commis}, Fours: {nb_fours}")
         
         # Convertir pour l'affichage
         texte = manager.convertir_instance_pour_affichage(instance)
