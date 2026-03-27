@@ -354,9 +354,11 @@ def convertir_plat_pour_frontend(plat_backend, index):
     cuisson = round(plat_backend["temps_cuisson"] / 60)
 
     # Dressage : ~25% du temps de préparation, entre 2 et 10 secondes de jeu
+    # (uniquement pour le jeu index.html, pas pris en compte dans les algorithmes)
     dressage = max(2, min(10, round(prep * 0.25))) if prep > 0 else 3
 
-    temps_total = prep + cuisson + dressage
+    # Priorité et deadline basées sur prep+cuisson uniquement (cohérent avec les algos)
+    temps_total = prep + cuisson
 
     # Priorité basée sur le temps total
     if temps_total > 45:
