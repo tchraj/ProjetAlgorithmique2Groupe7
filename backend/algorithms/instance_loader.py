@@ -168,7 +168,7 @@ class InstanceManager:
         Returns:
             Nouvelle instance générée
         """
-        from instance_generator import InstanceGenerator
+        from algorithms.instance_generator import InstanceGenerator
         
         generator = InstanceGenerator()
         
