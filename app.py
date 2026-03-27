@@ -6,8 +6,10 @@ from algorithms.instance_loader import InstanceManager
 from schedulers.johnson_scheduler import JohnsonScheduler
 from schedulers.lpt_scheduler     import LPTScheduler
 from schedulers.neh_scheduler     import NEHScheduler
+from schedulers.spt_scheduler     import SPTScheduler
 from schedulers.fifo_scheduler    import FIFOScheduler
 from schedulers.brute_force_scheduler import BruteForceScheduler
+from schedulers.palmer_scheduler     import PalmerScheduler
 from models.plat                  import Plat
 import time as time_module
 import heapq
@@ -32,8 +34,10 @@ SCHEDULERS = {
     'johnson': JohnsonScheduler(),
     'neh':     NEHScheduler(),
     'lpt':     LPTScheduler(),
+    'spt':     SPTScheduler(),
     'fifo':    FIFOScheduler(),
     'brute':   BruteForceScheduler(),
+    'palmer':  PalmerScheduler(),
 }
 
 @app.route('/')
