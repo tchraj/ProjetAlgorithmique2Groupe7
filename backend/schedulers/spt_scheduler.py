@@ -48,5 +48,10 @@ class SPTScheduler(BaseScheduler):
             'schedule_commis': schedule_result['schedule_commis'],
             'schedule_fours': schedule_result['schedule_fours'],
             'nom_algorithme': self.get_name(),
-            'details': schedule_result['details']
+            'est_optimal': False,
+            'details': {
+                'nb_plats': len(plats_tries),
+                'nb_commis': nb_commis,
+                'nb_fours': nb_fours,
+            }
         }
