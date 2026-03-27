@@ -310,6 +310,60 @@
     .btn-remove:hover { color: var(--accent); background: rgba(255,107,107,.1); }
 
     /* ── Étape 2 : drag & drop ── */
+
+    /* Zones préparation + four empilées verticalement */
+    .parallel-zones {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .parallel-zone-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 8px;
+      padding: 8px 12px;
+      border-radius: 10px;
+    }
+    .parallel-zone-header.prep-header {
+      background: rgba(0, 184, 148, .12);
+      color: #00B894;
+      border: 2px solid rgba(0, 184, 148, .3);
+    }
+    .parallel-zone-header.four-header {
+      background: rgba(255, 107, 107, .1);
+      color: #e17055;
+      border: 2px solid rgba(255, 107, 107, .3);
+    }
+    .four-zone {
+      border-color: rgba(225, 112, 85, .5) !important;
+      background: rgba(225, 112, 85, .04) !important;
+    }
+    .four-zone.drag-over-four {
+      background: rgba(225, 112, 85, .12) !important;
+      border-color: var(--accent) !important;
+    }
+    .four-zone .order-zone-empty { color: #e17055; }
+    .parallel-sep {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      font-size: 22px;
+      color: var(--muted);
+      gap: 4px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
     .drag-area {
       min-height: 120px;
       background: rgba(253,203,110,.15);
@@ -867,13 +921,32 @@
     <div class="drag-area-label">🃏 Plats disponibles — glisse-les dans l'ordre ci-dessous</div>
     <div class="drag-area" id="drag-source"></div>
 
-    <div class="drag-area-label" style="margin-top:16px;">📋 Mon ordre de préparation</div>
-    <div class="order-zone" id="order-zone">
-      <div class="order-zone-inner" id="order-inner">
-        <div class="order-zone-empty" id="order-empty">
-          ← Glisse tes plats ici dans l'ordre que tu veux
+    <div class="parallel-zones" style="margin-top:16px;">
+
+      <!-- Zone Préparation -->
+      <div>
+        <div class="parallel-zone-header prep-header">🥕 Préparation</div>
+        <div class="order-zone" id="order-zone">
+          <div class="order-zone-inner" id="order-inner">
+            <div class="order-zone-empty" id="order-empty">
+              ← Glisse tes plats ici dans l'ordre
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Zone Four -->
+      <div>
+        <div class="parallel-zone-header four-header">🔥 Au four (en parallèle)</div>
+        <div class="order-zone four-zone" id="four-zone">
+          <div class="order-zone-inner" id="four-inner">
+            <div class="order-zone-empty" id="four-empty">
+              🔥 Glisse ici un plat en cuisson pendant la prépa
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <div class="btn-row">
@@ -1167,10 +1240,12 @@ function construireDragDrop(plats) {
     if (dragSrc && dragSrc.parentElement !== src) {
       // Retirer du slot et remettre dans source
       const slot = dragSrc.closest('.plat-slot');
+      const wasInFour = slot && document.getElementById('four-inner').contains(slot);
       if (slot) slot.remove();
       dragSrc.querySelector('.card-num').style.background = 'var(--accent)';
       src.appendChild(dragSrc);
       updateOrdre();
+      if (wasInFour) updateFourZone();
     }
   });
 }
@@ -1252,6 +1327,7 @@ function creerSlot(card, removeFromSrc = true) {
 
 // Drop sur la zone d'ordre (espace vide)
 document.addEventListener('DOMContentLoaded', () => {
+  // ── Zone Préparation ──
   const zone = document.getElementById('order-zone');
   zone.addEventListener('dragover', e => {
     e.preventDefault();
@@ -1276,6 +1352,60 @@ document.addEventListener('DOMContentLoaded', () => {
       inner.appendChild(slot);
       updateOrdre();
     }
+    // Si vient de la zone four → déplacer vers prépa
+    const fourInner = document.getElementById('four-inner');
+    if (fourInner.contains(dragSrc)) {
+      const oldSlot = dragSrc.closest('.plat-slot');
+      if (oldSlot) oldSlot.remove();
+      const slot = document.createElement('div');
+      slot.className = 'plat-slot';
+      dragSrc.querySelector('.card-num').style.background = 'var(--green)';
+      slot.appendChild(dragSrc);
+      inner.appendChild(slot);
+      updateOrdre();
+      updateFourZone();
+    }
+  });
+
+  // ── Zone Four ──
+  const fourZone = document.getElementById('four-zone');
+  fourZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    fourZone.classList.add('drag-over-four');
+  });
+  fourZone.addEventListener('dragleave', () => fourZone.classList.remove('drag-over-four'));
+  fourZone.addEventListener('drop', e => {
+    e.preventDefault();
+    fourZone.classList.remove('drag-over-four');
+    if (!dragSrc) return;
+
+    const fourInner = document.getElementById('four-inner');
+    const src = document.getElementById('drag-source');
+    const prepInner = document.getElementById('order-inner');
+
+    // Depuis la source
+    if (src.contains(dragSrc)) {
+      src.removeChild(dragSrc);
+      const slot = document.createElement('div');
+      slot.className = 'plat-slot';
+      dragSrc.querySelector('.card-num').style.background = '#e17055';
+      slot.appendChild(dragSrc);
+      fourInner.appendChild(slot);
+      updateOrdre();
+      updateFourZone();
+    }
+    // Depuis la zone prépa → déplacer vers four
+    else if (prepInner.contains(dragSrc)) {
+      const oldSlot = dragSrc.closest('.plat-slot');
+      if (oldSlot) oldSlot.remove();
+      const slot = document.createElement('div');
+      slot.className = 'plat-slot';
+      dragSrc.querySelector('.card-num').style.background = '#e17055';
+      slot.appendChild(dragSrc);
+      fourInner.appendChild(slot);
+      updateOrdre();
+      updateFourZone();
+    }
   });
 });
 
@@ -1294,25 +1424,48 @@ function updateOrdre() {
 
   empty.style.display = slots.length === 0 ? 'block' : 'none';
 
-  // Activer le bouton valider si tous les plats sont placés
-  const placed = inner.querySelectorAll('.plat-card').length;
-  document.getElementById('btn-valider').disabled = placed < totalPlats;
+  // Activer le bouton valider si tous les plats sont placés (prépa + four)
+  const placedPrep = inner.querySelectorAll('.plat-card').length;
+  const placedFour = document.getElementById('four-inner').querySelectorAll('.plat-card').length;
+  document.getElementById('btn-valider').disabled = (placedPrep + placedFour) < totalPlats;
+}
+
+function updateFourZone() {
+  const fourInner = document.getElementById('four-inner');
+  const fourEmpty = document.getElementById('four-empty');
+  const slots = fourInner.querySelectorAll('.plat-slot');
+
+  // Numéroter les positions dans le four (comme la zone préparation)
+  slots.forEach((slot, i) => {
+    const num = slot.querySelector('.card-num');
+    if (num) num.textContent = i + 1;
+  });
+
+  fourEmpty.style.display = slots.length === 0 ? 'block' : 'none';
 }
 
 function resetOrdre() {
+  // Remettre les cartes du four dans la source avant de reconstruire
+  const fourInner = document.getElementById('four-inner');
+  fourInner.querySelectorAll('.plat-slot').forEach(s => s.remove());
+  document.getElementById('four-empty').style.display = 'block';
+
   construireDragDrop(platsDonnees);
 }
 
 // ── Valider et appeler l'API ──────────────────────────────
 async function validerOrdre() {
-  const inner  = document.getElementById('order-inner');
-  const cards  = inner.querySelectorAll('.plat-card');
-  if (cards.length < platsDonnees.length) {
+  const inner     = document.getElementById('order-inner');
+  const fourInner = document.getElementById('four-inner');
+  const cardsPrep = inner.querySelectorAll('.plat-card');
+  const cardsFour = fourInner.querySelectorAll('.plat-card');
+  const totalPlaced = cardsPrep.length + cardsFour.length;
+  if (totalPlaced < platsDonnees.length) {
     showToast('Place tous tes plats dans l\'ordre !', 'error'); return;
   }
 
-  // Reconstruire l'ordre
-  const ordreHuman = [...cards].map(c => parseInt(c.dataset.idx));
+  // Reconstruire l'ordre : prépa d'abord, puis four
+  const ordreHuman = [...cardsPrep, ...cardsFour].map(c => parseInt(c.dataset.idx));
   const platsOrdres = ordreHuman.map(i => platsDonnees[i]);
 
   const nbCommis = parseInt(document.getElementById('nb-commis').value) || 1;
@@ -1541,3 +1694,14 @@ function showToast(msg, type='') {
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
