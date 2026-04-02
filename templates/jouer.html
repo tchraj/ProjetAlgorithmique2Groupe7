@@ -309,116 +309,176 @@
     }
     .btn-remove:hover { color: var(--accent); background: rgba(255,107,107,.1); }
 
-    /* ── Étape 2 : drag & drop ── */
-    .drag-area {
-      min-height: 120px;
-      background: rgba(253,203,110,.15);
+    /* ── Étape 2 : Planning Gantt interactif ── */
+    .planning-layout {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 700px) {
+      .planning-layout { grid-template-columns: 1fr; }
+    }
+
+    /* Deck de cartes gauche */
+    .deck-panel {
+      background: rgba(255,234,167,.25);
       border: 2px dashed var(--yellow);
       border-radius: var(--radius);
-      padding: 16px;
+      padding: 14px;
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-content: flex-start;
-      margin-bottom: 20px;
-      transition: background .2s;
+      flex-direction: column;
+      gap: 0;
     }
-    .drag-area.drag-over {
-      background: rgba(0,184,148,.1);
-      border-color: var(--green);
-    }
-    .drag-area-label {
+    .deck-title {
       font-family: 'Fredoka One', cursive;
       font-size: 12px;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: .06em;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
-
-    /* Carte plat draggable */
-    .plat-card {
+    .deck-card {
       background: white;
-      border: 2px solid var(--dark);
+      border: 3px solid var(--dark);
       border-radius: 12px;
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: grab;
+      padding: 10px 13px;
+      margin-bottom: 9px;
+      cursor: pointer;
       box-shadow: var(--shadow);
       transition: all .2s var(--bounce);
+      display: flex;
+      align-items: center;
+      gap: 10px;
       user-select: none;
-      min-width: 160px;
-      position: relative;
     }
-    .plat-card:hover  { transform: translateY(-3px) rotate(-1deg); box-shadow: var(--shadow-lg); }
-    .plat-card.dragging { opacity: .4; transform: scale(.95); cursor: grabbing; }
-    .plat-card.drag-over-card { border-color: var(--green); background: rgba(0,184,148,.08); }
+    .deck-card:last-child { margin-bottom: 0; }
+    .deck-card:hover:not(.used) {
+      transform: translateX(5px) scale(1.02);
+      border-color: var(--green);
+      background: rgba(0,184,148,.06);
+      box-shadow: var(--shadow-lg);
+    }
+    .deck-card.used {
+      opacity: .35;
+      cursor: not-allowed;
+      transform: none !important;
+      filter: grayscale(70%);
+      box-shadow: none;
+    }
+    .deck-card .dc-emoji { font-size: 22px; flex-shrink: 0; }
+    .deck-card .dc-info { flex: 1; }
+    .deck-card .dc-nom { font-family: 'Fredoka One', cursive; font-size: 14px; }
+    .deck-card .dc-times { font-size: 11px; color: var(--muted); font-weight: 700; }
+    .deck-card .dc-arrow {
+      font-size: 16px; color: var(--green); font-weight: 900;
+      opacity: 0; transition: opacity .15s;
+    }
+    .deck-card:hover:not(.used) .dc-arrow { opacity: 1; }
 
-    .plat-card .card-num {
-      width: 26px; height: 26px;
-      border-radius: 50%;
-      background: var(--accent);
-      color: white;
+    /* Panneau Gantt live */
+    .live-gantt-panel {
+      background: white;
+      border: 2px solid var(--dark);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .live-gantt-header {
+      background: linear-gradient(135deg, rgba(116,185,255,.2), rgba(162,155,254,.12));
+      border-bottom: 2px solid var(--dark);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-family: 'Fredoka One', cursive;
       font-size: 14px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      border: 2px solid var(--dark);
     }
-    .plat-card .card-info { flex: 1; }
-    .plat-card .card-nom { font-family: 'Fredoka One', cursive; font-size: 14px; }
-    .plat-card .card-times {
-      font-size: 11px;
+    .makespan-badge {
+      margin-left: auto;
+      background: var(--dark);
+      color: white;
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 13px;
+      transition: background .4s, transform .3s var(--bounce);
+    }
+    .makespan-badge.pop {
+      background: var(--green);
+      transform: scale(1.12);
+    }
+    .live-gantt-body {
+      padding: 16px 16px 10px;
+      min-height: 120px;
+    }
+    .live-gantt-empty {
+      text-align: center;
+      padding: 28px 10px;
       color: var(--muted);
-      font-weight: 700;
-    }
-    .plat-card .drag-handle {
-      color: #DFE6E9;
-      font-size: 18px;
-      cursor: grab;
+      font-family: 'Fredoka One', cursive;
+      font-size: 15px;
+      line-height: 1.8;
     }
 
-    /* Zone d'ordre */
-    .order-zone {
-      background: rgba(255,255,255,.8);
-      border: 3px solid var(--dark);
+    /* File de passage (queue bar) */
+    .queue-bar {
+      background: rgba(255,255,255,.85);
+      border: 2px solid var(--dark);
       border-radius: var(--radius);
-      padding: 16px;
-      min-height: 80px;
-      margin-bottom: 20px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      min-height: 54px;
     }
-    .order-zone-inner {
+    .queue-label {
+      font-family: 'Fredoka One', cursive;
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .queue-items {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 7px;
+      flex: 1;
       align-items: center;
     }
-    .order-zone-empty {
+    .queue-chip {
+      background: var(--green);
+      color: white;
+      border: 2px solid var(--dark);
+      border-radius: 20px;
+      padding: 5px 11px 5px 9px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      transition: all .15s;
+      animation: popChip .3s var(--bounce);
+    }
+    .queue-chip:hover { background: var(--accent); transform: scale(1.07); }
+    .queue-chip .chip-x { font-size: 11px; opacity: .7; }
+    .queue-empty-msg {
       font-family: 'Fredoka One', cursive;
       color: var(--muted);
-      font-size: 15px;
-      text-align: center;
-      padding: 20px;
-      width: 100%;
+      font-size: 14px;
     }
 
-    /* Numéro de position */
-    .pos-indicator {
-      font-family: 'Fredoka One', cursive;
-      font-size: 11px;
-      color: var(--muted);
-      text-align: center;
-      margin-top: 4px;
+    @keyframes popChip {
+      0%   { transform: scale(0) rotate(-8deg); opacity: 0; }
+      100% { transform: scale(1) rotate(0deg);  opacity: 1; }
     }
-    .plat-slot {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    @keyframes slideSegIn {
+      0%   { clip-path: inset(0 100% 0 0); opacity: 0; }
+      100% { clip-path: inset(0 0% 0 0);   opacity: 1; }
     }
-    .plat-slot .plat-card .card-num {
-      background: var(--green);
+    .gantt-seg.animate-in {
+      animation: slideSegIn .35s ease-out forwards;
     }
 
     /* ── Étape 3 : résultats ── */
@@ -786,7 +846,7 @@
     <span class="step-num">1</span> Créer mon menu
   </div>
   <div class="step-pill" id="pill-2">
-    <span class="step-num">2</span> Ordonner les plats
+    <span class="step-num">2</span> Construire le planning
   </div>
   <div class="step-pill" id="pill-3">
     <span class="step-num">3</span> Résultats
@@ -854,34 +914,53 @@
 
     <div class="btn-row">
       <button class="btn-primary" onclick="allerEtape2()">
-        Ordonner mes plats →
+        Construire mon planning →
       </button>
     </div>
   </div>
 
-  <!-- ── ÉTAPE 2 : Drag & Drop ── -->
+  <!-- ── ÉTAPE 2 : Planning Gantt interactif ── -->
   <div class="card" id="step-2">
-    <div class="card-title">🔀 Dans quel ordre cuisines-tu ?</div>
-    <div class="card-sub">Glisse les cartes pour définir l'ordre dans lequel les plats seront préparés. Essaie de trouver l'ordre le plus rapide !</div>
+    <div class="card-title">🗓️ Construis ton planning !</div>
+    <div class="card-sub">Clique sur les plats dans l'ordre où tu veux les cuisiner — le Gantt se construit en temps réel. Essaie de minimiser le makespan !</div>
 
-    <div class="drag-area-label">🃏 Plats disponibles — glisse-les dans l'ordre ci-dessous</div>
-    <div class="drag-area" id="drag-source"></div>
+    <div class="planning-layout">
+      <!-- Deck gauche -->
+      <div class="deck-panel">
+        <div class="deck-title">🃏 Plats à planifier</div>
+        <div id="deck-cards"></div>
+      </div>
 
-    <div class="drag-area-label" style="margin-top:16px;">📋 Mon ordre de préparation</div>
-    <div class="order-zone" id="order-zone">
-      <div class="order-zone-inner" id="order-inner">
-        <div class="order-zone-empty" id="order-empty">
-          ← Glisse tes plats ici dans l'ordre que tu veux
+      <!-- Gantt live droite -->
+      <div class="live-gantt-panel">
+        <div class="live-gantt-header">
+          📊 Ton planning en direct
+          <div class="makespan-badge" id="makespan-badge">— min</div>
         </div>
+        <div class="live-gantt-body" id="live-gantt-body">
+          <div class="live-gantt-empty" id="live-gantt-empty">
+            👈 Clique sur un plat pour l'ajouter !<br>
+            <span style="font-size:12px;font-weight:600;">Le Gantt se construit au fur et à mesure</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- File de passage -->
+    <div class="queue-bar">
+      <div class="queue-label">📋 File :</div>
+      <div class="queue-items" id="queue-items">
+        <div class="queue-empty-msg" id="queue-empty">Aucun plat sélectionné</div>
       </div>
     </div>
 
     <div class="btn-row">
       <button class="btn-secondary" onclick="allerEtape1()">← Retour</button>
       <button class="btn-green" id="btn-valider" onclick="validerOrdre()" disabled>
-        ✅ Valider mon ordre
+        ✅ Valider mon planning
       </button>
-      <button class="btn-secondary" onclick="resetOrdre()" style="margin-left:auto;">🔄 Tout remettre</button>
+      <button class="btn-secondary" id="btn-undo" onclick="undoLast()" disabled style="margin-left:auto;">↩️ Annuler</button>
+      <button class="btn-secondary" onclick="resetPlanning()">🔄 Recommencer</button>
     </div>
   </div>
 
@@ -995,11 +1074,14 @@ const PRESETS = {
 
 const EMOJIS = ['🍕','🍔','🥗','🍜','🥘','🍰','🥩','🍝','🍣','🥞'];
 let rowId = 0;
-let dragSrc = null; // carte en cours de drag
 let platsDonnees = []; // données de l'étape 1
+let _ganttEmpty  = null; // référence conservée même après innerHTML=''
 
 // ── Init ──────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => chargerPreset(1));
+document.addEventListener('DOMContentLoaded', () => {
+  _ganttEmpty = document.getElementById('live-gantt-empty');
+  chargerPreset(1);
+});
 
 // ── Navigation étapes ─────────────────────────────────────
 function setStep(n) {
@@ -1137,182 +1219,302 @@ function allerEtape2() {
   const plats = lirePlats();
   if (plats.length < 2) { showToast('Ajoute au moins 2 plats !', 'error'); return; }
   platsDonnees = plats;
-  construireDragDrop(plats);
+  construirePlanning(plats);
   setStep(2);
 }
 
-// ── Drag & Drop ───────────────────────────────────────────
-function construireDragDrop(plats) {
-  const src   = document.getElementById('drag-source');
-  const inner = document.getElementById('order-inner');
-  const empty = document.getElementById('order-empty');
+// ── Planning Gantt interactif ─────────────────────────────
+let ordreQueue = [];   // indices dans platsDonnees
 
-  src.innerHTML   = '';
-  inner.innerHTML = '';
-  inner.appendChild(empty);
-  empty.style.display = 'block';
-  document.getElementById('btn-valider').disabled = true;
+const PALETTE = ['#FDCB6E','#74B9FF','#A29BFE','#55EFC4','#FF7675','#FD79A8','#00CEC9','#E17055','#6C5CE7','#00B894'];
 
+function construirePlanning(plats) {
+  ordreQueue = [];
+  const deck = document.getElementById('deck-cards');
+  deck.innerHTML = '';
   plats.forEach((p, i) => {
-    const card = creerCarteDate(p, i, false);
-    src.appendChild(card);
+    const el = document.createElement('div');
+    el.className = 'deck-card';
+    el.dataset.idx = i;
+    el.innerHTML = `
+      <span class="dc-emoji">${EMOJIS[i % EMOJIS.length]}</span>
+      <div class="dc-info">
+        <div class="dc-nom">${p.nom}</div>
+        <div class="dc-times">🔪 ${p.prep}min &nbsp;🔥 ${p.cuisson}min</div>
+      </div>
+      <span class="dc-arrow">＋</span>
+    `;
+    el.addEventListener('click', () => ajouterPlatAQueue(i));
+    deck.appendChild(el);
   });
-
-  // Drop sur la zone source
-  src.addEventListener('dragover', e => { e.preventDefault(); src.classList.add('drag-over'); });
-  src.addEventListener('dragleave', () => src.classList.remove('drag-over'));
-  src.addEventListener('drop', e => {
-    e.preventDefault();
-    src.classList.remove('drag-over');
-    if (dragSrc && dragSrc.parentElement !== src) {
-      // Retirer du slot et remettre dans source
-      const slot = dragSrc.closest('.plat-slot');
-      if (slot) slot.remove();
-      dragSrc.querySelector('.card-num').style.background = 'var(--accent)';
-      src.appendChild(dragSrc);
-      updateOrdre();
-    }
-  });
+  renderQueue();
+  renderLiveGantt();
 }
 
-function creerCarteDate(plat, idx, inSlot) {
-  const card = document.createElement('div');
-  card.className  = 'plat-card';
-  card.draggable  = true;
-  card.dataset.idx = idx;
-  card.innerHTML = `
-    <div class="card-num">${inSlot ? '?' : EMOJIS[idx % EMOJIS.length]}</div>
-    <div class="card-info">
-      <div class="card-nom">${plat.nom}</div>
-      <div class="card-times">🔪 ${plat.prep}min &nbsp;🔥 ${plat.cuisson}min</div>
-    </div>
-    <div class="drag-handle">⠿</div>
-  `;
-
-  card.addEventListener('dragstart', e => {
-    dragSrc = card;
-    card.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
-  });
-  card.addEventListener('dragend', () => {
-    card.classList.remove('dragging');
-    dragSrc = null;
-  });
-
-  // Drop sur une autre carte (réordonner)
-  card.addEventListener('dragover', e => {
-    e.preventDefault();
-    if (dragSrc && dragSrc !== card && card.closest('#order-inner')) {
-      card.classList.add('drag-over-card');
-    }
-  });
-  card.addEventListener('dragleave', () => card.classList.remove('drag-over-card'));
-  card.addEventListener('drop', e => {
-    e.preventDefault();
-    card.classList.remove('drag-over-card');
-    if (!dragSrc || dragSrc === card) return;
-
-    const inner = document.getElementById('order-inner');
-    const destSlot = card.closest('.plat-slot');
-    const srcSlot  = dragSrc.closest('.plat-slot');
-
-    if (destSlot && srcSlot) {
-      // Réordonner deux slots
-      const slots = [...inner.querySelectorAll('.plat-slot')];
-      const iDest = slots.indexOf(destSlot);
-      const iSrc  = slots.indexOf(srcSlot);
-      if (iSrc < iDest) inner.insertBefore(srcSlot, destSlot.nextSibling);
-      else              inner.insertBefore(srcSlot, destSlot);
-    } else if (destSlot && !srcSlot) {
-      // Vient de la source → insérer avant la carte dest
-      const slot = creerSlot(dragSrc, true);
-      inner.insertBefore(slot, destSlot);
-      dragSrc.querySelector('.card-num').style.background = 'var(--green)';
-    }
-    updateOrdre();
-  });
-
-  return card;
+function ajouterPlatAQueue(idx) {
+  if (ordreQueue.includes(idx)) return; // déjà placé
+  ordreQueue.push(idx);
+  // marquer la carte deck comme utilisée
+  const card = document.querySelector(`.deck-card[data-idx="${idx}"]`);
+  if (card) card.classList.add('used');
+  renderQueue();
+  renderLiveGantt();
 }
 
-function creerSlot(card, removeFromSrc = true) {
-  if (removeFromSrc) {
-    card.parentElement?.remove?.() || card.remove?.();
-    // retire de la source si c'est une carte directe
-    const src = document.getElementById('drag-source');
-    if (src.contains(card)) src.removeChild(card);
+function undoLast() {
+  if (!ordreQueue.length) return;
+  const removed = ordreQueue.pop();
+  const card = document.querySelector(`.deck-card[data-idx="${removed}"]`);
+  if (card) card.classList.remove('used');
+  renderQueue();
+  renderLiveGantt();
+}
+
+function resetPlanning() {
+  construirePlanning(platsDonnees);
+}
+
+function renderQueue() {
+  const container = document.getElementById('queue-items');
+  const emptyMsg  = document.getElementById('queue-empty');
+  const btnUndo   = document.getElementById('btn-undo');
+  const btnVal    = document.getElementById('btn-valider');
+
+  // Garder uniquement les chips
+  [...container.querySelectorAll('.queue-chip')].forEach(c => c.remove());
+
+  if (ordreQueue.length === 0) {
+    emptyMsg.style.display = '';
+  } else {
+    emptyMsg.style.display = 'none';
+    ordreQueue.forEach((idx, pos) => {
+      const p = platsDonnees[idx];
+      const chip = document.createElement('div');
+      chip.className = 'queue-chip';
+      chip.style.background = PALETTE[idx % PALETTE.length];
+      chip.innerHTML = `<span>${pos+1}.</span><span>${EMOJIS[idx % EMOJIS.length]} ${p.nom}</span><span class="chip-x">✕</span>`;
+      chip.title = 'Cliquer pour retirer ce plat de la file';
+      chip.addEventListener('click', () => retirerDuQueue(idx));
+      container.appendChild(chip);
+    });
   }
 
-  const slot = document.createElement('div');
-  slot.className = 'plat-slot';
-  card.querySelector('.card-num').style.background = 'var(--green)';
-  slot.appendChild(card);
-  return slot;
+  btnUndo.disabled = ordreQueue.length === 0;
+  btnVal.disabled  = ordreQueue.length < platsDonnees.length;
 }
 
-// Drop sur la zone d'ordre (espace vide)
-document.addEventListener('DOMContentLoaded', () => {
-  const zone = document.getElementById('order-zone');
-  zone.addEventListener('dragover', e => {
-    e.preventDefault();
-    zone.style.background = 'rgba(0,184,148,.08)';
+function retirerDuQueue(idx) {
+  const pos = ordreQueue.indexOf(idx);
+  if (pos === -1) return;
+  // Retirer le plat et tous ceux placés après (pour maintenir la cohérence)
+  const removed = ordreQueue.splice(pos);
+  removed.forEach(i => {
+    const card = document.querySelector(`.deck-card[data-idx="${i}"]`);
+    if (card) card.classList.remove('used');
   });
-  zone.addEventListener('dragleave', () => zone.style.background = '');
-  zone.addEventListener('drop', e => {
-    e.preventDefault();
-    zone.style.background = '';
-    if (!dragSrc) return;
+  // Remettre uniquement ceux qui étaient avant
+  // (les cartes supprimées restent disponibles dans le deck)
+  renderQueue();
+  renderLiveGantt();
+}
 
-    const inner = document.getElementById('order-inner');
-    const src   = document.getElementById('drag-source');
+// ── Calcul du schedule côté client (aperçu) ───────────────
+// Calcule le planning par machine (comme le backend FIFO).
+// Chaque tâche porte sa couleur unique (par position dans la queue).
+function computePreviewSchedule(ordre, nbCommis, nbFours) {
+  const commisEnd   = new Array(nbCommis).fill(0);
+  const foursEnd    = new Array(nbFours).fill(0);
+  const schedCommis = Array.from({length: nbCommis}, () => []);
+  const schedFours  = Array.from({length: nbFours},  () => []);
 
-    // Si vient de la source
-    if (src.contains(dragSrc)) {
-      src.removeChild(dragSrc);
-      const slot = document.createElement('div');
-      slot.className = 'plat-slot';
-      dragSrc.querySelector('.card-num').style.background = 'var(--green)';
-      slot.appendChild(dragSrc);
-      inner.appendChild(slot);
-      updateOrdre();
+  ordre.forEach((plat, pos) => {
+    const prepSec = (plat.prep    || 0) * 60;
+    const cuisSec = (plat.cuisson || 0) * 60;
+    const color   = PALETTE[pos % PALETTE.length];
+
+    // Commis le moins chargé
+    const cIdx      = commisEnd.indexOf(Math.min(...commisEnd));
+    const prepStart = commisEnd[cIdx];
+    const prepEnd   = prepStart + prepSec;
+    commisEnd[cIdx] = prepEnd;
+    // Toujours ajouter à schedCommis (même si prep=0, on marque la présence)
+    schedCommis[cIdx].push({ plat, debut: prepStart, fin: prepEnd, color, pos });
+
+    // Four le moins chargé, dispo après la fin de prep
+    const fIdx      = foursEnd.indexOf(Math.min(...foursEnd));
+    const cuisStart = Math.max(foursEnd[fIdx], prepEnd);
+    const cuisEnd   = cuisStart + cuisSec;
+    foursEnd[fIdx]  = cuisSec > 0 ? cuisEnd : foursEnd[fIdx];
+    // Toujours ajouter à schedFours (même si cuisson=0)
+    schedFours[fIdx].push({ plat, debut: cuisStart, fin: cuisEnd, color, pos });
+  });
+
+  const makespan = Math.max(0, ...commisEnd, ...foursEnd);
+  return { schedCommis, schedFours, makespan };
+}
+
+// ── Rendu Gantt live — même layout que la page résultats ──
+function renderLiveGantt() {
+  const body  = document.getElementById('live-gantt-body');
+  const badge = document.getElementById('makespan-badge');
+  // Récupère l'élément empty depuis le DOM ou le cache module-level
+  const empty = document.getElementById('live-gantt-empty') || _ganttEmpty;
+
+  // Vider les lignes du Gantt (ruler + rows) sans toucher à `empty`
+  [...body.children].forEach(c => { if (c !== empty) c.remove(); });
+
+  if (ordreQueue.length === 0) {
+    if (!body.contains(empty)) body.appendChild(empty);
+    empty.style.display = '';
+    badge.textContent = '— min';
+    badge.classList.remove('pop');
+    return;
+  }
+
+  // Cacher le message vide
+  empty.style.display = 'none';
+
+  const nbCommis    = parseInt(document.getElementById('nb-commis').value) || 1;
+  const nbFours     = parseInt(document.getElementById('nb-fours').value)  || 1;
+  const platsOrdres = ordreQueue.map(i => platsDonnees[i]);
+
+  const { schedCommis, schedFours, makespan } = computePreviewSchedule(platsOrdres, nbCommis, nbFours);
+
+  const maxMin = Math.max(1, Math.ceil(makespan / 60));
+  const scale  = makespan > 0 ? 100 / makespan : 1;
+
+  // Badge makespan
+  badge.textContent = `${Math.round(makespan / 60)} min`;
+  badge.classList.add('pop');
+  setTimeout(() => badge.classList.remove('pop'), 500);
+
+  // ── Règle graduée ──────────────────────────────────────
+  body.appendChild(construireRuler(maxMin));
+
+  // ── Grille verticale ──────────────────────────────────
+  const nbTicks  = Math.min(maxMin, 20);
+  const niceStep = [1,2,5,10,15,20,30].find(s => s >= Math.ceil(maxMin / nbTicks)) || 1;
+
+  const makeGrid = () => {
+    const g = document.createElement('div');
+    g.className = 'gantt-grid-overlay';
+    for (let t = 0; t <= maxMin; t += niceStep) {
+      const line = document.createElement('div');
+      line.className = 'gantt-grid-line';
+      line.style.left = `${(t / maxMin * 100).toFixed(2)}%`;
+      g.appendChild(line);
     }
-  });
-});
+    return g;
+  };
 
-function updateOrdre() {
-  const inner = document.getElementById('order-inner');
-  const empty = document.getElementById('order-empty');
-  const slots = inner.querySelectorAll('.plat-slot');
-  const src   = document.getElementById('drag-source');
-  const totalPlats = platsDonnees.length;
-
-  // Numéroter les positions
-  slots.forEach((slot, i) => {
-    const num = slot.querySelector('.card-num');
-    if (num) num.textContent = i + 1;
+  // ── Ligne Commis (préparation) ─────────────────────────
+  schedCommis.forEach((row, i) => {
+    body.appendChild(creerLiveRow(`🔪 Commis ${i+1}`, row, scale, makeGrid(), false));
   });
 
-  empty.style.display = slots.length === 0 ? 'block' : 'none';
+  // ── Ligne Four (cuisson) ───────────────────────────────
+  schedFours.forEach((row, i) => {
+    body.appendChild(creerLiveRow(`🔥 Four ${i+1}`, row, scale, makeGrid(), true));
+  });
 
-  // Activer le bouton valider si tous les plats sont placés
-  const placed = inner.querySelectorAll('.plat-card').length;
-  document.getElementById('btn-valider').disabled = placed < totalPlats;
+  const unit = document.createElement('div');
+  unit.style.cssText = 'text-align:right;font-size:10px;font-weight:700;color:var(--muted);margin-top:4px;';
+  unit.textContent = '(minutes)';
+  body.appendChild(unit);
 }
 
-function resetOrdre() {
-  construireDragDrop(platsDonnees);
+function creerLiveRow(label, taches, scale, gridOverlay, isFour) {
+  const row = document.createElement('div');
+  row.className = 'gantt-row';
+
+  const lbl = document.createElement('div');
+  lbl.className = 'gantt-label';
+  lbl.style.fontSize = '11px';
+  lbl.textContent = label;
+
+  const track = document.createElement('div');
+  track.className = 'gantt-track';
+  track.appendChild(gridOverlay);
+
+  taches.forEach((t, segIdx) => {
+    const duree = t.fin - t.debut;
+    // Ne pas afficher les segments de durée 0
+    if (duree <= 0) return;
+
+    const left  = (t.debut * scale).toFixed(2);
+    const width = Math.max(1.2, (duree * scale)).toFixed(2);
+    const nom   = t.plat?.nom || '';
+    const emoji = EMOJIS[ordreQueue[t.pos] % EMOJIS.length];
+
+    const seg = document.createElement('div');
+    seg.className = 'gantt-seg animate-in';
+    seg.style.left        = `${left}%`;
+    seg.style.width       = `${width}%`;
+    seg.style.background  = t.color;
+    seg.style.borderColor = shadeColor(t.color, -40);
+    seg.style.color       = '#2d3436';
+    seg.style.fontWeight  = '800';
+    seg.style.animationDelay = `${segIdx * 0.06}s`;
+
+    const w = parseFloat(width);
+    const dureeMin = Math.round(duree / 60);
+    if (w > 12) {
+      seg.textContent = `${emoji} ${nom.length > 7 ? nom.slice(0,6)+'…' : nom}`;
+    } else if (w > 5) {
+      seg.textContent = emoji;
+    }
+    seg.dataset.tip = `${nom} (${isFour ? 'Cuisson' : 'Prépa'}) : ${Math.round(t.debut/60)}→${Math.round(t.fin/60)} min (${dureeMin} min)`;
+    track.appendChild(seg);
+  });
+
+  row.appendChild(lbl);
+  row.appendChild(track);
+  return row;
+}
+
+function construireRuler(maxMin) {
+  const row = document.createElement('div');
+  row.className = 'gantt-row';
+  const lbl = document.createElement('div');
+  lbl.className = 'gantt-label';
+  const ruler = document.createElement('div');
+  ruler.className = 'gantt-ruler';
+  const nbTicks  = Math.min(maxMin, 20);
+  const niceStep = [1,2,5,10,15,20,30].find(s => s >= Math.ceil(maxMin / nbTicks)) || 1;
+  for (let t = 0; t <= maxMin; t += niceStep) {
+    const pct  = maxMin > 0 ? (t / maxMin * 100).toFixed(2) : 0;
+    const tick = document.createElement('div');
+    tick.className = 'gantt-tick';
+    tick.style.left = `${pct}%`;
+    tick.innerHTML = `<span class="gantt-tick-label">${t}</span>`;
+    ruler.appendChild(tick);
+  }
+  const rl = document.createElement('div');
+  rl.className = 'gantt-ruler-line';
+  ruler.appendChild(rl);
+  row.appendChild(lbl);
+  row.appendChild(ruler);
+  return row;
+}
+
+// Assombrir une couleur hex de `amount` (négatif = plus sombre)
+function shadeColor(hex, amount) {
+  let r = parseInt(hex.slice(1,3),16);
+  let g = parseInt(hex.slice(3,5),16);
+  let b = parseInt(hex.slice(5,7),16);
+  r = Math.max(0, Math.min(255, r + amount));
+  g = Math.max(0, Math.min(255, g + amount));
+  b = Math.max(0, Math.min(255, b + amount));
+  return `rgb(${r},${g},${b})`;
 }
 
 // ── Valider et appeler l'API ──────────────────────────────
 async function validerOrdre() {
-  const inner  = document.getElementById('order-inner');
-  const cards  = inner.querySelectorAll('.plat-card');
-  if (cards.length < platsDonnees.length) {
-    showToast('Place tous tes plats dans l\'ordre !', 'error'); return;
+  if (ordreQueue.length < platsDonnees.length) {
+    showToast('Place tous tes plats dans le planning !', 'error'); return;
   }
 
-  // Reconstruire l'ordre
-  const ordreHuman = [...cards].map(c => parseInt(c.dataset.idx));
+  const ordreHuman  = ordreQueue;
   const platsOrdres = ordreHuman.map(i => platsDonnees[i]);
 
   const nbCommis = parseInt(document.getElementById('nb-commis').value) || 1;

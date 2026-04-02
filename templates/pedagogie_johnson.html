@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Algorithme de Johnson — Comprendre en cuisinant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent:    #FF6B6B;
+      --green:     #00B894;
+      --purple:    #A29BFE;
+      --yellow:    #FDCB6E;
+      --blue:      #74B9FF;
+      --dark:      #2D3436;
+      --muted:     #636E72;
+      --prep-color:#00B894;
+      --cook-color:#FF6B6B;
+      --idle-color:#DFE6E9;
+      --shadow:    4px 4px 0px rgba(0,0,0,0.18);
+      --shadow-lg: 6px 6px 0px rgba(0,0,0,0.2);
+      --bounce:    cubic-bezier(0.68,-0.55,0.265,1.55);
+      --r:         15px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-image: url('/static/assets/background.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: var(--dark);
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .header {
+      display: flex; align-items: center; gap: 16px;
+      padding: 14px 28px;
+      background: linear-gradient(135deg,rgba(116,185,255,.97),rgba(162,155,254,.97));
+      border-bottom: 3px solid var(--dark);
+      box-shadow: var(--shadow);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .back-btn {
+      font-family: 'Fredoka One', cursive; font-size: 15px;
+      color: var(--dark); text-decoration: none;
+      background: white; border: 2px solid var(--dark);
+      border-radius: 10px; padding: 6px 14px;
+      box-shadow: var(--shadow);
+      transition: transform .2s var(--bounce);
+    }
+    .back-btn:hover { transform: translateY(-2px); }
+    .header-title {
+      font-family: 'Fredoka One', cursive; font-size: 22px;
+      color: white; text-shadow: 2px 2px 0 rgba(0,0,0,.15);
+    }
+    .header-badge {
+      background: white; border: 2px solid var(--dark);
+      border-radius: 20px; padding: 4px 14px;
+      font-family: 'Fredoka One', cursive; font-size: 13px;
+      color: var(--purple); margin-left: auto;
+    }
+
+    /* ── Page layout ─────────────────────────────────── */
+    .page { max-width: 900px; margin: 0 auto; padding: 32px 24px 80px; display: flex; flex-direction: column; gap: 32px; }
+
+    /* ── Cards ───────────────────────────────────────── */
+    .card {
+      background: linear-gradient(180deg,rgba(255,255,255,.97),rgba(255,248,220,.97));
+      border: 3px solid var(--dark); border-radius: var(--r);
+      padding: 28px 32px; box-shadow: var(--shadow-lg);
+    }
+    .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .section-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--accent); color: white;
+      font-family: 'Fredoka One', cursive; font-size: 16px;
+      border: 2px solid var(--dark); box-shadow: var(--shadow);
+      flex-shrink: 0;
+    }
+    .card-title {
+      font-family: 'Fredoka One', cursive; font-size: 24px;
+      color: var(--accent); margin-bottom: 0;
+    }
+    .card-sub {
+      font-size: 15px; font-weight: 600; color: var(--muted);
+      margin-bottom: 20px; line-height: 1.6;
+    }
+
+    /* ── Section 1 : Introduction ────────────────────── */
+    .hook-box {
+      background: linear-gradient(135deg,rgba(116,185,255,.12),rgba(162,155,254,.12));
+      border: 2px solid var(--blue);
+      border-radius: 14px; padding: 28px;
+      text-align: center; margin-bottom: 24px;
+    }
+    .hook-emoji { font-size: 60px; display: block; margin-bottom: 14px; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    .hook-question {
+      font-family: 'Fredoka One', cursive; font-size: 20px;
+      color: var(--dark); line-height: 1.5;
+      max-width: 640px; margin: 0 auto 12px;
+    }
+    .hook-answer { font-size: 14px; font-weight: 700; color: var(--muted); }
+
+    .domain-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .domain-card {
+      display: flex; gap: 12px; align-items: flex-start;
+      background: white; border: 2px solid #DFE6E9;
+      border-radius: 12px; padding: 14px 16px;
+      box-shadow: 3px 3px 0 rgba(0,0,0,.07);
+      transition: transform .2s var(--bounce);
+    }
+    .domain-card:hover { transform: translateY(-3px); }
+    .domain-card.games   { border-color: var(--purple); }
+    .domain-card.factory { border-color: var(--yellow); }
+    .domain-card.cpu     { border-color: var(--green); }
+    .domain-card.logistic{ border-color: var(--blue); }
+    .domain-icon { font-size: 32px; flex-shrink: 0; }
+    .domain-card h3 { font-family: 'Fredoka One', cursive; font-size: 15px; margin-bottom: 4px; }
+    .domain-card p  { font-size: 13px; color: var(--muted); font-weight: 600; line-height: 1.5; }
+
+    /* ── Gantt charts ────────────────────────────────── */
+    .gantt-wrap { overflow-x: auto; border-radius: 12px; }
+    .gantt-container {
+      position: relative;
+      background: #f5f2ea;
+      border: 2px solid var(--dark);
+      border-radius: 12px;
+      padding: 16px 16px 32px;
+      min-width: 420px;
+    }
+    .gantt-rail-label {
+      font-family: 'Fredoka One', cursive; font-size: 13px;
+      color: var(--muted); margin-bottom: 6px; padding-left: 4px;
+    }
+    .gantt-rail {
+      position: relative; height: 52px;
+      background: rgba(255,255,255,.75);
+      border: 2px solid #DFE6E9; border-radius: 8px;
+      margin-bottom: 14px; overflow: visible;
+    }
+    .gantt-block {
+      position: absolute; height: 100%; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Fredoka One', cursive; font-size: 11px;
+      color: white; border: 2px solid rgba(0,0,0,.2);
+      box-shadow: 2px 2px 0 rgba(0,0,0,.12);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      padding: 0 6px; transition: opacity .3s;
+    }
+    .gantt-block.prep { background: var(--prep-color); }
+    .gantt-block.cook { background: var(--cook-color); }
+    .gantt-block.idle {
+      background: var(--idle-color); color: var(--muted);
+      border: 2px dashed #B2BEC3; font-size: 10px;
+    }
+    .gantt-axis {
+      position: relative; height: 20px; margin-top: 2px;
+    }
+    .gantt-tick {
+      position: absolute; display: flex; flex-direction: column; align-items: center;
+      font-size: 10px; color: var(--muted); font-weight: 800; transform: translateX(-50%);
+    }
+    .gantt-tick-line { width: 1px; height: 7px; background: #B2BEC3; margin-bottom: 1px; }
+    .gantt-makespan-tag {
+      text-align: right;
+      font-family: 'Fredoka One', cursive; font-size: 13px;
+      color: var(--green); margin-top: 6px;
+    }
+    .gantt-legend {
+      display: flex; gap: 16px; margin-top: 14px; flex-wrap: wrap;
+    }
+    .gantt-legend-item { display: flex; align-items: center; gap: 8px; font-family: 'Fredoka One', cursive; font-size: 13px; }
+    .gantt-legend-dot { width: 22px; height: 14px; border-radius: 4px; border: 2px solid rgba(0,0,0,.15); }
+
+    .constraint-note {
+      background: rgba(253,203,110,.18); border: 2px solid var(--yellow);
+      border-radius: 10px; padding: 12px 16px; margin-top: 16px;
+      font-size: 14px; font-weight: 700; color: var(--dark);
+      display: flex; gap: 10px; align-items: flex-start; line-height: 1.6;
+    }
+
+    /* ── Section 3 : Challenge ───────────────────────── */
+    .challenge-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 15px; }
+    .challenge-table th {
+      font-family: 'Fredoka One', cursive; font-size: 13px; color: var(--muted);
+      padding: 10px 16px; background: rgba(253,203,110,.28);
+      border-bottom: 2px solid var(--dark); text-align: left;
+    }
+    .challenge-table td { padding: 12px 16px; border-bottom: 1px dashed rgba(45,52,54,.1); font-weight: 700; }
+    .challenge-table tr:last-child td { border-bottom: none; }
+    .badge-prep { background: rgba(0,184,148,.15); color: var(--green); padding: 3px 12px; border-radius: 20px; border: 2px solid var(--green); font-family: 'Fredoka One', cursive; font-size: 13px; }
+    .badge-cook { background: rgba(255,107,107,.15); color: var(--accent); padding: 3px 12px; border-radius: 20px; border: 2px solid var(--accent); font-family: 'Fredoka One', cursive; font-size: 13px; }
+
+    .challenge-question {
+      background: rgba(116,185,255,.12); border: 2px solid var(--blue);
+      border-radius: 12px; padding: 16px;
+      font-family: 'Fredoka One', cursive; font-size: 18px;
+      color: var(--dark); text-align: center; margin-bottom: 20px;
+    }
+
+    .dish-picker { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .pick-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding: 12px 18px; background: white;
+      border: 2px solid var(--dark); border-radius: 12px;
+      cursor: pointer; font-family: 'Fredoka One', cursive;
+      box-shadow: var(--shadow); transition: all .2s var(--bounce);
+    }
+    .pick-btn:hover:not(:disabled) { transform: translateY(-3px); border-color: var(--purple); }
+    .pick-btn:disabled { opacity: .4; cursor: not-allowed; transform: none !important; }
+    .pick-btn .pick-emoji { font-size: 30px; }
+    .pick-btn .pick-name  { font-size: 14px; color: var(--dark); }
+    .pick-btn .pick-times { font-size: 11px; color: var(--muted); font-weight: 600; }
+
+    .order-selector { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+    .order-slot {
+      width: 72px; height: 72px;
+      border: 2px dashed #B2BEC3; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Fredoka One', cursive; font-size: 28px;
+      background: white; position: relative;
+      transition: all .2s var(--bounce);
+    }
+    .order-slot.filled { border-style: solid; border-color: var(--dark); box-shadow: var(--shadow); }
+    .order-slot .slot-num {
+      position: absolute; top: 4px; left: 6px;
+      font-size: 10px; color: var(--muted); font-family: 'Fredoka One', cursive;
+    }
+    .order-arrow { font-size: 22px; color: var(--muted); }
+
+    .btn-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+    .btn-primary {
+      background: linear-gradient(135deg,var(--green),#00a680);
+      color: white; border: 3px solid var(--dark);
+      border-radius: 12px; padding: 12px 28px;
+      font-family: 'Fredoka One', cursive; font-size: 17px;
+      cursor: pointer; box-shadow: var(--shadow-lg);
+      transition: all .2s var(--bounce);
+    }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); }
+    .btn-primary:disabled { background: #DFE6E9; color: var(--muted); cursor: not-allowed; transform: none; }
+    .btn-secondary {
+      background: white; color: var(--dark); border: 2px solid var(--dark);
+      border-radius: 12px; padding: 12px 24px;
+      font-family: 'Fredoka One', cursive; font-size: 15px;
+      cursor: pointer; box-shadow: var(--shadow);
+      transition: all .2s var(--bounce);
+    }
+    .btn-secondary:hover { transform: translateY(-2px); }
+
+    .result-box {
+      background: white; border: 3px solid var(--dark);
+      border-radius: 14px; padding: 20px 24px;
+      text-align: center; box-shadow: var(--shadow-lg);
+      margin-top: 4px; display: none;
+    }
+    .result-box.show { display: block; animation: popIn .4s var(--bounce); }
+    @keyframes popIn { from { transform: scale(.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .result-makespan { font-family: 'Fredoka One', cursive; font-size: 44px; transition: color .3s; }
+    .result-label { font-size: 14px; color: var(--muted); font-weight: 700; }
+    .result-verdict { margin-top: 10px; font-size: 14px; font-weight: 700; line-height: 1.5; }
+
+    /* ── Section 4 : Pourquoi difficile ─────────────── */
+    .perm-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .perm-card {
+      background: white; border: 2px solid #DFE6E9;
+      border-radius: 12px; padding: 18px 12px; text-align: center;
+      box-shadow: 3px 3px 0 rgba(0,0,0,.07);
+      transition: transform .2s var(--bounce);
+    }
+    .perm-card:hover { transform: translateY(-3px); }
+    .perm-card.danger   { border-color: var(--yellow); background: rgba(253,203,110,.06); }
+    .perm-card.critical { border-color: var(--accent); background: rgba(255,107,107,.06); }
+    .perm-card.dead     { border-color: #e17055; background: rgba(225,112,85,.08); }
+    .perm-n { font-family: 'Fredoka One', cursive; font-size: 38px; color: var(--accent); }
+    .perm-label { font-size: 12px; color: var(--muted); font-weight: 700; margin: 3px 0 8px; }
+    .perm-count { font-family: 'Courier New', monospace; font-size: 14px; font-weight: 800; word-break: break-all; line-height: 1.4; }
+    .perm-verdict { font-size: 11px; font-weight: 700; margin-top: 8px; padding: 3px 8px; border-radius: 20px; display: inline-block; }
+    .v-ok   { background: rgba(0,184,148,.15); color: var(--green); }
+    .v-warn { background: rgba(253,203,110,.3); color: #b7860b; }
+    .v-bad  { background: rgba(255,107,107,.12); color: var(--accent); }
+    .v-dead { background: rgba(45,52,54,.08); color: var(--muted); }
+
+    .conclusion-msg {
+      background: linear-gradient(135deg,rgba(255,107,107,.08),rgba(225,112,85,.08));
+      border: 3px solid var(--accent); border-radius: 14px;
+      padding: 20px 24px; margin-top: 20px; text-align: center;
+    }
+    .conclusion-msg p { font-family: 'Fredoka One', cursive; font-size: 17px; color: var(--dark); line-height: 1.6; }
+    .conclusion-msg .hl { color: var(--accent); }
+
+    /* ── Section 5 : Johnson ─────────────────────────── */
+    .rule-cards { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .rule-card {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: white; border: 2px solid #DFE6E9;
+      border-radius: 12px; padding: 14px 18px;
+      box-shadow: 3px 3px 0 rgba(0,0,0,.07);
+      transition: all .3s;
+    }
+    .rule-card.active { border-color: var(--accent); background: rgba(255,107,107,.04); box-shadow: var(--shadow); }
+    .rule-card.done   { border-color: var(--green);  background: rgba(0,184,148,.05); }
+    .rule-num {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Fredoka One', cursive; font-size: 15px;
+      background: #DFE6E9; color: var(--muted);
+      border: 2px solid var(--dark); flex-shrink: 0;
+      transition: background .3s, color .3s;
+    }
+    .rule-card.active .rule-num { background: var(--accent); color: white; }
+    .rule-card.done   .rule-num { background: var(--green);  color: white; }
+    .rule-card h4 { font-family: 'Fredoka One', cursive; font-size: 15px; margin-bottom: 3px; }
+    .rule-card p  { font-size: 13px; color: var(--muted); font-weight: 600; line-height: 1.5; }
+
+    .intuition-box {
+      background: rgba(162,155,254,.1); border: 2px solid var(--purple);
+      border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;
+    }
+    .intuition-box h4 { font-family: 'Fredoka One', cursive; font-size: 16px; color: var(--purple); margin-bottom: 8px; }
+    .intuition-box p  { font-size: 14px; font-weight: 600; color: var(--dark); line-height: 1.6; }
+
+    .section-divider {
+      border: none; border-top: 2px dashed #DFE6E9; margin: 24px 0;
+    }
+
+    .sim-title { font-family: 'Fredoka One', cursive; font-size: 20px; color: var(--purple); margin-bottom: 8px; }
+    .sim-sub   { font-size: 14px; color: var(--muted); font-weight: 600; margin-bottom: 16px; }
+
+    .step-explanation {
+      background: rgba(162,155,254,.08); border: 2px solid var(--purple);
+      border-radius: 12px; padding: 14px 18px;
+      font-size: 14px; font-weight: 600; color: var(--dark);
+      line-height: 1.65; margin-bottom: 16px; min-height: 70px;
+      transition: background .3s;
+    }
+
+    .btn-next {
+      background: linear-gradient(135deg,var(--purple),#7c7ce8);
+      color: white; border: 3px solid var(--dark);
+      border-radius: 12px; padding: 10px 24px;
+      font-family: 'Fredoka One', cursive; font-size: 16px;
+      cursor: pointer; box-shadow: var(--shadow-lg);
+      transition: all .2s var(--bounce);
+    }
+    .btn-next:hover:not(:disabled) { transform: translateY(-2px); }
+    .btn-next:disabled { background: #DFE6E9; color: var(--muted); cursor: not-allowed; transform: none; }
+    .btn-reset-sim {
+      background: white; color: var(--dark); border: 2px solid var(--dark);
+      border-radius: 12px; padding: 10px 20px;
+      font-family: 'Fredoka One', cursive; font-size: 14px;
+      cursor: pointer; box-shadow: var(--shadow); transition: all .2s;
+    }
+    .btn-reset-sim:hover { background: #f8f8f8; }
+
+    .johnson-table-wrap { overflow-x: auto; margin-bottom: 20px; }
+    .johnson-table {
+      width: 100%; border-collapse: collapse; font-size: 15px; min-width: 360px;
+    }
+    .johnson-table th {
+      font-family: 'Fredoka One', cursive; font-size: 13px;
+      background: rgba(253,203,110,.28); border-bottom: 2px solid var(--dark);
+      padding: 10px 16px; text-align: left; color: var(--muted); text-transform: uppercase;
+    }
+    .johnson-table td { padding: 12px 16px; border-bottom: 1px dashed rgba(45,52,54,.1); font-weight: 700; transition: all .3s; }
+    .johnson-table tr:last-child td { border-bottom: none; }
+    .johnson-table tr.j-placed td { opacity: .3; text-decoration: line-through; }
+    .johnson-table td.j-highlight {
+      background: rgba(255,107,107,.18); color: var(--accent);
+      border-radius: 6px; animation: cellPulse .5s ease;
+    }
+    @keyframes cellPulse { 0%,100%{box-shadow:none} 50%{box-shadow:inset 0 0 0 2px rgba(255,107,107,.5)} }
+
+    .order-display-wrap {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      background: white; border: 3px solid var(--dark);
+      border-radius: 14px; padding: 14px 18px;
+      margin-bottom: 20px; min-height: 64px;
+      box-shadow: var(--shadow);
+    }
+    .order-label { font-family: 'Fredoka One', cursive; font-size: 13px; color: var(--muted); }
+    .order-item {
+      background: var(--accent); color: white;
+      border: 2px solid var(--dark); border-radius: 10px;
+      padding: 6px 14px; font-family: 'Fredoka One', cursive; font-size: 15px;
+      box-shadow: var(--shadow); animation: slideIn .35s var(--bounce);
+    }
+    .order-item.end-pos { background: var(--purple); }
+    .order-item.mid-pos { background: var(--blue); }
+    .order-placeholder {
+      border: 2px dashed #B2BEC3; border-radius: 10px;
+      padding: 6px 16px; font-family: 'Fredoka One', cursive;
+      font-size: 14px; color: #B2BEC3;
+    }
+    @keyframes slideIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+
+    .final-result-card {
+      background: linear-gradient(135deg,rgba(0,184,148,.1),rgba(84,240,196,.08));
+      border: 3px solid var(--green); border-radius: 14px;
+      padding: 24px; text-align: center; margin-top: 24px;
+    }
+    .final-result-card h3 { font-family: 'Fredoka One', cursive; font-size: 22px; color: var(--green); margin-bottom: 12px; }
+    .final-order-display { font-family: 'Fredoka One', cursive; font-size: 26px; color: var(--dark); margin-bottom: 8px; }
+    .final-result-card p { font-size: 14px; font-weight: 600; color: var(--muted); line-height: 1.6; }
+
+    /* ── Footer navigation ───────────────────────────── */
+    .nav-footer {
+      background: linear-gradient(180deg,rgba(255,255,255,.97),rgba(255,248,220,.97));
+      border: 3px solid var(--dark); border-radius: var(--r);
+      padding: 24px; text-align: center; box-shadow: var(--shadow-lg);
+    }
+    .nav-footer h3 { font-family: 'Fredoka One', cursive; font-size: 20px; color: var(--dark); margin-bottom: 16px; }
+    .nav-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .nav-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 14px 20px; background: white; border: 2px solid var(--dark);
+      border-radius: 14px; text-decoration: none; color: var(--dark);
+      font-family: 'Fredoka One', cursive; font-size: 15px;
+      box-shadow: var(--shadow); transition: all .2s var(--bounce); min-width: 130px;
+    }
+    .nav-btn:hover { transform: translateY(-3px); border-color: var(--accent); }
+    .nav-btn .nav-emoji { font-size: 26px; }
+    .nav-btn .nav-desc  { font-size: 11px; color: var(--muted); font-weight: 600; }
+
+    /* ── Responsive ──────────────────────────────────── */
+    @media (max-width: 640px) {
+      .page { padding: 16px 12px 60px; gap: 20px; }
+      .card { padding: 18px 16px; }
+      .card-title { font-size: 19px; }
+      .domain-grid { grid-template-columns: 1fr; }
+      .perm-cards  { grid-template-columns: repeat(2,1fr); }
+      .hook-question { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <a href="/" class="back-btn">← Menu</a>
+  <span class="header-title">🍳 Algorithme de Johnson</span>
+  <span class="header-badge">Atelier lycée</span>
+</header>
+
+<div class="page">
+
+  <!-- ════════════════════════════════════════════
+       SECTION 1 — INTRODUCTION
+  ════════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-header">
+      <span class="section-badge">1</span>
+      <div class="card-title">Un problème du quotidien</div>
+    </div>
+    <div class="card-sub">Un problème d'organisation simple en apparence… qui cache une vraie complexité mathématique.</div>
+
+    <div class="hook-box">
+      <span class="hook-emoji">🍽️</span>
+      <div class="hook-question">
+        "Imaginez que vous devez préparer plusieurs plats dans un restaurant,
+        mais vous n'avez qu'<strong>un seul commis</strong> et qu'<strong>un seul four</strong>."
+      </div>
+      <div class="hook-answer">Dans quel ordre cuisiner pour finir le plus vite possible ?</div>
+    </div>
+
+    <p style="font-family:'Fredoka One',cursive;font-size:15px;color:var(--muted);margin-bottom:12px;">
+      Ce type de problème existe partout dans le monde réel :
+    </p>
+
+    <div class="domain-grid">
+      <div class="domain-card games">
+        <div class="domain-icon">🎮</div>
+        <div>
+          <h3>Jeux vidéo</h3>
+          <p>Les serveurs doivent traiter des millions de requêtes. L'ordre impacte directement la fluidité du jeu.</p>
+        </div>
+      </div>
+      <div class="domain-card factory">
+        <div class="domain-icon">🏭</div>
+        <div>
+          <h3>Usines</h3>
+          <p>Sur une chaîne de montage, les pièces doivent arriver dans le bon ordre pour éviter que les machines n'attendent.</p>
+        </div>
+      </div>
+      <div class="domain-card cpu">
+        <div class="domain-icon">💻</div>
+        <div>
+          <h3>Ordinateurs</h3>
+          <p>Votre CPU jongle avec des dizaines de tâches simultanées grâce à des algorithmes d'ordonnancement.</p>
+        </div>
+      </div>
+      <div class="domain-card logistic">
+        <div class="domain-icon">🚚</div>
+        <div>
+          <h3>Logistique</h3>
+          <p>Amazon prépare et expédie des millions de commandes par jour. L'ordre des livraisons change tout.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       SECTION 2 — VISUALISATION DU PROBLÈME
+  ════════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-header">
+      <span class="section-badge" style="background:var(--blue)">2</span>
+      <div class="card-title" style="color:var(--blue)">Visualiser le problème</div>
+    </div>
+    <div class="card-sub">
+      Chaque plat passe d'abord chez le <strong>commis</strong> (préparation), puis dans le <strong>four</strong> (cuisson).
+      Voici ce que ça donne avec l'ordre A → B → C :
+    </div>
+
+    <div class="gantt-wrap">
+      <div id="gantt-intro" class="gantt-container"></div>
+    </div>
+
+    <div class="gantt-legend">
+      <div class="gantt-legend-item">
+        <div class="gantt-legend-dot" style="background:var(--prep-color)"></div>
+        Commis — Préparation
+      </div>
+      <div class="gantt-legend-item">
+        <div class="gantt-legend-dot" style="background:var(--cook-color)"></div>
+        Four — Cuisson
+      </div>
+      <div class="gantt-legend-item">
+        <div class="gantt-legend-dot" style="background:var(--idle-color);border:2px dashed #B2BEC3"></div>
+        Four en attente (temps perdu)
+      </div>
+    </div>
+
+    <div class="constraint-note">
+      <span>⚠️</span>
+      <span>
+        <strong>La contrainte fondamentale :</strong> le four ne peut démarrer un plat
+        que lorsque le commis a terminé sa préparation.
+        Si le four finit avant que le commis prépare le suivant, il <em>attend</em> — c'est du temps perdu !
+        Tu peux le voir dans le diagramme ci-dessus.
+      </span>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       SECTION 3 — DÉFI ÉLÈVE
+  ════════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-header">
+      <span class="section-badge" style="background:var(--purple)">3</span>
+      <div class="card-title" style="color:var(--purple)">Ton défi !</div>
+    </div>
+    <div class="card-sub">
+      Voici 3 plats à cuisiner. Dans quel ordre faut-il les préparer pour finir le plus vite possible ?
+    </div>
+
+    <table class="challenge-table">
+      <thead>
+        <tr>
+          <th>Plat</th>
+          <th>🟢 Préparation (commis)</th>
+          <th>🔴 Cuisson (four)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>🥗 Plat A</strong></td>
+          <td><span class="badge-prep">3 min</span></td>
+          <td><span class="badge-cook">7 min</span></td>
+        </tr>
+        <tr>
+          <td><strong>🍕 Plat B</strong></td>
+          <td><span class="badge-prep">6 min</span></td>
+          <td><span class="badge-cook">2 min</span></td>
+        </tr>
+        <tr>
+          <td><strong>🥩 Plat C</strong></td>
+          <td><span class="badge-prep">4 min</span></td>
+          <td><span class="badge-cook">5 min</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="challenge-question">
+      🤔 Dans quel ordre prépares-tu les plats pour finir le plus vite possible ?
+    </div>
+
+    <p style="font-size:14px;font-weight:700;color:var(--muted);margin-bottom:12px;">
+      Clique sur les plats dans l'ordre que tu veux tester :
+    </p>
+
+    <div class="dish-picker" id="dish-picker">
+      <button class="pick-btn" data-dish="A" onclick="pickDish('A')">
+        <span class="pick-emoji">🥗</span>
+        <span class="pick-name">Plat A</span>
+        <span class="pick-times">Prép: 3 · Cuis: 7</span>
+      </button>
+      <button class="pick-btn" data-dish="B" onclick="pickDish('B')">
+        <span class="pick-emoji">🍕</span>
+        <span class="pick-name">Plat B</span>
+        <span class="pick-times">Prép: 6 · Cuis: 2</span>
+      </button>
+      <button class="pick-btn" data-dish="C" onclick="pickDish('C')">
+        <span class="pick-emoji">🥩</span>
+        <span class="pick-name">Plat C</span>
+        <span class="pick-times">Prép: 4 · Cuis: 5</span>
+      </button>
+    </div>
+
+    <div class="order-selector" id="order-selector">
+      <div class="order-slot" id="slot-1"><span class="slot-num">1er</span>?</div>
+      <div class="order-arrow">→</div>
+      <div class="order-slot" id="slot-2"><span class="slot-num">2e</span>?</div>
+      <div class="order-arrow">→</div>
+      <div class="order-slot" id="slot-3"><span class="slot-num">3e</span>?</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" id="btn-calc" onclick="calculateUserOrder()" disabled>📊 Calculer le makespan</button>
+      <button class="btn-secondary" onclick="resetChallenge()">🔄 Recommencer</button>
+    </div>
+
+    <div class="result-box" id="challenge-result">
+      <div class="result-makespan" id="result-makespan-val">--</div>
+      <div class="result-label">minutes pour tout finir (makespan)</div>
+      <div class="result-verdict" id="result-verdict"></div>
+    </div>
+
+    <div style="margin-top:16px;display:none;" id="challenge-gantt-wrap">
+      <p style="font-family:'Fredoka One',cursive;font-size:14px;color:var(--muted);margin-bottom:8px;">
+        Ton planning :
+      </p>
+      <div class="gantt-wrap">
+        <div id="gantt-challenge" class="gantt-container"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;display:none;" id="reveal-box">
+      <div class="constraint-note" style="border-color:var(--green);background:rgba(0,184,148,.08);">
+        <span>🏆</span>
+        <span>
+          <strong>L'ordre optimal est A → C → B</strong> avec un makespan de <strong>17 minutes</strong>.
+          C'est l'algorithme de Johnson qui trouve toujours cet ordre optimal — découvre comment dans la section 5 !
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       SECTION 4 — POURQUOI C'EST DIFFICILE
+  ════════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-header">
+      <span class="section-badge" style="background:var(--yellow);color:var(--dark)">4</span>
+      <div class="card-title" style="color:#b7860b">Pourquoi c'est difficile ?</div>
+    </div>
+    <div class="card-sub">
+      La force brute (tester tous les ordres) est impossible dès que le nombre de plats augmente.
+    </div>
+
+    <div class="perm-cards">
+      <div class="perm-card">
+        <div class="perm-n">3</div>
+        <div class="perm-label">plats</div>
+        <div class="perm-count">6</div>
+        <div class="perm-verdict v-ok">⚡ Instantané</div>
+      </div>
+      <div class="perm-card danger">
+        <div class="perm-n">5</div>
+        <div class="perm-label">plats</div>
+        <div class="perm-count">120</div>
+        <div class="perm-verdict v-warn">😐 Encore ok</div>
+      </div>
+      <div class="perm-card critical">
+        <div class="perm-n">10</div>
+        <div class="perm-label">plats</div>
+        <div class="perm-count">3 628 800</div>
+        <div class="perm-verdict v-bad">⚠️ Long…</div>
+      </div>
+      <div class="perm-card dead">
+        <div class="perm-n">20</div>
+        <div class="perm-label">plats</div>
+        <div class="perm-count" style="font-size:11px">2 432 902 008<br>176 640 000</div>
+        <div class="perm-verdict v-dead">💀 Impossible</div>
+      </div>
+    </div>
+
+    <div class="conclusion-msg">
+      <p>
+        Pour <span class="hl">n plats</span>, il y a <span class="hl">n! combinaisons</span> à tester.<br>
+        Avec 20 plats, même l'ordinateur le plus rapide du monde ne pourrait pas toutes les tester.<br>
+        <strong>Il nous faut un algorithme intelligent !</strong>
+      </p>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       SECTION 5 — ALGORITHME DE JOHNSON
+  ════════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-header">
+      <span class="section-badge" style="background:var(--green)">5</span>
+      <div class="card-title" style="color:var(--green)">L'algorithme de Johnson</div>
+    </div>
+    <div class="card-sub">
+      En 1954, Selmer M. Johnson a découvert une règle simple et <strong>toujours optimale</strong>
+      pour ce problème (1 commis + 1 four). Quatre étapes suffisent.
+    </div>
+
+    <!-- Les 4 règles -->
+    <div class="rule-cards" id="rule-cards">
+      <div class="rule-card" id="rule-1">
+        <div class="rule-num">1</div>
+        <div>
+          <h4>Trouver la plus petite durée</h4>
+          <p>Parmi <em>tous</em> les temps de préparation ET de cuisson, identifier la valeur minimale.</p>
+        </div>
+      </div>
+      <div class="rule-card" id="rule-2">
+        <div class="rule-num">2</div>
+        <div>
+          <h4>Si c'est une préparation → placer ce plat au début</h4>
+          <p>Le plat avec le temps de préparation le plus court passe en premier (il libère le four plus vite).</p>
+        </div>
+      </div>
+      <div class="rule-card" id="rule-3">
+        <div class="rule-num">3</div>
+        <div>
+          <h4>Si c'est une cuisson → placer ce plat à la fin</h4>
+          <p>Le plat avec le temps de cuisson le plus court passe en dernier (il n'immobilise pas longtemps le four).</p>
+        </div>
+      </div>
+      <div class="rule-card" id="rule-4">
+        <div class="rule-num">4</div>
+        <div>
+          <h4>Retirer ce plat et recommencer</h4>
+          <p>Enlever le plat placé, puis répéter les étapes 1–3 avec les plats restants.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Explication intuitive -->
+    <div class="intuition-box">
+      <h4>💡 L'intuition derrière l'algorithme</h4>
+      <p>
+        <strong>Préparer en premier les plats à courte préparation</strong> → le four démarre tôt et n'attend jamais.<br>
+        <strong>Terminer par les plats à courte cuisson</strong> → le four finit vite et ne bloque pas la fin du service.
+        En combinant ces deux principes, Johnson élimine les <em>temps d'attente inutiles</em> sur le four.
+      </p>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- Simulation pas-à-pas -->
+    <div class="sim-title">🔬 Simulation pas-à-pas</div>
+    <div class="sim-sub">Appliquons Johnson à nos 3 plats. Clique sur « Étape suivante » pour avancer.</div>
+
+    <div class="step-explanation" id="sim-explanation">
+      Clique sur <strong>« Étape suivante »</strong> pour démarrer la simulation de l'algorithme de Johnson.
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-next" id="btn-next" onclick="nextStep()">Étape suivante →</button>
+      <button class="btn-reset-sim" onclick="resetSim()">🔄 Recommencer</button>
+    </div>
+
+    <div class="johnson-table-wrap">
+      <table class="johnson-table" id="j-table">
+        <thead>
+          <tr>
+            <th>Plat</th>
+            <th>🟢 Préparation</th>
+            <th>🔴 Cuisson</th>
+            <th>Décision</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="j-row-A">
+            <td><strong>🥗 Plat A</strong></td>
+            <td id="j-A-prep">3 min</td>
+            <td id="j-A-cook">7 min</td>
+            <td id="j-A-status">—</td>
+          </tr>
+          <tr id="j-row-B">
+            <td><strong>🍕 Plat B</strong></td>
+            <td id="j-B-prep">6 min</td>
+            <td id="j-B-cook">2 min</td>
+            <td id="j-B-status">—</td>
+          </tr>
+          <tr id="j-row-C">
+            <td><strong>🥩 Plat C</strong></td>
+            <td id="j-C-prep">4 min</td>
+            <td id="j-C-cook">5 min</td>
+            <td id="j-C-status">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-family:'Fredoka One',cursive;font-size:14px;color:var(--muted);margin-bottom:8px;">
+      Ordre en cours de construction :
+    </p>
+    <div class="order-display-wrap" id="order-display">
+      <span class="order-label">Début →</span>
+      <span class="order-placeholder">? · ? · ?</span>
+      <span class="order-label">→ Fin</span>
+    </div>
+
+    <!-- Résultat final (caché jusqu'à la fin) -->
+    <div id="final-result" style="display:none;">
+      <div class="final-result-card">
+        <h3>🏆 Ordre optimal trouvé !</h3>
+        <div class="final-order-display">🥗 A → 🥩 C → 🍕 B</div>
+        <p>
+          Johnson garantit que cet ordre minimise le makespan.<br>
+          Complexité : <strong>O(n log n)</strong> — rapide même pour 1 000 plats !
+        </p>
+      </div>
+
+      <div style="margin-top:20px;">
+        <p style="font-family:'Fredoka One',cursive;font-size:15px;color:var(--muted);margin-bottom:10px;">
+          Timeline optimale — ordre A → C → B (makespan = 17 min) :
+        </p>
+        <div class="gantt-wrap">
+          <div id="gantt-johnson" class="gantt-container"></div>
+        </div>
+        <div class="gantt-legend" style="margin-top:12px;">
+          <div class="gantt-legend-item">
+            <div class="gantt-legend-dot" style="background:var(--prep-color)"></div>
+            Commis — Préparation
+          </div>
+          <div class="gantt-legend-item">
+            <div class="gantt-legend-dot" style="background:var(--cook-color)"></div>
+            Four — Cuisson
+          </div>
+        </div>
+        <div class="constraint-note" style="border-color:var(--green);background:rgba(0,184,148,.08);margin-top:12px;">
+          <span>✅</span>
+          <span>
+            Avec l'ordre de Johnson, le four <strong>ne attend jamais</strong> entre les plats.
+            Zéro temps mort = makespan minimal !
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       FOOTER NAVIGATION
+  ════════════════════════════════════════════ -->
+  <div class="nav-footer">
+    <h3>Envie d'aller plus loin ? 🚀</h3>
+    <div class="nav-btns">
+      <a href="/jouer" class="nav-btn">
+        <span class="nav-emoji">🧑‍🍳</span>
+        <span>Tester ma solution</span>
+        <span class="nav-desc">Ordonne les plats toi-même</span>
+      </a>
+      <a href="/compare" class="nav-btn">
+        <span class="nav-emoji">🔬</span>
+        <span>Comparer les algos</span>
+        <span class="nav-desc">Johnson vs Force brute…</span>
+      </a>
+      <a href="/complexite" class="nav-btn">
+        <span class="nav-emoji">🧠</span>
+        <span>Pourquoi c'est dur ?</span>
+        <span class="nav-desc">La complexité expliquée</span>
+      </a>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+/* ════════════════════════════════════════════════════════
+   DATA
+════════════════════════════════════════════════════════ */
+const DISHES = {
+  A: { emoji: '🥗', name: 'Plat A', prep: 3, cook: 7 },
+  B: { emoji: '🍕', name: 'Plat B', prep: 6, cook: 2 },
+  C: { emoji: '🥩', name: 'Plat C', prep: 4, cook: 5 },
+};
+const DISH_KEYS = ['A', 'B', 'C'];
+
+/* ════════════════════════════════════════════════════════
+   GANTT RENDERING
+════════════════════════════════════════════════════════ */
+function computeSchedule(order) {
+  let prepEnd = 0, cookEnd = 0;
+  const items = [];
+  for (const k of order) {
+    const d = DISHES[k];
+    const prepStart = prepEnd;
+    prepEnd = prepStart + d.prep;
+    const cookStart = Math.max(prepEnd, cookEnd);
+    cookEnd = cookStart + d.cook;
+    items.push({ key: k, prepStart, prepEnd, cookStart, cookEnd });
+  }
+  return { items, makespan: cookEnd };
+}
+
+function renderGantt(containerId, order, pxPerUnit) {
+  const px = pxPerUnit || 28;
+  const { items, makespan } = computeSchedule(order);
+  const totalW = (makespan + 1) * px;
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  let html = '';
+
+  /* Rail préparation */
+  html += `<div class="gantt-rail-label">👨‍🍳 Commis (Préparation)</div>`;
+  html += `<div class="gantt-rail" style="width:${totalW}px">`;
+  for (const it of items) {
+    const left  = it.prepStart * px;
+    const width = (it.prepEnd - it.prepStart) * px;
+    const d = DISHES[it.key];
+    html += `<div class="gantt-block prep"
+        style="left:${left}px;width:${width}px"
+        title="${d.name} : prép. ${it.prepStart}–${it.prepEnd} min">
+      ${d.emoji} ${it.key} (${d.prep} min)
+    </div>`;
+  }
+  html += `</div>`;
+
+  /* Rail cuisson (avec lacunes inter-plats) */
+  html += `<div class="gantt-rail-label" style="margin-top:8px">🔥 Four (Cuisson)</div>`;
+  html += `<div class="gantt-rail" style="width:${totalW}px">`;
+  let prevEnd = 0;
+  for (const it of items) {
+    /* Lacune entre plats (pas le vide initial avant le 1er plat) */
+    if (prevEnd > 0 && it.cookStart > prevEnd) {
+      const idleL = prevEnd * px;
+      const idleW = (it.cookStart - prevEnd) * px;
+      html += `<div class="gantt-block idle"
+          style="left:${idleL}px;width:${idleW}px"
+          title="Four en attente : ${prevEnd}–${it.cookStart} min">
+        ⏳
+      </div>`;
+    }
+    const left  = it.cookStart * px;
+    const width = (it.cookEnd - it.cookStart) * px;
+    const d = DISHES[it.key];
+    html += `<div class="gantt-block cook"
+        style="left:${left}px;width:${width}px"
+        title="${d.name} : cuis. ${it.cookStart}–${it.cookEnd} min">
+      ${d.emoji} ${it.key} (${d.cook} min)
+    </div>`;
+    prevEnd = it.cookEnd;
+  }
+  html += `</div>`;
+
+  /* Axe temporel */
+  html += `<div class="gantt-axis" style="width:${totalW}px;position:relative;height:22px;margin-top:4px;">`;
+  const step = makespan <= 12 ? 1 : makespan <= 20 ? 2 : 5;
+  for (let t = 0; t <= makespan; t += step) {
+    html += `<div class="gantt-tick" style="left:${t * px}px">
+      <div class="gantt-tick-line"></div>${t}
+    </div>`;
+  }
+  html += `</div>`;
+
+  html += `<div class="gantt-makespan-tag">Makespan = <strong>${makespan} min</strong></div>`;
+
+  container.innerHTML = html;
+}
+
+/* Gantt section 2 : ordre A→B→C (avec lacune visible) */
+renderGantt('gantt-intro', ['A', 'B', 'C'], 26);
+
+/* ════════════════════════════════════════════════════════
+   SECTION 3 — CHALLENGE ÉLÈVE
+════════════════════════════════════════════════════════ */
+const OPTIMAL = 17;
+let userOrder = [];
+
+function pickDish(key) {
+  if (userOrder.includes(key) || userOrder.length >= 3) return;
+  userOrder.push(key);
+  document.querySelector(`[data-dish="${key}"]`).disabled = true;
+  updateSlots();
+  if (userOrder.length === 3) document.getElementById('btn-calc').disabled = false;
+}
+
+function updateSlots() {
+  const labels = ['1er', '2e', '3e'];
+  for (let i = 0; i < 3; i++) {
+    const slot = document.getElementById(`slot-${i + 1}`);
+    if (userOrder[i]) {
+      const k = userOrder[i];
+      slot.innerHTML = `<span class="slot-num">${labels[i]}</span>${DISHES[k].emoji}`;
+      slot.classList.add('filled');
+    } else {
+      slot.innerHTML = `<span class="slot-num">${labels[i]}</span>?`;
+      slot.classList.remove('filled');
+    }
+  }
+}
+
+function calculateUserOrder() {
+  if (userOrder.length < 3) return;
+  const { makespan } = computeSchedule(userOrder);
+
+  const msEl  = document.getElementById('result-makespan-val');
+  const vdEl  = document.getElementById('result-verdict');
+  const resBox = document.getElementById('challenge-result');
+
+  msEl.textContent = makespan + ' min';
+
+  if (makespan === OPTIMAL) {
+    msEl.style.color = 'var(--green)';
+    vdEl.innerHTML = '🏆 <span style="color:var(--green)">Bravo ! C\'est l\'ordre optimal !</span>';
+  } else if (makespan <= OPTIMAL + 2) {
+    msEl.style.color = '#b7860b';
+    vdEl.innerHTML = `😊 Pas mal, mais on peut faire <strong>${makespan - OPTIMAL} min</strong> de mieux. L'optimal est <strong>17 min</strong>.`;
+  } else {
+    msEl.style.color = 'var(--accent)';
+    vdEl.innerHTML = `🤔 Il y a un meilleur ordre ! L'optimal est <strong>17 min</strong>. Essaie encore !`;
+  }
+
+  resBox.classList.add('show');
+  renderGantt('gantt-challenge', userOrder, 24);
+  document.getElementById('challenge-gantt-wrap').style.display = 'block';
+  document.getElementById('reveal-box').style.display = 'block';
+}
+
+function resetChallenge() {
+  userOrder = [];
+  document.getElementById('btn-calc').disabled = true;
+  document.getElementById('challenge-result').classList.remove('show');
+  document.getElementById('challenge-gantt-wrap').style.display = 'none';
+  document.getElementById('reveal-box').style.display = 'none';
+  updateSlots();
+  document.querySelectorAll('.pick-btn').forEach(b => b.disabled = false);
+}
+
+/* ════════════════════════════════════════════════════════
+   SECTION 5 — SIMULATION JOHNSON PAS-À-PAS
+   Données : A(prép 3, cuis 7)  B(prép 6, cuis 2)  C(prép 4, cuis 5)
+   Étape 1 : min global = Cuis B = 2 → B placé à la FIN
+   Étape 2 : restants A, C. min = Prép A = 3 → A placé au DÉBUT
+   Étape 3 : restant C → milieu automatique
+   Résultat : A → C → B  (makespan 17 min)
+════════════════════════════════════════════════════════ */
+const SIM_STEPS = [
+  {
+    explanation:
+      '🔍 <strong>Étape 1 — Trouver le minimum global.</strong><br>' +
+      'On examine toutes les valeurs : Prép A=3, Prép B=6, Prép C=4, Cuis A=7, <span style="color:var(--accent)">Cuis B=2</span>, Cuis C=5.<br>' +
+      'Le minimum est <strong>Cuis B = 2</strong>. C\'est une cuisson → on place <strong>Plat B à la fin</strong>.',
+    highlight: { dish: 'B', col: 'cook' },
+    place: { dish: 'B', pos: 'end' },
+    statusText: '→ Fin 🔴',
+    ruleHighlight: [1, 3],
+  },
+  {
+    explanation:
+      '🔍 <strong>Étape 2 — Recommencer sans le Plat B.</strong><br>' +
+      'Valeurs restantes : <span style="color:var(--green)">Prép A=3</span>, Prép C=4, Cuis A=7, Cuis C=5.<br>' +
+      'Le minimum est <strong>Prép A = 3</strong>. C\'est une préparation → on place <strong>Plat A au début</strong>.',
+    highlight: { dish: 'A', col: 'prep' },
+    place: { dish: 'A', pos: 'front' },
+    statusText: '→ Début 🟢',
+    ruleHighlight: [1, 2],
+  },
+  {
+    explanation:
+      '🔍 <strong>Étape 3 — Il ne reste que le Plat C.</strong><br>' +
+      'Il prend automatiquement la position du milieu.<br>' +
+      'L\'ordre final est : <strong>A → C → B</strong>.',
+    highlight: { dish: 'C', col: null },
+    place: { dish: 'C', pos: 'mid' },
+    statusText: '→ Milieu 🔵',
+    ruleHighlight: [4],
+  },
+  {
+    explanation:
+      '✅ <strong>Algorithme terminé !</strong><br>' +
+      'Ordre optimal trouvé : <strong>A → C → B</strong> avec un makespan de <strong>17 minutes</strong>.<br>' +
+      'L\'algorithme de Johnson est <em>garanti optimal</em> pour 1 commis + 1 four, en O(n log n).',
+    highlight: null,
+    place: null,
+    ruleHighlight: [1, 2, 3, 4],
+    done: true,
+  },
+];
+
+let simStep   = 0;
+let jFront    = [];   // placés au début (dans l'ordre)
+let jEnd      = [];   // placés à la fin (à inverser)
+let jMid      = [];   // placés au milieu
+let jPlaced   = new Set();
+
+function getSimOrder() {
+  const placed   = new Set([...jFront, ...jEnd, ...jMid]);
+  const unplaced = DISH_KEYS.filter(d => !placed.has(d));
+  return [...jFront, ...jMid, ...unplaced, ...[...jEnd].reverse()];
+}
+
+function renderOrderDisplay() {
+  const order = getSimOrder();
+  const display = document.getElementById('order-display');
+  let html = '<span class="order-label">Début →</span>';
+  order.forEach((d, i) => {
+    const confirmed = jPlaced.has(d);
+    let cls = 'order-placeholder';
+    let clsItem = '';
+    if (confirmed) {
+      cls = 'order-item';
+      if (jEnd.includes(d))   clsItem = 'end-pos';
+      else if (jMid.includes(d)) clsItem = 'mid-pos';
+    }
+    if (confirmed) {
+      html += `<span class="order-item ${clsItem}">${DISHES[d].emoji} ${d}</span>`;
+    } else {
+      html += `<span class="order-placeholder">${DISHES[d].emoji} ?</span>`;
+    }
+    if (i < order.length - 1) html += `<span style="color:var(--muted);font-size:18px;margin:0 2px">→</span>`;
+  });
+  html += '<span class="order-label">→ Fin</span>';
+  display.innerHTML = html;
+}
+
+function clearHighlights() {
+  DISH_KEYS.forEach(d => {
+    document.getElementById(`j-${d}-prep`).classList.remove('j-highlight');
+    document.getElementById(`j-${d}-cook`).classList.remove('j-highlight');
+  });
+}
+
+function applyRuleHighlights(indices) {
+  document.querySelectorAll('.rule-card').forEach(c => c.classList.remove('active'));
+  indices.forEach(i => document.getElementById(`rule-${i}`).classList.add('active'));
+}
+
+function nextStep() {
+  if (simStep >= SIM_STEPS.length) return;
+  const step = SIM_STEPS[simStep];
+
+  /* Explication */
+  document.getElementById('sim-explanation').innerHTML = step.explanation;
+
+  /* Highlight cellule */
+  clearHighlights();
+  if (step.highlight && step.highlight.col) {
+    document.getElementById(`j-${step.highlight.dish}-${step.highlight.col}`).classList.add('j-highlight');
+  }
+
+  /* Placement */
+  if (step.place) {
+    const { dish, pos } = step.place;
+    jPlaced.add(dish);
+    if (pos === 'front') jFront.push(dish);
+    else if (pos === 'end') jEnd.push(dish);
+    else jMid.push(dish);
+
+    document.getElementById(`j-row-${dish}`).classList.add('j-placed');
+    document.getElementById(`j-${dish}-status`).textContent = step.statusText;
+    renderOrderDisplay();
+  }
+
+  /* Highlight règles */
+  if (step.ruleHighlight) applyRuleHighlights(step.ruleHighlight);
+
+  /* Fin */
+  if (step.done) {
+    document.getElementById('btn-next').disabled = true;
+    document.getElementById('final-result').style.display = 'block';
+    renderGantt('gantt-johnson', ['A', 'C', 'B'], 28);
+    document.querySelectorAll('.rule-card').forEach(c => {
+      c.classList.remove('active');
+      c.classList.add('done');
+    });
+    clearHighlights();
+  }
+
+  simStep++;
+}
+
+function resetSim() {
+  simStep = 0;
+  jFront = []; jEnd = []; jMid = []; jPlaced = new Set();
+
+  document.getElementById('sim-explanation').innerHTML =
+    'Clique sur <strong>« Étape suivante »</strong> pour démarrer la simulation de l\'algorithme de Johnson.';
+  document.getElementById('btn-next').disabled = false;
+  document.getElementById('final-result').style.display = 'none';
+
+  DISH_KEYS.forEach(d => {
+    document.getElementById(`j-row-${d}`).classList.remove('j-placed');
+    document.getElementById(`j-${d}-status`).textContent = '—';
+    document.getElementById(`j-${d}-prep`).classList.remove('j-highlight');
+    document.getElementById(`j-${d}-cook`).classList.remove('j-highlight');
+  });
+
+  document.querySelectorAll('.rule-card').forEach(c => { c.classList.remove('active', 'done'); });
+  renderOrderDisplay();
+}
+
+/* Init */
+renderOrderDisplay();
+</script>
+
+</body>
+</html>

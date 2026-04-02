@@ -544,6 +544,11 @@ def api_jouer():
 def complexite():
     return render_template('complexite.html')
 
+@app.route('/pedagogie')
+def pedagogie():
+    """Page pédagogique — Algorithme de Johnson expliqué aux lycéens."""
+    return render_template('pedagogie_johnson.html')
+
 
 
 if __name__ == '__main__':

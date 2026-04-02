@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kit Activit&eacute; D&eacute;branch&eacute;e - Ordonnancement en Cuisine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; color: #333; }
@@ -255,10 +256,139 @@
             font-size: 0.8em; font-weight: bold;
         }
 
+        /* ===== PEDAGOGICAL SCREEN SECTIONS ===== */
+        :root {
+            --ped-accent:#FF6B6B; --ped-green:#00B894; --ped-purple:#A29BFE;
+            --ped-yellow:#FDCB6E; --ped-blue:#74B9FF; --ped-dark:#2D3436;
+            --ped-muted:#636E72; --ped-prep:#00B894; --ped-cook:#FF6B6B;
+            --ped-shadow:4px 4px 0px rgba(0,0,0,.18);
+            --ped-shadow-lg:6px 6px 0px rgba(0,0,0,.2);
+            --ped-bounce:cubic-bezier(0.68,-0.55,0.265,1.55);
+            --ped-r:14px;
+        }
+        .screen-pedagogy { display: block; background: #eef0f4; padding: 0 0 32px; border-bottom: 3px solid #333; margin-bottom: 20px; }
+        .ped-header { padding: 18px 28px; background: linear-gradient(135deg,rgba(116,185,255,.92),rgba(162,155,254,.92)); border-bottom: 3px solid var(--ped-dark); font-family: 'Fredoka One', cursive; font-size: 21px; color: white; text-shadow: 2px 2px 0 rgba(0,0,0,.15); }
+        .ped-page { max-width: 880px; margin: 0 auto; padding: 24px 24px 0; display: flex; flex-direction: column; gap: 24px; font-family: 'Nunito','Segoe UI',sans-serif; }
+        .ped-card { background: linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,248,220,.98)); border: 3px solid var(--ped-dark); border-radius: var(--ped-r); padding: 24px 28px; box-shadow: var(--ped-shadow-lg); }
+        .ped-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .ped-badge { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: var(--ped-accent); color: white; font-family: 'Fredoka One',cursive; font-size: 14px; border: 2px solid var(--ped-dark); box-shadow: var(--ped-shadow); flex-shrink: 0; }
+        .ped-title { font-family: 'Fredoka One',cursive; font-size: 21px; color: var(--ped-accent); }
+        .ped-sub { font-size: 13px; font-weight: 600; color: var(--ped-muted); margin-bottom: 16px; line-height: 1.6; }
+        /* Hook */
+        .ped-hook { background: linear-gradient(135deg,rgba(116,185,255,.12),rgba(162,155,254,.12)); border: 2px solid var(--ped-blue); border-radius: 12px; padding: 22px; text-align: center; margin-bottom: 18px; }
+        .ped-hook-emoji { font-size: 50px; display: block; margin-bottom: 12px; animation: pedFloat 3s ease-in-out infinite; }
+        @keyframes pedFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+        .ped-hook-q { font-family: 'Fredoka One',cursive; font-size: 17px; color: var(--ped-dark); line-height: 1.5; max-width: 580px; margin: 0 auto 10px; }
+        .ped-hook-a { font-size: 13px; font-weight: 700; color: var(--ped-muted); }
+        /* Domains */
+        .ped-domain-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+        .ped-domain { display: flex; gap: 10px; align-items: flex-start; background: white; border: 2px solid #DFE6E9; border-radius: 10px; padding: 11px 13px; box-shadow: 3px 3px 0 rgba(0,0,0,.06); transition: transform .2s var(--ped-bounce); }
+        .ped-domain:hover { transform: translateY(-2px); }
+        .ped-domain.g{border-color:var(--ped-purple)} .ped-domain.f{border-color:var(--ped-yellow)} .ped-domain.c{border-color:var(--ped-green)} .ped-domain.l{border-color:var(--ped-blue)}
+        .ped-domain-icon { font-size: 26px; flex-shrink: 0; }
+        .ped-domain h3 { font-family: 'Fredoka One',cursive; font-size: 13px; margin-bottom: 2px; }
+        .ped-domain p  { font-size: 12px; color: var(--ped-muted); font-weight: 600; line-height: 1.4; }
+        /* Gantt */
+        .ped-gantt-wrap { overflow-x: auto; border-radius: 10px; margin-bottom: 10px; }
+        .ped-gantt-container { position: relative; background: #f5f2ea; border: 2px solid var(--ped-dark); border-radius: 10px; padding: 13px 13px 26px; min-width: 380px; }
+        .ped-rail-label { font-family: 'Fredoka One',cursive; font-size: 12px; color: var(--ped-muted); margin-bottom: 4px; }
+        .ped-rail { position: relative; height: 44px; background: rgba(255,255,255,.75); border: 2px solid #DFE6E9; border-radius: 7px; margin-bottom: 10px; overflow: visible; }
+        .ped-block { position: absolute; height: 100%; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka One',cursive; font-size: 10px; color: white; border: 2px solid rgba(0,0,0,.2); box-shadow: 2px 2px 0 rgba(0,0,0,.1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+        .ped-block.prep{background:var(--ped-prep)} .ped-block.cook{background:var(--ped-cook)}
+        .ped-block.idle{background:#DFE6E9;color:var(--ped-muted);border:2px dashed #B2BEC3;font-size:10px}
+        .ped-axis { position: relative; height: 18px; margin-top: 2px; }
+        .ped-tick { position: absolute; display: flex; flex-direction: column; align-items: center; font-size: 9px; color: var(--ped-muted); font-weight: 800; transform: translateX(-50%); }
+        .ped-tick-line { width: 1px; height: 6px; background: #B2BEC3; margin-bottom: 1px; }
+        .ped-makespan-tag { text-align: right; font-family: 'Fredoka One',cursive; font-size: 12px; color: var(--ped-green); margin-top: 4px; }
+        .ped-legend { display: flex; gap: 12px; flex-wrap: wrap; }
+        .ped-legend-item { display: flex; align-items: center; gap: 6px; font-family: 'Fredoka One',cursive; font-size: 12px; }
+        .ped-legend-dot { width: 18px; height: 12px; border-radius: 3px; border: 2px solid rgba(0,0,0,.15); }
+        .ped-note { background: rgba(253,203,110,.18); border: 2px solid var(--ped-yellow); border-radius: 9px; padding: 10px 13px; margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--ped-dark); display: flex; gap: 8px; align-items: flex-start; line-height: 1.5; }
+        /* Challenge */
+        .ped-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 13px; }
+        .ped-table th { font-family: 'Fredoka One',cursive; font-size: 12px; color: var(--ped-muted); padding: 8px 13px; background: rgba(253,203,110,.28); border-bottom: 2px solid var(--ped-dark); text-align: left; }
+        .ped-table td { padding: 10px 13px; border-bottom: 1px dashed rgba(45,52,54,.1); font-weight: 700; }
+        .ped-table tr:last-child td { border-bottom: none; }
+        .b-prep { background: rgba(0,184,148,.15); color: var(--ped-green); padding: 2px 9px; border-radius: 20px; border: 2px solid var(--ped-green); font-family: 'Fredoka One',cursive; font-size: 12px; }
+        .b-cook { background: rgba(255,107,107,.15); color: var(--ped-accent); padding: 2px 9px; border-radius: 20px; border: 2px solid var(--ped-accent); font-family: 'Fredoka One',cursive; font-size: 12px; }
+        .ped-question { background: rgba(116,185,255,.12); border: 2px solid var(--ped-blue); border-radius: 10px; padding: 13px; font-family: 'Fredoka One',cursive; font-size: 15px; color: var(--ped-dark); text-align: center; margin-bottom: 14px; }
+        .ped-picker { display: flex; gap: 9px; flex-wrap: wrap; margin-bottom: 14px; }
+        .ped-pick-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 9px 13px; background: white; border: 2px solid var(--ped-dark); border-radius: 10px; cursor: pointer; font-family: 'Fredoka One',cursive; box-shadow: var(--ped-shadow); transition: all .2s var(--ped-bounce); }
+        .ped-pick-btn:hover:not(:disabled){transform:translateY(-2px);border-color:var(--ped-purple)} .ped-pick-btn:disabled{opacity:.4;cursor:not-allowed}
+        .ped-pick-btn .pe{font-size:24px} .ped-pick-btn .pn{font-size:12px} .ped-pick-btn .pt{font-size:10px;color:var(--ped-muted)}
+        .ped-slots { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
+        .ped-slot { width: 60px; height: 60px; border: 2px dashed #B2BEC3; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka One',cursive; font-size: 22px; background: white; position: relative; transition: all .2s var(--ped-bounce); }
+        .ped-slot.filled{border-style:solid;border-color:var(--ped-dark);box-shadow:var(--ped-shadow)}
+        .ped-slot .sn { position: absolute; top: 3px; left: 4px; font-size: 9px; color: var(--ped-muted); font-family: 'Fredoka One',cursive; }
+        .ped-arrow { font-size: 16px; color: var(--ped-muted); }
+        .ped-btn-row { display: flex; gap: 9px; flex-wrap: wrap; margin-bottom: 12px; }
+        .ped-btn-primary { background: linear-gradient(135deg,var(--ped-green),#00a680); color: white; border: 3px solid var(--ped-dark); border-radius: 10px; padding: 9px 20px; font-family: 'Fredoka One',cursive; font-size: 14px; cursor: pointer; box-shadow: var(--ped-shadow-lg); transition: all .2s var(--ped-bounce); }
+        .ped-btn-primary:hover:not(:disabled){transform:translateY(-2px)} .ped-btn-primary:disabled{background:#DFE6E9;color:var(--ped-muted);cursor:not-allowed;transform:none}
+        .ped-btn-sec { background: white; color: var(--ped-dark); border: 2px solid var(--ped-dark); border-radius: 10px; padding: 9px 16px; font-family: 'Fredoka One',cursive; font-size: 13px; cursor: pointer; box-shadow: var(--ped-shadow); transition: all .2s; }
+        .ped-btn-sec:hover{background:#f8f8f8}
+        .ped-result { background: white; border: 3px solid var(--ped-dark); border-radius: 12px; padding: 16px; text-align: center; box-shadow: var(--ped-shadow-lg); margin-top: 4px; display: none; }
+        .ped-result.show{display:block;animation:pedPop .4s var(--ped-bounce)} @keyframes pedPop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+        .ped-ms-val{font-family:'Fredoka One',cursive;font-size:36px} .ped-ms-lbl{font-size:12px;color:var(--ped-muted);font-weight:700}
+        .ped-verdict{margin-top:8px;font-size:13px;font-weight:700;line-height:1.5}
+        /* Permutations */
+        .ped-perm-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+        .ped-perm-card { background: white; border: 2px solid #DFE6E9; border-radius: 10px; padding: 14px 10px; text-align: center; box-shadow: 3px 3px 0 rgba(0,0,0,.06); transition: transform .2s var(--ped-bounce); }
+        .ped-perm-card:hover{transform:translateY(-2px)}
+        .ped-perm-card.danger{border-color:var(--ped-yellow);background:rgba(253,203,110,.06)}
+        .ped-perm-card.critical{border-color:var(--ped-accent);background:rgba(255,107,107,.06)}
+        .ped-perm-card.dead{border-color:#e17055;background:rgba(225,112,85,.08)}
+        .ped-perm-n{font-family:'Fredoka One',cursive;font-size:30px;color:var(--ped-accent)}
+        .ped-perm-lbl{font-size:11px;color:var(--ped-muted);font-weight:700;margin:2px 0 6px}
+        .ped-perm-count{font-family:'Courier New',monospace;font-size:12px;font-weight:800;word-break:break-all;line-height:1.4}
+        .ped-perm-v{font-size:10px;font-weight:700;margin-top:6px;padding:2px 6px;border-radius:20px;display:inline-block}
+        .pv-ok{background:rgba(0,184,148,.15);color:var(--ped-green)} .pv-warn{background:rgba(253,203,110,.3);color:#b7860b}
+        .pv-bad{background:rgba(255,107,107,.12);color:var(--ped-accent)} .pv-dead{background:rgba(45,52,54,.08);color:var(--ped-muted)}
+        .ped-concl{background:linear-gradient(135deg,rgba(255,107,107,.08),rgba(225,112,85,.08));border:3px solid var(--ped-accent);border-radius:12px;padding:16px 20px;margin-top:16px;text-align:center}
+        .ped-concl p{font-family:'Fredoka One',cursive;font-size:14px;color:var(--ped-dark);line-height:1.6}
+        .ped-concl .hl{color:var(--ped-accent)}
+        /* Johnson rules */
+        .ped-rules{display:flex;flex-direction:column;gap:9px;margin-bottom:18px}
+        .ped-rule{display:flex;gap:11px;align-items:flex-start;background:white;border:2px solid #DFE6E9;border-radius:10px;padding:11px 15px;box-shadow:3px 3px 0 rgba(0,0,0,.06);transition:all .3s}
+        .ped-rule.active{border-color:var(--ped-accent);background:rgba(255,107,107,.04)}
+        .ped-rule.done{border-color:var(--ped-green);background:rgba(0,184,148,.05)}
+        .ped-rule-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:13px;background:#DFE6E9;color:var(--ped-muted);border:2px solid var(--ped-dark);flex-shrink:0;transition:background .3s,color .3s}
+        .ped-rule.active .ped-rule-num{background:var(--ped-accent);color:white} .ped-rule.done .ped-rule-num{background:var(--ped-green);color:white}
+        .ped-rule h4{font-family:'Fredoka One',cursive;font-size:13px;margin-bottom:2px} .ped-rule p{font-size:12px;color:var(--ped-muted);font-weight:600;line-height:1.4}
+        .ped-intuition{background:rgba(162,155,254,.1);border:2px solid var(--ped-purple);border-radius:10px;padding:13px 16px;margin-bottom:18px}
+        .ped-intuition h4{font-family:'Fredoka One',cursive;font-size:14px;color:var(--ped-purple);margin-bottom:5px}
+        .ped-intuition p{font-size:12px;font-weight:600;color:var(--ped-dark);line-height:1.6}
+        .ped-divider{border:none;border-top:2px dashed #DFE6E9;margin:18px 0}
+        .ped-sim-title{font-family:'Fredoka One',cursive;font-size:17px;color:var(--ped-purple);margin-bottom:5px}
+        .ped-sim-sub{font-size:13px;color:var(--ped-muted);font-weight:600;margin-bottom:12px}
+        .ped-explanation{background:rgba(162,155,254,.08);border:2px solid var(--ped-purple);border-radius:10px;padding:11px 15px;font-size:13px;font-weight:600;color:var(--ped-dark);line-height:1.6;margin-bottom:12px;min-height:55px}
+        .ped-btn-next{background:linear-gradient(135deg,var(--ped-purple),#7c7ce8);color:white;border:3px solid var(--ped-dark);border-radius:10px;padding:8px 18px;font-family:'Fredoka One',cursive;font-size:14px;cursor:pointer;box-shadow:var(--ped-shadow-lg);transition:all .2s var(--ped-bounce)}
+        .ped-btn-next:hover:not(:disabled){transform:translateY(-2px)} .ped-btn-next:disabled{background:#DFE6E9;color:var(--ped-muted);cursor:not-allowed;transform:none}
+        .ped-btn-reset{background:white;color:var(--ped-dark);border:2px solid var(--ped-dark);border-radius:10px;padding:8px 14px;font-family:'Fredoka One',cursive;font-size:13px;cursor:pointer;box-shadow:var(--ped-shadow);transition:all .2s}
+        .ped-btn-reset:hover{background:#f8f8f8}
+        .ped-j-table-wrap{overflow-x:auto;margin-bottom:14px}
+        .ped-j-table{width:100%;border-collapse:collapse;font-size:13px;min-width:300px}
+        .ped-j-table th{font-family:'Fredoka One',cursive;font-size:11px;background:rgba(253,203,110,.28);border-bottom:2px solid var(--ped-dark);padding:8px 13px;text-align:left;color:var(--ped-muted);text-transform:uppercase}
+        .ped-j-table td{padding:9px 13px;border-bottom:1px dashed rgba(45,52,54,.1);font-weight:700;font-size:13px;transition:all .3s}
+        .ped-j-table tr:last-child td{border-bottom:none} .ped-j-table tr.j-placed td{opacity:.3;text-decoration:line-through}
+        .ped-j-table td.j-hl{background:rgba(255,107,107,.18);color:var(--ped-accent);border-radius:5px;animation:pedCellPulse .5s ease}
+        @keyframes pedCellPulse{0%,100%{box-shadow:none}50%{box-shadow:inset 0 0 0 2px rgba(255,107,107,.5)}}
+        .ped-order-wrap{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:white;border:3px solid var(--ped-dark);border-radius:11px;padding:11px 15px;margin-bottom:14px;min-height:52px;box-shadow:var(--ped-shadow)}
+        .ped-order-lbl{font-family:'Fredoka One',cursive;font-size:11px;color:var(--ped-muted)}
+        .ped-order-item{background:var(--ped-accent);color:white;border:2px solid var(--ped-dark);border-radius:7px;padding:4px 11px;font-family:'Fredoka One',cursive;font-size:13px;box-shadow:var(--ped-shadow);animation:pedSlide .3s var(--ped-bounce)}
+        .ped-order-item.end-p{background:var(--ped-purple)} .ped-order-item.mid-p{background:var(--ped-blue)}
+        @keyframes pedSlide{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+        .ped-order-ph{border:2px dashed #B2BEC3;border-radius:7px;padding:4px 11px;font-family:'Fredoka One',cursive;font-size:12px;color:#B2BEC3}
+        .ped-final-card{background:linear-gradient(135deg,rgba(0,184,148,.1),rgba(84,240,196,.08));border:3px solid var(--ped-green);border-radius:12px;padding:18px;text-align:center;margin-top:18px}
+        .ped-final-card h3{font-family:'Fredoka One',cursive;font-size:19px;color:var(--ped-green);margin-bottom:9px}
+        .ped-final-order{font-family:'Fredoka One',cursive;font-size:20px;color:var(--ped-dark);margin-bottom:5px}
+        .ped-final-card p{font-size:12px;font-weight:600;color:var(--ped-muted);line-height:1.5}
+        @media(max-width:600px){.ped-domain-grid{grid-template-columns:1fr}.ped-perm-grid{grid-template-columns:repeat(2,1fr)}.ped-page{padding:12px 10px 0}.ped-card{padding:14px 12px}}
+
         /* ===== PRINT STYLES ===== */
         @media print {
             body { background: #fff; }
             .screen-ui { display: none !important; }
+            .screen-pedagogy { display: none !important; }
             .print-page { box-shadow: none; margin: 0; padding: 12mm; }
         }
 
@@ -281,6 +411,208 @@
         <button class="print-all-btn" onclick="window.print()">Imprimer le kit complet</button>
     </div>
 </div>
+
+<!-- ===== SCREEN PEDAGOGY ===== -->
+<div class="screen-pedagogy">
+  <div class="ped-header">🍳 L'Algorithme de Johnson — Atelier Lycée</div>
+  <div class="ped-page">
+
+    <!-- Section 1 : Introduction -->
+    <div class="ped-card">
+      <div class="ped-card-header">
+        <span class="ped-badge">1</span>
+        <div class="ped-title">Un problème du quotidien</div>
+      </div>
+      <div class="ped-sub">Un problème d'organisation simple en apparence… qui cache une vraie complexité mathématique.</div>
+      <div class="ped-hook">
+        <span class="ped-hook-emoji">🍽️</span>
+        <div class="ped-hook-q">"Imaginez que vous devez préparer plusieurs plats dans un restaurant,
+          mais vous n'avez qu'<strong>un seul commis</strong> et qu'<strong>un seul four</strong>."</div>
+        <div class="ped-hook-a">Dans quel ordre cuisiner pour finir le plus vite possible ?</div>
+      </div>
+      <p style="font-family:'Fredoka One',cursive;font-size:13px;color:var(--ped-muted);margin-bottom:9px;">Ce type de problème existe partout dans le monde réel :</p>
+      <div class="ped-domain-grid">
+        <div class="ped-domain g"><div class="ped-domain-icon">🎮</div><div><h3>Jeux vidéo</h3><p>Les serveurs traitent des millions de requêtes — l'ordre impacte la fluidité.</p></div></div>
+        <div class="ped-domain f"><div class="ped-domain-icon">🏭</div><div><h3>Usines</h3><p>Sur une chaîne de montage, les pièces doivent arriver dans le bon ordre.</p></div></div>
+        <div class="ped-domain c"><div class="ped-domain-icon">💻</div><div><h3>Ordinateurs</h3><p>Le CPU jongle avec des dizaines de tâches grâce aux algorithmes d'ordonnancement.</p></div></div>
+        <div class="ped-domain l"><div class="ped-domain-icon">🚚</div><div><h3>Logistique</h3><p>Amazon prépare des millions de commandes — l'ordre des livraisons change tout.</p></div></div>
+      </div>
+    </div>
+
+    <!-- Section 2 : Visualisation -->
+    <div class="ped-card">
+      <div class="ped-card-header">
+        <span class="ped-badge" style="background:var(--ped-blue)">2</span>
+        <div class="ped-title" style="color:var(--ped-blue)">Visualiser le problème</div>
+      </div>
+      <div class="ped-sub">Chaque plat passe d'abord chez le <strong>commis</strong> (préparation) puis dans le <strong>four</strong> (cuisson). Voici l'ordre A → B → C :</div>
+      <div class="ped-gantt-wrap"><div id="ped-gantt-intro" class="ped-gantt-container"></div></div>
+      <div class="ped-legend" style="margin-top:10px;">
+        <div class="ped-legend-item"><div class="ped-legend-dot" style="background:var(--ped-prep)"></div>Commis — Prépa.</div>
+        <div class="ped-legend-item"><div class="ped-legend-dot" style="background:var(--ped-cook)"></div>Four — Cuisson</div>
+        <div class="ped-legend-item"><div class="ped-legend-dot" style="background:#DFE6E9;border:2px dashed #B2BEC3"></div>Four en attente</div>
+      </div>
+      <div class="ped-note">
+        <span>⚠️</span>
+        <span><strong>Contrainte clé :</strong> le four ne peut démarrer un plat que lorsque le commis a terminé sa prépa. S'il finit avant, il <em>attend</em> — temps perdu visible dans le diagramme !</span>
+      </div>
+    </div>
+
+    <!-- Section 3 : Défi -->
+    <div class="ped-card">
+      <div class="ped-card-header">
+        <span class="ped-badge" style="background:var(--ped-purple)">3</span>
+        <div class="ped-title" style="color:var(--ped-purple)">Ton défi !</div>
+      </div>
+      <div class="ped-sub">Dans quel ordre faut-il préparer ces 3 plats pour finir le plus vite possible ?</div>
+      <table class="ped-table">
+        <thead><tr><th>Plat</th><th>🟢 Préparation (commis)</th><th>🔴 Cuisson (four)</th></tr></thead>
+        <tbody>
+          <tr><td><strong>🥗 Plat A</strong></td><td><span class="b-prep">3 min</span></td><td><span class="b-cook">7 min</span></td></tr>
+          <tr><td><strong>🍕 Plat B</strong></td><td><span class="b-prep">6 min</span></td><td><span class="b-cook">2 min</span></td></tr>
+          <tr><td><strong>🥩 Plat C</strong></td><td><span class="b-prep">4 min</span></td><td><span class="b-cook">5 min</span></td></tr>
+        </tbody>
+      </table>
+      <div class="ped-question">🤔 Dans quel ordre prépares-tu les plats pour finir le plus vite possible ?</div>
+      <p style="font-size:12px;font-weight:700;color:var(--ped-muted);margin-bottom:10px;">Clique sur les plats dans l'ordre que tu veux tester :</p>
+      <div class="ped-picker" id="ped-picker">
+        <button class="ped-pick-btn" data-pdish="A" onclick="pedPickDish('A')"><span class="pe">🥗</span><span class="pn">Plat A</span><span class="pt">Prép:3 · Cuis:7</span></button>
+        <button class="ped-pick-btn" data-pdish="B" onclick="pedPickDish('B')"><span class="pe">🍕</span><span class="pn">Plat B</span><span class="pt">Prép:6 · Cuis:2</span></button>
+        <button class="ped-pick-btn" data-pdish="C" onclick="pedPickDish('C')"><span class="pe">🥩</span><span class="pn">Plat C</span><span class="pt">Prép:4 · Cuis:5</span></button>
+      </div>
+      <div class="ped-slots" id="ped-slots">
+        <div class="ped-slot" id="pslot-1"><span class="sn">1er</span>?</div>
+        <div class="ped-arrow">→</div>
+        <div class="ped-slot" id="pslot-2"><span class="sn">2e</span>?</div>
+        <div class="ped-arrow">→</div>
+        <div class="ped-slot" id="pslot-3"><span class="sn">3e</span>?</div>
+      </div>
+      <div class="ped-btn-row">
+        <button class="ped-btn-primary" id="ped-btn-calc" onclick="pedCalculate()" disabled>📊 Calculer le makespan</button>
+        <button class="ped-btn-sec" onclick="pedReset()">🔄 Recommencer</button>
+      </div>
+      <div class="ped-result" id="ped-result">
+        <div class="ped-ms-val" id="ped-ms-val">--</div>
+        <div class="ped-ms-lbl">minutes pour tout finir (makespan)</div>
+        <div class="ped-verdict" id="ped-verdict"></div>
+      </div>
+      <div style="margin-top:12px;display:none;" id="ped-gantt-challenge-wrap">
+        <p style="font-family:'Fredoka One',cursive;font-size:12px;color:var(--ped-muted);margin-bottom:6px;">Ton planning :</p>
+        <div class="ped-gantt-wrap"><div id="ped-gantt-challenge" class="ped-gantt-container"></div></div>
+      </div>
+      <div style="margin-top:12px;display:none;" id="ped-reveal">
+        <div class="ped-note" style="border-color:var(--ped-green);background:rgba(0,184,148,.08);">
+          <span>🏆</span><span><strong>L'ordre optimal est A → C → B</strong> avec un makespan de <strong>17 minutes</strong>. Découvre comment l'algorithme de Johnson le trouve en section 5 !</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4 : Pourquoi difficile -->
+    <div class="ped-card">
+      <div class="ped-card-header">
+        <span class="ped-badge" style="background:var(--ped-yellow);color:var(--ped-dark)">4</span>
+        <div class="ped-title" style="color:#b7860b">Pourquoi c'est difficile ?</div>
+      </div>
+      <div class="ped-sub">La force brute (tester tous les ordres) devient impossible très vite :</div>
+      <div class="ped-perm-grid">
+        <div class="ped-perm-card"><div class="ped-perm-n">3</div><div class="ped-perm-lbl">plats</div><div class="ped-perm-count">6</div><div class="ped-perm-v pv-ok">⚡ Instantané</div></div>
+        <div class="ped-perm-card danger"><div class="ped-perm-n">5</div><div class="ped-perm-lbl">plats</div><div class="ped-perm-count">120</div><div class="ped-perm-v pv-warn">😐 Encore ok</div></div>
+        <div class="ped-perm-card critical"><div class="ped-perm-n">10</div><div class="ped-perm-lbl">plats</div><div class="ped-perm-count">3 628 800</div><div class="ped-perm-v pv-bad">⚠️ Long…</div></div>
+        <div class="ped-perm-card dead"><div class="ped-perm-n">20</div><div class="ped-perm-lbl">plats</div><div class="ped-perm-count" style="font-size:10px">2 432 902 008<br>176 640 000</div><div class="ped-perm-v pv-dead">💀 Impossible</div></div>
+      </div>
+      <div class="ped-concl"><p>Pour <span class="hl">n plats</span>, il y a <span class="hl">n! combinaisons</span>. Avec 20 plats, même le plus puissant des ordinateurs ne peut pas toutes les tester. <strong>Il faut un algorithme intelligent !</strong></p></div>
+    </div>
+
+    <!-- Section 5 : Algorithme de Johnson -->
+    <div class="ped-card">
+      <div class="ped-card-header">
+        <span class="ped-badge" style="background:var(--ped-green)">5</span>
+        <div class="ped-title" style="color:var(--ped-green)">L'algorithme de Johnson</div>
+      </div>
+      <div class="ped-sub">En 1954, Selmer M. Johnson a découvert une règle simple et <strong>toujours optimale</strong> pour 1 commis + 1 four.</div>
+      <div class="ped-rules" id="ped-rules">
+        <div class="ped-rule" id="ped-rule-1"><div class="ped-rule-num">1</div><div><h4>Trouver la plus petite durée</h4><p>Parmi tous les temps de prépa ET de cuisson, identifier la valeur minimale.</p></div></div>
+        <div class="ped-rule" id="ped-rule-2"><div class="ped-rule-num">2</div><div><h4>Si c'est une préparation → placer au début</h4><p>Le plat avec le plus court temps de prépa passe en premier.</p></div></div>
+        <div class="ped-rule" id="ped-rule-3"><div class="ped-rule-num">3</div><div><h4>Si c'est une cuisson → placer à la fin</h4><p>Le plat avec le plus court temps de cuisson passe en dernier.</p></div></div>
+        <div class="ped-rule" id="ped-rule-4"><div class="ped-rule-num">4</div><div><h4>Retirer ce plat et recommencer</h4><p>Enlever le plat placé et répéter jusqu'à ce que tous soient ordonnés.</p></div></div>
+      </div>
+      <div class="ped-intuition">
+        <h4>💡 L'intuition</h4>
+        <p><strong>Préparer en premier les plats à courte prépa</strong> → le four démarre tôt et n'attend jamais.<br>
+        <strong>Terminer par les plats à courte cuisson</strong> → le four finit vite, zéro temps mort à la fin.</p>
+      </div>
+
+      <!-- Image : exemple de timeline Johnson -->
+      <div style="margin-bottom:18px;">
+        <p style="font-family:'Fredoka One',cursive;font-size:13px;color:var(--ped-muted);margin-bottom:8px;">
+          📊 Exemple de résultat de l'algorithme de Johnson :
+        </p>
+        <div style="overflow-x:auto;border-radius:12px;border:3px solid var(--ped-dark);box-shadow:var(--ped-shadow-lg);">
+          <img src="/static/assets/image.png" alt="Timeline Johnson's Algorithm — exemple avec plusieurs plats"
+               style="display:block;width:100%;min-width:400px;border-radius:9px;">
+        </div>
+        <p style="font-size:11px;color:var(--ped-muted);font-weight:700;margin-top:6px;text-align:center;">
+          Ressource 1 (Commis — vert) et Ressource 2 (Four — rouge) : l'algorithme de Johnson minimise les temps d'attente.
+        </p>
+      </div>
+
+      <hr class="ped-divider">
+      <div class="ped-sim-title">🔬 Simulation pas-à-pas</div>
+      <div class="ped-sim-sub">Appliquons Johnson à nos 3 plats. Clique sur « Étape suivante ».</div>
+      <div class="ped-explanation" id="ped-sim-expl">Clique sur <strong>« Étape suivante »</strong> pour démarrer la simulation de l'algorithme de Johnson.</div>
+      <div class="ped-btn-row">
+        <button class="ped-btn-next" id="ped-btn-next" onclick="pedNextStep()">Étape suivante →</button>
+        <button class="ped-btn-reset" onclick="pedResetSim()">🔄 Recommencer</button>
+      </div>
+      <div class="ped-j-table-wrap">
+        <table class="ped-j-table">
+          <thead><tr><th>Plat</th><th>🟢 Préparation</th><th>🔴 Cuisson</th><th>Décision</th></tr></thead>
+          <tbody>
+            <tr id="pj-row-A"><td><strong>🥗 Plat A</strong></td><td id="pj-A-prep">3 min</td><td id="pj-A-cook">7 min</td><td id="pj-A-st">—</td></tr>
+            <tr id="pj-row-B"><td><strong>🍕 Plat B</strong></td><td id="pj-B-prep">6 min</td><td id="pj-B-cook">2 min</td><td id="pj-B-st">—</td></tr>
+            <tr id="pj-row-C"><td><strong>🥩 Plat C</strong></td><td id="pj-C-prep">4 min</td><td id="pj-C-cook">5 min</td><td id="pj-C-st">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-family:'Fredoka One',cursive;font-size:12px;color:var(--ped-muted);margin-bottom:6px;">Ordre en construction :</p>
+      <div class="ped-order-wrap" id="ped-order-wrap">
+        <span class="ped-order-lbl">Début →</span>
+        <span class="ped-order-ph">? · ? · ?</span>
+        <span class="ped-order-lbl">→ Fin</span>
+      </div>
+      <div id="ped-final" style="display:none;">
+        <div class="ped-final-card">
+          <h3>🏆 Ordre optimal trouvé !</h3>
+          <div class="ped-final-order">🥗 A → 🥩 C → 🍕 B</div>
+          <p>Johnson garantit le makespan minimal — O(n log n), rapide même pour 1 000 plats !</p>
+        </div>
+        <p style="font-family:'Fredoka One',cursive;font-size:13px;color:var(--ped-muted);margin:14px 0 7px">Timeline optimale — A → C → B :</p>
+        <div class="ped-gantt-wrap"><div id="ped-gantt-johnson" class="ped-gantt-container"></div></div>
+        <div class="ped-note" style="border-color:var(--ped-green);background:rgba(0,184,148,.08);margin-top:10px;">
+          <span>✅</span><span>Avec l'ordre de Johnson, le four <strong>ne attend jamais</strong> entre les plats. Zéro temps mort = makespan minimal !</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Séparateur vers le kit imprimable -->
+    <div style="background:white;border:3px solid var(--ped-dark);border-radius:var(--ped-r);padding:18px 22px;box-shadow:var(--ped-shadow-lg);">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center;">
+        <div style="text-align:center;">
+          <p style="font-family:'Fredoka One',cursive;font-size:17px;color:var(--ped-dark);margin-bottom:6px;">📄 Kit d'activité débranchée ci-dessous</p>
+          <p style="font-size:12px;font-weight:600;color:var(--ped-muted);">Sélectionne une instance et imprime (Ctrl+P) pour obtenir le matériel physique de l'atelier.</p>
+        </div>
+        <div>
+          <img src="/static/assets/img.png" alt="Activité débranchée en classe — étudiants travaillant sur l'algorithme de Johnson"
+               style="width:100%;border-radius:10px;border:2px solid var(--ped-dark);box-shadow:var(--ped-shadow);display:block;">
+          <p style="font-size:10px;color:var(--ped-muted);font-weight:700;margin-top:5px;text-align:center;">
+            Exemple de l'activité débranchée en classe
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /ped-page -->
+</div><!-- /screen-pedagogy -->
 
 <!-- ===== PAGE 1 : REGLES DU JEU ===== -->
 <div class="print-page" id="page-rules">
@@ -437,6 +769,184 @@
 </div>
 
 <script>
+// ===== PEDAGOGICAL SECTIONS =====
+const PED_DISHES = {
+  A:{ emoji:'🥗', prep:3, cook:7 },
+  B:{ emoji:'🍕', prep:6, cook:2 },
+  C:{ emoji:'🥩', prep:4, cook:5 },
+};
+const PED_KEYS = ['A','B','C'];
+
+function pedComputeSchedule(order) {
+  let prepEnd=0, cookEnd=0;
+  const items=[];
+  for (const k of order) {
+    const d=PED_DISHES[k];
+    const ps=prepEnd; prepEnd=ps+d.prep;
+    const cs=Math.max(prepEnd,cookEnd); cookEnd=cs+d.cook;
+    items.push({key:k,ps,prepEnd,cs,cookEnd});
+  }
+  return {items, makespan:cookEnd};
+}
+
+function pedRenderGantt(containerId, order, px) {
+  px=px||24;
+  const {items,makespan}=pedComputeSchedule(order);
+  const W=(makespan+1)*px;
+  const c=document.getElementById(containerId);
+  if(!c) return;
+  let h='';
+  h+=`<div class="ped-rail-label">👨‍🍳 Commis (Préparation)</div>`;
+  h+=`<div class="ped-rail" style="width:${W}px">`;
+  for(const it of items){
+    const l=it.ps*px, w=(it.prepEnd-it.ps)*px;
+    h+=`<div class="ped-block prep" style="left:${l}px;width:${w}px">${PED_DISHES[it.key].emoji} ${it.key} (${PED_DISHES[it.key].prep}min)</div>`;
+  }
+  h+=`</div>`;
+  h+=`<div class="ped-rail-label" style="margin-top:7px">🔥 Four (Cuisson)</div>`;
+  h+=`<div class="ped-rail" style="width:${W}px">`;
+  let prev=0;
+  for(const it of items){
+    if(prev>0 && it.cs>prev)
+      h+=`<div class="ped-block idle" style="left:${prev*px}px;width:${(it.cs-prev)*px}px">⏳</div>`;
+    const l=it.cs*px, w=(it.cookEnd-it.cs)*px;
+    h+=`<div class="ped-block cook" style="left:${l}px;width:${w}px">${PED_DISHES[it.key].emoji} ${it.key} (${PED_DISHES[it.key].cook}min)</div>`;
+    prev=it.cookEnd;
+  }
+  h+=`</div>`;
+  h+=`<div class="ped-axis" style="width:${W}px;position:relative;">`;
+  const step=makespan<=12?1:2;
+  for(let t=0;t<=makespan;t+=step)
+    h+=`<div class="ped-tick" style="left:${t*px}px"><div class="ped-tick-line"></div>${t}</div>`;
+  h+=`</div>`;
+  h+=`<div class="ped-makespan-tag">Makespan = <strong>${makespan} min</strong></div>`;
+  c.innerHTML=h;
+}
+
+pedRenderGantt('ped-gantt-intro',['A','B','C'],24);
+
+/* Challenge */
+let pedOrder=[];
+function pedPickDish(k){
+  if(pedOrder.includes(k)||pedOrder.length>=3) return;
+  pedOrder.push(k);
+  document.querySelector(`[data-pdish="${k}"]`).disabled=true;
+  pedUpdateSlots();
+  if(pedOrder.length===3) document.getElementById('ped-btn-calc').disabled=false;
+}
+function pedUpdateSlots(){
+  const lbl=['1er','2e','3e'];
+  for(let i=0;i<3;i++){
+    const s=document.getElementById(`pslot-${i+1}`);
+    if(pedOrder[i]){s.innerHTML=`<span class="sn">${lbl[i]}</span>${PED_DISHES[pedOrder[i]].emoji}`;s.classList.add('filled');}
+    else{s.innerHTML=`<span class="sn">${lbl[i]}</span>?`;s.classList.remove('filled');}
+  }
+}
+function pedCalculate(){
+  if(pedOrder.length<3) return;
+  const {makespan}=pedComputeSchedule(pedOrder);
+  const msEl=document.getElementById('ped-ms-val');
+  const vd=document.getElementById('ped-verdict');
+  msEl.textContent=makespan+' min';
+  if(makespan===17){msEl.style.color='var(--ped-green)';vd.innerHTML='🏆 <span style="color:var(--ped-green)">Bravo ! C\'est l\'ordre optimal !</span>';}
+  else if(makespan<=19){msEl.style.color='#b7860b';vd.innerHTML=`😊 Pas mal ! L'optimal est <strong>17 min</strong>.`;}
+  else{msEl.style.color='var(--ped-accent)';vd.innerHTML=`🤔 Il y a mieux ! L'optimal est <strong>17 min</strong>.`;}
+  document.getElementById('ped-result').classList.add('show');
+  pedRenderGantt('ped-gantt-challenge',pedOrder,22);
+  document.getElementById('ped-gantt-challenge-wrap').style.display='block';
+  document.getElementById('ped-reveal').style.display='block';
+}
+function pedReset(){
+  pedOrder=[];
+  document.getElementById('ped-btn-calc').disabled=true;
+  document.getElementById('ped-result').classList.remove('show');
+  document.getElementById('ped-gantt-challenge-wrap').style.display='none';
+  document.getElementById('ped-reveal').style.display='none';
+  pedUpdateSlots();
+  document.querySelectorAll('.ped-pick-btn').forEach(b=>b.disabled=false);
+}
+
+/* Johnson simulation
+   A(3,7) B(6,2) C(4,5)
+   Étape 1: min=CuisB=2 → B à la FIN
+   Étape 2: min=PrépA=3 → A au DÉBUT
+   Étape 3: C au milieu
+   Résultat: A→C→B, makespan=17 */
+const PED_SIM_STEPS=[
+  {expl:'🔍 <strong>Étape 1 :</strong> Min global = <span style="color:var(--ped-accent)">Cuis B = 2</span>. C\'est une cuisson → <strong>Plat B placé à la fin</strong>.',hl:{d:'B',c:'cook'},place:{d:'B',p:'end'},st:'→ Fin 🔴',rules:[1,3]},
+  {expl:'🔍 <strong>Étape 2 :</strong> Restants : A et C. Min = <span style="color:var(--ped-green)">Prép A = 3</span>. C\'est une préparation → <strong>Plat A placé au début</strong>.',hl:{d:'A',c:'prep'},place:{d:'A',p:'front'},st:'→ Début 🟢',rules:[1,2]},
+  {expl:'🔍 <strong>Étape 3 :</strong> Il reste le <strong>Plat C</strong> → milieu automatique. Ordre final : <strong>A → C → B</strong>.',hl:{d:'C',c:null},place:{d:'C',p:'mid'},st:'→ Milieu 🔵',rules:[4]},
+  {expl:'✅ <strong>Terminé !</strong> Ordre optimal : <strong>A → C → B</strong>, makespan = <strong>17 min</strong>. Garanti optimal en O(n log n) !',hl:null,place:null,rules:[1,2,3,4],done:true},
+];
+let pedSimStep=0,pedFront=[],pedEnd=[],pedMid=[],pedPlaced=new Set();
+
+function pedGetOrder(){
+  const placed=new Set([...pedFront,...pedEnd,...pedMid]);
+  const unpl=PED_KEYS.filter(d=>!placed.has(d));
+  return [...pedFront,...pedMid,...unpl,...[...pedEnd].reverse()];
+}
+function pedRenderOrder(){
+  const ord=pedGetOrder();
+  const d=document.getElementById('ped-order-wrap');
+  let h='<span class="ped-order-lbl">Début →</span>';
+  ord.forEach((k,i)=>{
+    const conf=pedPlaced.has(k);
+    if(conf){const cls=pedEnd.includes(k)?'end-p':pedMid.includes(k)?'mid-p':'';h+=`<span class="ped-order-item ${cls}">${PED_DISHES[k].emoji} ${k}</span>`;}
+    else h+=`<span class="ped-order-ph">${PED_DISHES[k].emoji} ?</span>`;
+    if(i<ord.length-1) h+=`<span style="color:var(--ped-muted);font-size:14px;margin:0 1px">→</span>`;
+  });
+  h+='<span class="ped-order-lbl">→ Fin</span>';
+  d.innerHTML=h;
+}
+function pedClearHl(){
+  PED_KEYS.forEach(d=>{
+    document.getElementById(`pj-${d}-prep`)?.classList.remove('j-hl');
+    document.getElementById(`pj-${d}-cook`)?.classList.remove('j-hl');
+  });
+}
+function pedApplyRules(ids){
+  document.querySelectorAll('.ped-rule').forEach(r=>r.classList.remove('active'));
+  ids.forEach(i=>document.getElementById(`ped-rule-${i}`)?.classList.add('active'));
+}
+function pedNextStep(){
+  if(pedSimStep>=PED_SIM_STEPS.length) return;
+  const step=PED_SIM_STEPS[pedSimStep];
+  document.getElementById('ped-sim-expl').innerHTML=step.expl;
+  pedClearHl();
+  if(step.hl?.c) document.getElementById(`pj-${step.hl.d}-${step.hl.c}`)?.classList.add('j-hl');
+  if(step.place){
+    const{d,p}=step.place; pedPlaced.add(d);
+    if(p==='front') pedFront.push(d); else if(p==='end') pedEnd.push(d); else pedMid.push(d);
+    document.getElementById(`pj-row-${d}`)?.classList.add('j-placed');
+    document.getElementById(`pj-${d}-st`).textContent=step.st;
+    pedRenderOrder();
+  }
+  if(step.rules) pedApplyRules(step.rules);
+  if(step.done){
+    document.getElementById('ped-btn-next').disabled=true;
+    document.getElementById('ped-final').style.display='block';
+    pedRenderGantt('ped-gantt-johnson',['A','C','B'],24);
+    document.querySelectorAll('.ped-rule').forEach(r=>{r.classList.remove('active');r.classList.add('done');});
+    pedClearHl();
+  }
+  pedSimStep++;
+}
+function pedResetSim(){
+  pedSimStep=0; pedFront=[]; pedEnd=[]; pedMid=[]; pedPlaced=new Set();
+  document.getElementById('ped-sim-expl').innerHTML='Clique sur <strong>« Étape suivante »</strong> pour démarrer la simulation.';
+  document.getElementById('ped-btn-next').disabled=false;
+  document.getElementById('ped-final').style.display='none';
+  PED_KEYS.forEach(d=>{
+    document.getElementById(`pj-row-${d}`)?.classList.remove('j-placed');
+    document.getElementById(`pj-${d}-st`).textContent='—';
+    document.getElementById(`pj-${d}-prep`)?.classList.remove('j-hl');
+    document.getElementById(`pj-${d}-cook`)?.classList.remove('j-hl');
+  });
+  document.querySelectorAll('.ped-rule').forEach(r=>r.classList.remove('active','done'));
+  pedRenderOrder();
+}
+pedRenderOrder();
+
 // ===== ICONS =====
 const ICONS = {
     "pomme":"\u{1F34E}","poire":"\u{1F350}","mangue":"\u{1F96D}","ananas":"\u{1F34D}",
