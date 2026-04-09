@@ -302,6 +302,85 @@ def api_compare():
     })
 
 
+
+def _simulate_manual_plan(plats, manual_plan, nb_commis, nb_fours):
+    """Simule un planning manuel explicite par commis et par four."""
+    plat_by_id = {p.id: p for p in plats}
+    prep_assignments = manual_plan.get('prep_assignments') or [[] for _ in range(nb_commis)]
+    oven_assignments = manual_plan.get('oven_assignments') or [[] for _ in range(nb_fours)]
+
+    # Normaliser la taille
+    prep_assignments = list(prep_assignments[:nb_commis]) + [[] for _ in range(max(0, nb_commis - len(prep_assignments)))]
+    oven_assignments = list(oven_assignments[:nb_fours]) + [[] for _ in range(max(0, nb_fours - len(oven_assignments)))]
+
+    prep_counts = {}
+    oven_counts = {}
+    for lane in prep_assignments:
+        for plat_id in lane:
+            prep_counts[plat_id] = prep_counts.get(plat_id, 0) + 1
+    for lane in oven_assignments:
+        for plat_id in lane:
+            oven_counts[plat_id] = oven_counts.get(plat_id, 0) + 1
+
+    errors = []
+    for p in plats:
+        prep_c = prep_counts.get(p.id, 0)
+        oven_c = oven_counts.get(p.id, 0)
+        if prep_c != 1:
+            errors.append(f"Le plat '{p.nom}' doit être affecté exactement une fois à un commis.")
+        if p.temps_cuisson > 0 and oven_c != 1:
+            errors.append(f"Le plat '{p.nom}' doit être affecté exactement une fois à un four.")
+        if p.temps_cuisson == 0 and oven_c > 0:
+            errors.append(f"Le plat '{p.nom}' n'a pas de cuisson et ne doit pas être placé dans un four.")
+
+    unknown_ids = [pid for pid in list(prep_counts) + list(oven_counts) if pid not in plat_by_id]
+    if unknown_ids:
+        errors.append(f"Identifiants de plats inconnus dans le planning manuel : {sorted(set(unknown_ids))}")
+
+    if errors:
+        raise ValueError(errors[0])
+
+    schedule_commis = []
+    prep_end_by_plat = {}
+
+    for lane in prep_assignments:
+        current = 0
+        tasks = []
+        for plat_id in lane:
+            plat = plat_by_id[plat_id]
+            debut = current
+            fin = debut + plat.temps_prep
+            current = fin
+            prep_end_by_plat[plat_id] = fin
+            tasks.append({'plat': plat, 'debut': debut, 'fin': fin})
+        schedule_commis.append(tasks)
+
+    schedule_fours = []
+    for lane in oven_assignments:
+        current = 0
+        tasks = []
+        for plat_id in lane:
+            plat = plat_by_id[plat_id]
+            prep_fin = prep_end_by_plat.get(plat_id, 0)
+            debut = max(current, prep_fin)
+            fin = debut + plat.temps_cuisson
+            current = fin
+            tasks.append({'plat': plat, 'debut': debut, 'fin': fin})
+        schedule_fours.append(tasks)
+
+    makespan = 0
+    for lane in schedule_commis + schedule_fours:
+        if lane:
+            makespan = max(makespan, lane[-1]['fin'])
+
+    ordre = [plat_by_id[plat_id] for lane in prep_assignments for plat_id in lane]
+    return {
+        'makespan': makespan,
+        'ordre': ordre,
+        'schedule_commis': schedule_commis,
+        'schedule_fours': schedule_fours,
+    }
+
 def _serialiser_schedule(schedule_liste):
     """
     Convertit les objets Plat dans le planning en dicts JSON-sérialisables.
@@ -492,6 +571,7 @@ def api_jouer():
     data       = request.get_json(force=True)
     plats_raw  = data.get('plats', [])
     ordre_idx  = data.get('ordre_human', [])
+    manual_plan = data.get('manual_plan')
     nb_commis  = max(1, int(data.get('nb_commis', 1)))
     nb_fours   = max(1, int(data.get('nb_fours',  1)))
 
@@ -508,17 +588,19 @@ def api_jouer():
 
     stations = {'commis': nb_commis, 'fours': nb_fours}
 
-    # ── Ordre humain ──────────────────────────────────────
+    # ── Ordre humain / planning manuel ────────────────────
     try:
-        plats_human = [plats[i] for i in ordre_idx]
-    except IndexError:
-        return jsonify({'error': 'Indices d\'ordre invalides.'}), 400
+        if manual_plan:
+            res_human = _simulate_manual_plan(plats, manual_plan, nb_commis, nb_fours)
+            plats_human = res_human['ordre']
+        else:
+            plats_human = [plats[i] for i in ordre_idx]
+            fifo = SCHEDULERS['fifo']
+            res_human = fifo.schedule(plats_human, stations)
+    except (IndexError, ValueError) as exc:
+        return jsonify({'error': str(exc)}), 400
 
     scheduler_johnson = SCHEDULERS['johnson']
-
-    # Calculer avec l'ordre humain via FIFO (respecte l'ordre donné)
-    fifo = SCHEDULERS['fifo']
-    res_human = fifo.schedule(plats_human, stations)
 
     # Calculer avec Johnson
     res_johnson = SCHEDULERS['johnson'].schedule(plats, stations)
