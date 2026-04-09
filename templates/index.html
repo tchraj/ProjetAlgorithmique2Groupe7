@@ -12,40 +12,61 @@
         <div class="landing-content">
             <div class="landing-logo">
                 <span class="logo-icon">🍳</span>
-                <h1>Kitchen Load Balancer</h1>
-                <p class="tagline">Apprenez le load balancing en cuisinant !</p>
+                <h1>Ordonnancement &amp; Cuisine</h1>
+                <p class="tagline">Dans quel ordre cuisiner pour finir le plus vite possible ?</p>
+                <p class="tagline-sub">Explore, joue, et comprends pourquoi c'est un problème impossible à résoudre parfaitement !</p>
             </div>
 
             <div class="landing-menu">
-                <button class="menu-btn play-btn" id="btn-play">
-                    <span class="btn-emoji">▶️</span>
-                    <span>Jouer</span>
-                </button>
-                <button class="menu-btn tutorial-btn" id="btn-tutorial">
-                    <span class="btn-emoji">📚</span>
-                    <span>Tutoriel</span>
-                </button>
-                <button class="menu-btn options-btn" id="btn-options">
-                    <span class="btn-emoji">⚙️</span>
-                    <span>Options</span>
-                </button>
+                <div class="menu-row">
+                    <button class="menu-btn btn-primary-action" onclick="window.location.href='/jouer'">
+                        <span class="btn-emoji">🧑‍🍳</span>
+                        <div class="btn-text">
+                            <span class="btn-title">Tester ma solution</span>
+                            <span class="btn-desc">Ordonne les plats toi-même</span>
+                        </div>
+                    </button>
+                    <button class="menu-btn btn-secondary-action" onclick="window.location.href='/compare'">
+                        <span class="btn-emoji">🔬</span>
+                        <div class="btn-text">
+                            <span class="btn-title">Comparer les algos</span>
+                            <span class="btn-desc">Johnson, NEH, LPT, Force brute…</span>
+                        </div>
+                    </button>
+                </div>
+                <div class="menu-row">
+                    <button class="menu-btn btn-pedagogy" onclick="window.location.href='/complexite'">
+                        <span class="btn-emoji">🧠</span>
+                        <div class="btn-text">
+                            <span class="btn-title">Pourquoi c'est difficile ?</span>
+                            <span class="btn-desc">NP-difficile expliqué</span>
+                        </div>
+                    </button>
+                    <button class="menu-btn btn-debranchee" onclick="window.location.href='/activite-debranchee'">
+                        <span class="btn-emoji">🃏</span>
+                        <div class="btn-text">
+                            <span class="btn-title">Activité débranchée</span>
+                            <span class="btn-desc">Joue sans ordinateur !</span>
+                        </div>
+                    </button>
+                </div>
             </div>
 
             <div class="landing-footer">
-                <p>🎓 Projet Algorithmique - Load Balancing</p>
+                <p>🎓 Projet Algorithmique — SI4 Polytech Nice · Groupe 7</p>
             </div>
         </div>
 
-        <!-- Animated kitchen items -->
         <div class="floating-items">
-            <span class="float-item" style="--delay: 0s; --x: 10%;">🍕</span>
-            <span class="float-item" style="--delay: 1s; --x: 25%;">🍔</span>
-            <span class="float-item" style="--delay: 2s; --x: 40%;">🥗</span>
-            <span class="float-item" style="--delay: 0.5s; --x: 55%;">🍜</span>
-            <span class="float-item" style="--delay: 1.5s; --x: 70%;">🥘</span>
-            <span class="float-item" style="--delay: 2.5s; --x: 85%;">🍰</span>
+            <span class="float-item" style="--delay: 0s;   --x: 8%;" >🍕</span>
+            <span class="float-item" style="--delay: 1.2s; --x: 22%;">🥗</span>
+            <span class="float-item" style="--delay: 0.4s; --x: 38%;">🍜</span>
+            <span class="float-item" style="--delay: 2s;   --x: 54%;">🥘</span>
+            <span class="float-item" style="--delay: 0.8s; --x: 68%;">🍰</span>
+            <span class="float-item" style="--delay: 1.6s; --x: 83%;">🥩</span>
+            <span class="float-item" style="--delay: 2.4s; --x: 92%;">🍔</span>
         </div>
-    </div>
+    </div>v>
 
     <!-- Tutorial Overlay -->
     <div class="tutorial-overlay" id="tutorial-overlay">
@@ -62,7 +83,7 @@
                 </div>
                 <div class="tutorial-step">
                     <span class="step-num">3</span>
-                    <p><strong>Respectez les deadlines</strong> - Le compteur sur chaque plat indique le temps restant</p>
+                    <p><strong>Respectez le timer</strong> - Cuisinez un maximum de plats avant la fin du temps !</p>
                 </div>
                 <div class="tutorial-step">
                     <span class="step-num">4</span>
@@ -128,67 +149,77 @@
             </div>
         </header>
 
+        <!-- Burger Menu Button -->
+        <button class="burger-btn" id="burger-btn">
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+        </button>
+
+        <!-- Panel Load Balancer (overlay) -->
+        <aside class="panel-loadbalancer" id="panel-loadbalancer">
+            <h2>Load Balancer</h2>
+            <div class="algo-list">
+                <button class="algo-btn" data-algo="manual" data-icon="🎮">
+                    <span class="btn-icon">🎮</span>
+                    <span class="btn-label">Manuel</span>
+                    <span class="btn-tooltip">Vous choisissez quoi cuisiner !</span>
+                </button>
+                <button class="algo-btn active" data-algo="least-loaded" data-icon="📊">
+                    <span class="btn-icon">📊</span>
+                    <span class="btn-label">Least Loaded</span>
+                    <span class="btn-tooltip">Envoie vers la station la moins chargée</span>
+                </button>
+                <button class="algo-btn" data-algo="round-robin" data-icon="🔄" disabled>
+                    <span class="btn-icon">🔄</span>
+                    <span class="btn-label">Round Robin</span>
+                    <span class="btn-tooltip">Répartition cyclique (bientôt)</span>
+                </button>
+                <button class="algo-btn" data-algo="shortest-job" data-icon="⏳" disabled>
+                    <span class="btn-icon">⏳</span>
+                    <span class="btn-label">Shortest Job</span>
+                    <span class="btn-tooltip">Priorité aux plats courts (bientôt)</span>
+                </button>
+                <button class="algo-btn" data-algo="priority-first" data-icon="⭐" disabled>
+                    <span class="btn-icon">⭐</span>
+                    <span class="btn-label">Priority First</span>
+                    <span class="btn-tooltip">VIP d'abord (bientôt)</span>
+                </button>
+            </div>
+
+            <div class="manual-mode-indicator" id="manual-indicator">
+                🎮 Mode Manuel Actif
+            </div>
+
+            <div class="game-controls">
+                <button id="btn-start" class="control-btn start">▶ Démarrer</button>
+                <button id="btn-pause" class="control-btn pause" disabled>⏸ Pause</button>
+                <button id="btn-reset" class="control-btn reset">🔄 Reset</button>
+            </div>
+
+            <div class="speed-control">
+                <label>Vitesse:</label>
+                <div class="speed-buttons">
+                    <button class="speed-btn" data-speed="0.25">0.25x</button>
+                    <button class="speed-btn" data-speed="0.5">0.5x</button>
+                    <button class="speed-btn active" data-speed="1">1x</button>
+                    <button class="speed-btn" data-speed="2">2x</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Overlay backdrop -->
+        <div class="panel-overlay" id="panel-overlay"></div>
+
         <!-- Main content area -->
         <div class="main-content">
-            <!-- Panel Load Balancer (latéral) -->
-            <aside class="panel-loadbalancer">
-                <h2>Load Balancer</h2>
-                <div class="algo-list">
-                    <button class="algo-btn" data-algo="manual" data-icon="🎮">
-                        <span class="btn-icon">🎮</span>
-                        <span class="btn-label">Manuel</span>
-                        <span class="btn-tooltip">Vous choisissez quoi cuisiner !</span>
-                    </button>
-                    <button class="algo-btn active" data-algo="least-loaded" data-icon="📊">
-                        <span class="btn-icon">📊</span>
-                        <span class="btn-label">Least Loaded</span>
-                        <span class="btn-tooltip">Envoie vers la station la moins chargée</span>
-                    </button>
-                    <button class="algo-btn" data-algo="round-robin" data-icon="🔄" disabled>
-                        <span class="btn-icon">🔄</span>
-                        <span class="btn-label">Round Robin</span>
-                        <span class="btn-tooltip">Répartition cyclique (bientôt)</span>
-                    </button>
-                    <button class="algo-btn" data-algo="shortest-job" data-icon="⏳" disabled>
-                        <span class="btn-icon">⏳</span>
-                        <span class="btn-label">Shortest Job</span>
-                        <span class="btn-tooltip">Priorité aux plats courts (bientôt)</span>
-                    </button>
-                    <button class="algo-btn" data-algo="priority-first" data-icon="⭐" disabled>
-                        <span class="btn-icon">⭐</span>
-                        <span class="btn-label">Priority First</span>
-                        <span class="btn-tooltip">VIP d'abord (bientôt)</span>
-                    </button>
-                </div>
-
-                <div class="manual-mode-indicator" id="manual-indicator">
-                    🎮 Mode Manuel Actif
-                </div>
-
-                <div class="game-controls">
-                    <button id="btn-start" class="control-btn start">▶ Démarrer</button>
-                    <button id="btn-pause" class="control-btn pause" disabled>⏸ Pause</button>
-                    <button id="btn-reset" class="control-btn reset">🔄 Reset</button>
-                </div>
-
-                <div class="speed-control">
-                    <label>Vitesse:</label>
-                    <div class="speed-buttons">
-                        <button class="speed-btn" data-speed="0.25">0.25x</button>
-                        <button class="speed-btn" data-speed="0.5">0.5x</button>
-                        <button class="speed-btn active" data-speed="1">1x</button>
-                        <button class="speed-btn" data-speed="2">2x</button>
-                    </div>
-                </div>
-            </aside>
-
             <!-- Zone Cuisine (centrale) -->
             <main class="zone-cuisine">
                 <div class="stations-container">
                     <!-- Station Préparation -->
                     <div class="station" data-type="preparation" data-status="idle">
                         <div class="station-header">
-                            <span class="station-icon">🥕</span>
+                            <span class="station-icon">🔪</span>
                             <span class="station-name">Préparation</span>
                             <span class="station-capacity">0/2</span>
                         </div>
@@ -201,6 +232,13 @@
                         <div class="station-queue" id="prep-queue">
                             <!-- File d'attente préparation -->
                         </div>
+                    </div>
+
+                    <!-- Flow Arrow -->
+                    <div class="flow-arrow">
+                        <div class="flow-arrow-line"></div>
+                        <div class="flow-arrow-head"></div>
+                        <span class="flow-arrow-label">Cuisson</span>
                     </div>
 
                     <!-- Station Cuisson -->
@@ -221,10 +259,17 @@
                         </div>
                     </div>
 
+                    <!-- Flow Arrow -->
+                    <div class="flow-arrow">
+                        <div class="flow-arrow-line"></div>
+                        <div class="flow-arrow-head"></div>
+                        <span class="flow-arrow-label">Dressage</span>
+                    </div>
+
                     <!-- Station Dressage -->
                     <div class="station" data-type="dressage" data-status="idle">
                         <div class="station-header">
-                            <span class="station-icon">🎨</span>
+                            <span class="station-icon">🍽️</span>
                             <span class="station-name">Dressage</span>
                             <span class="station-capacity">0/1</span>
                         </div>

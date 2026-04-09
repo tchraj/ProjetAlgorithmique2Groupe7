@@ -490,7 +490,7 @@ async function loadInstance(nom) {
         `Instance : ${data.nom} \u2014 ${plats.length} plats, ${nbCommis} commis \u2014 Difficult\u00e9 : ${data.difficulte || '?'}`;
 
     document.getElementById('cards-grid').innerHTML = plats.map((p, i) => {
-        const epMin = Math.round(p.temps_epluchage / 60);
+        const epMin = Math.round(p.temps_prep / 60);
         const cuMin = Math.round(p.temps_cuisson / 60);
         const total = epMin + cuMin;
         return `<div class="plat-card">
@@ -526,8 +526,8 @@ async function loadInstance(nom) {
     // Compute greedy solution
     const platsWithTotal = plats.map(p => ({
         ...p,
-        total: p.temps_epluchage + p.temps_cuisson,
-        totalMin: Math.round((p.temps_epluchage + p.temps_cuisson) / 60)
+        total: p.temps_prep + p.temps_cuisson,
+        totalMin: Math.round((p.temps_prep + p.temps_cuisson) / 60)
     }));
     const sorted = [...platsWithTotal].sort((a,b) => b.total - a.total);
     const loads = Array(nbCommis).fill(0);

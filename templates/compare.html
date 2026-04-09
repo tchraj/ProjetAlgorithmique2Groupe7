@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comparaison des Algorithmes — Kitchen Scheduler</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --surface:   rgba(255,248,220,0.95);
+      --surface2:  rgba(255,250,240,0.97);
+      --panel:     rgba(255,255,255,0.92);
+      --border:    #2D3436;
+      --accent:    #FF6B6B;
+      --green:     #00B894;
+      --teal:      #55EFC4;
+      --purple:    #A29BFE;
+      --yellow:    #FDCB6E;
+      --red:       #FF6B6B;
+      --text:      #2D3436;
+      --muted:     #636E72;
+      --radius:    15px;
+      --shadow:    4px 4px 0px rgba(0,0,0,0.18);
+      --shadow-lg: 6px 6px 0px rgba(0,0,0,0.18);
+      --bounce:    cubic-bezier(0.68,-0.55,0.265,1.55);
+
+      --c-johnson: #FF6B6B;
+      --c-neh:     #A29BFE;
+      --c-lpt:     #00B894;
+      --c-spt:     #FDCB6E;
+      --c-fifo:    #B2BEC3;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-image: url('/static/assets/background.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 24px;
+      background: linear-gradient(135deg, rgba(255,234,167,0.97), rgba(253,203,110,0.97));
+      border-bottom: 3px solid var(--border);
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      text-decoration: none;
+      font-family: 'Fredoka One', cursive;
+      font-size: 15px;
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 6px 14px;
+      box-shadow: var(--shadow);
+      transition: transform .2s var(--bounce);
+    }
+    .back-btn:hover { transform: translateY(-2px); }
+
+    .header-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 22px;
+      color: var(--accent);
+      text-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+    }
+
+    .header-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-left: auto;
+      font-weight: 700;
+    }
+
+    /* ── Layout ── */
+    .page {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      min-height: calc(100vh - 65px);
+      gap: 0;
+    }
+
+    /* ── Panneau gauche ── */
+    .panel-input {
+      background: linear-gradient(180deg, rgba(255,255,255,0.97), rgba(255,234,167,0.97));
+      border-right: 3px solid var(--border);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      overflow-y: auto;
+    }
+
+    .section-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 13px;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    /* Presets */
+    .preset-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .preset-btn {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 6px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: all .2s var(--bounce);
+      text-align: center;
+      color: var(--text);
+    }
+    .preset-btn:hover { transform: translateY(-3px); border-color: var(--accent); }
+    .preset-btn.active {
+      background: linear-gradient(135deg, var(--accent), #EE5A5A);
+      color: white;
+      border-color: var(--accent);
+    }
+    .preset-btn small { display: block; font-family: 'Nunito', sans-serif; font-size: 11px; opacity: .8; }
+
+    /* Table plats */
+    .plats-table-wrapper { overflow-x: auto; }
+
+    .plats-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .plats-table th {
+      font-family: 'Fredoka One', cursive;
+      font-size: 11px;
+      color: var(--muted);
+      padding: 8px 8px;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+      background: rgba(253,203,110,0.3);
+    }
+
+    .plats-table td {
+      padding: 5px 3px;
+      border-bottom: 1px dashed rgba(45,52,54,.15);
+    }
+
+    .plats-table input[type="text"],
+    .plats-table input[type="number"] {
+      width: 100%;
+      background: white;
+      border: 2px solid #DFE6E9;
+      border-radius: 8px;
+      color: var(--text);
+      padding: 6px 8px;
+      font-size: 13px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      transition: border-color .2s;
+    }
+    .plats-table input:focus { outline: none; border-color: var(--accent); }
+    .plats-table input[type="number"] { width: 70px; }
+
+    .btn-remove-row {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all .2s;
+    }
+    .btn-remove-row:hover { color: var(--red); background: rgba(255,107,107,.1); }
+
+    .btn-add-row {
+      width: 100%;
+      background: white;
+      border: 2px dashed #B2BEC3;
+      border-radius: 10px;
+      color: var(--muted);
+      padding: 10px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all .2s;
+    }
+    .btn-add-row:hover { border-color: var(--green); color: var(--green); }
+
+    /* Stations */
+    .stations-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .station-input-group label {
+      display: block;
+      font-family: 'Fredoka One', cursive;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .station-input-group input {
+      width: 100%;
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 10px 14px;
+      font-size: 20px;
+      font-family: 'Fredoka One', cursive;
+      text-align: center;
+      box-shadow: var(--shadow);
+      transition: border-color .2s;
+    }
+    .station-input-group input:focus { outline: none; border-color: var(--accent); }
+
+    /* Algos checkboxes */
+    .algo-checkboxes { display: flex; flex-direction: column; gap: 8px; }
+
+    .algo-check-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 2px solid #DFE6E9;
+      background: white;
+      box-shadow: 3px 3px 0 rgba(0,0,0,0.08);
+      transition: all .2s var(--bounce);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .algo-check-label input { display: none; }
+    .algo-check-label:hover { transform: translateY(-2px); }
+    .algo-check-label.checked {
+      border-color: var(--algo-color);
+      background: linear-gradient(135deg, white, rgba(var(--algo-rgb),.08));
+    }
+    .algo-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--algo-color);
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+    }
+    .algo-check-label .checkmark {
+      margin-left: auto;
+      font-size: 18px;
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .algo-check-label.checked .checkmark { opacity: 1; }
+
+    /* Bouton run */
+    .btn-run {
+      width: 100%;
+      background: linear-gradient(135deg, #FF6B6B, #EE5A5A);
+      color: white;
+      border: 3px solid var(--border);
+      border-radius: 15px;
+      padding: 16px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: var(--shadow-lg);
+      transition: all .2s var(--bounce);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-run:hover { transform: translateY(-3px) scale(1.02); box-shadow: 6px 8px 0 rgba(0,0,0,.2); }
+    .btn-run:disabled {
+      background: #DFE6E9;
+      color: var(--muted);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: var(--shadow);
+    }
+
+    /* ── Panneau droit ── */
+    .panel-results {
+      padding: 24px 28px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* État vide */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      height: 100%;
+      min-height: 400px;
+      color: var(--muted);
+      text-align: center;
+    }
+    .empty-state .empty-icon { font-size: 72px; filter: drop-shadow(3px 3px 0 rgba(0,0,0,.1)); }
+    .empty-state h3 { font-family: 'Fredoka One', cursive; font-size: 24px; color: var(--text); }
+    .empty-state p { font-size: 15px; max-width: 300px; line-height: 1.6; font-weight: 600; }
+
+    /* Info box */
+    .info-box {
+      background: linear-gradient(135deg, rgba(162,155,254,.15), rgba(162,155,254,.05));
+      border: 2px solid var(--purple);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      box-shadow: var(--shadow);
+    }
+    .info-box .info-icon { font-size: 22px; flex-shrink: 0; }
+    .info-box p { font-size: 14px; line-height: 1.7; font-weight: 600; color: var(--text); }
+
+    /* Tableau résultats */
+    .results-table-wrapper {
+      background: var(--surface2);
+      border: 3px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .results-table th {
+      background: linear-gradient(135deg, rgba(253,203,110,.6), rgba(255,234,167,.6));
+      font-family: 'Fredoka One', cursive;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .results-table td {
+      padding: 14px 16px;
+      border-bottom: 1px dashed rgba(45,52,54,.15);
+      vertical-align: middle;
+      background: rgba(255,255,255,.5);
+    }
+    .results-table tr:last-child td { border-bottom: none; }
+    .results-table tr:hover td { background: rgba(253,203,110,.2); }
+
+    .algo-badge { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+
+    .makespan-value {
+      font-family: 'Fredoka One', cursive;
+      font-size: 18px;
+    }
+
+    .best-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: linear-gradient(135deg, #00B894, #55EFC4);
+      color: white;
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 11px;
+      box-shadow: 2px 2px 0 rgba(0,0,0,.15);
+      margin-left: 6px;
+    }
+
+    .optimal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: linear-gradient(135deg, #FF6B6B, #EE5A5A);
+      color: white;
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 11px;
+      box-shadow: 2px 2px 0 rgba(0,0,0,.15);
+      margin-left: 4px;
+    }
+
+    .ratio-bar-wrap { display: flex; align-items: center; gap: 10px; }
+    .ratio-bar-bg {
+      flex: 1;
+      height: 10px;
+      background: #DFE6E9;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .ratio-bar-fill { height: 100%; border-radius: 5px; transition: width .6s ease; }
+    .ratio-text { font-family: 'Fredoka One', cursive; font-size: 13px; color: var(--muted); width: 50px; text-align: right; }
+    .time-text { font-family: 'Fredoka One', cursive; font-size: 13px; color: var(--muted); }
+
+    /* ── Gantt ── */
+    .gantt-section { display: flex; flex-direction: column; gap: 16px; }
+
+    .gantt-card {
+      background: var(--surface2);
+      border: 3px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: transform .2s var(--bounce), box-shadow .2s;
+    }
+    .gantt-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+    .gantt-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      border-bottom: 2px solid var(--border);
+      background: linear-gradient(135deg, rgba(253,203,110,.5), rgba(255,234,167,.5));
+    }
+
+    .gantt-card-header .algo-dot { width: 14px; height: 14px; }
+
+    .gantt-card-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 15px;
+    }
+
+    .gantt-card-makespan {
+      margin-left: auto;
+      font-family: 'Fredoka One', cursive;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .gantt-body { padding: 14px 18px; }
+
+    .gantt-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .gantt-row:last-child { margin-bottom: 0; }
+
+    .gantt-label {
+      font-family: 'Fredoka One', cursive;
+      font-size: 12px;
+      color: var(--muted);
+      width: 80px;
+      flex-shrink: 0;
+      text-align: right;
+    }
+
+    .gantt-track {
+      flex: 1;
+      height: 34px;
+      background: rgba(223,230,233,.5);
+      border-radius: 8px;
+      border: 2px solid rgba(45,52,54,.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gantt-block {
+      position: absolute;
+      top: 2px;
+      height: calc(100% - 4px);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      transition: all .4s ease;
+      cursor: default;
+      border-width: 2px !important;
+      border-style: solid !important;
+    }
+
+    .gantt-block:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--border);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 10;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+    }
+
+    /* ── Loader ── */
+    .loader-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,248,220,.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .loader-overlay.active { display: flex; }
+    .spinner {
+      width: 56px; height: 56px;
+      border: 4px solid #DFE6E9;
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    .loader-overlay p {
+      font-family: 'Fredoka One', cursive;
+      font-size: 18px;
+      color: var(--muted);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: white;
+      border: 3px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 20px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 15px;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all .3s var(--bounce);
+      z-index: 1000;
+      max-width: 360px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.error { border-color: var(--red); color: var(--red); }
+    .toast.success { border-color: var(--green); color: var(--green); }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .page { grid-template-columns: 1fr; }
+      .panel-input { border-right: none; border-bottom: 3px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <a href="/" class="back-btn">← Retour</a>
+  <span class="header-title">🔬 Comparaison des Algorithmes</span>
+  <span class="header-sub">Ordonnancement Cuisine — Groupe 7</span>
+</header>
+
+<div class="page">
+
+  <!-- ── Panneau gauche : saisie ──────────────────────── -->
+  <aside class="panel-input">
+
+    <!-- Exemples rapides -->
+    <div>
+      <div class="section-title">⚡ Quelques instances</div>
+      <div class="preset-grid">
+        <button class="preset-btn" onclick="chargerPreset(1)">Ex. 1<br><small>3 plats</small></button>
+        <button class="preset-btn" onclick="chargerPreset(2)">Ex. 2<br><small>3 plats</small></button>
+        <button class="preset-btn" onclick="chargerPreset(3)">Ex. 3<br><small>6 plats</small></button>
+      </div>
+    </div>
+
+    <!-- Saisie des plats -->
+    <div>
+      <div class="section-title">🍽️ Plats à ordonnancer</div>
+      <div class="plats-table-wrapper">
+        <table class="plats-table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Prép (min)</th>
+              <th>Cuisson (min)</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="plats-tbody"></tbody>
+        </table>
+      </div>
+      <button class="btn-add-row" onclick="ajouterLigne()">+ Ajouter un plat</button>
+    </div>
+
+    <!-- Stations -->
+    <div>
+      <div class="section-title">👨‍🍳 Stations disponibles</div>
+      <div class="stations-row">
+        <div class="station-input-group">
+          <label>🔪 Commis</label>
+          <input type="number" id="nb-commis" value="1" min="1" max="10">
+        </div>
+        <div class="station-input-group">
+          <label>🔥 Fours</label>
+          <input type="number" id="nb-fours" value="1" min="1" max="10">
+        </div>
+      </div>
+    </div>
+
+    <!-- Algos -->
+    <div>
+      <div class="section-title">🧮 Algorithmes à comparer</div>
+      <div class="algo-checkboxes" id="algo-checkboxes">
+        <label class="algo-check-label checked"
+               style="--algo-color: #FF6B6B; --algo-rgb: 255,107,107;"
+               data-algo="johnson" onclick="toggleAlgo(this)">
+          <span class="algo-dot"></span>
+          <span>Johnson <small style="color:var(--muted); font-size:11px;">(optimal 1+1)</small></span>
+          <span class="checkmark">✓</span>
+        </label>
+        <label class="algo-check-label checked"
+               style="--algo-color: #A29BFE; --algo-rgb: 162,155,254;"
+               data-algo="neh" onclick="toggleAlgo(this)">
+          <span class="algo-dot"></span>
+          <span>NEH <small style="color:var(--muted); font-size:11px;">(heuristique)</small></span>
+          <span class="checkmark">✓</span>
+        </label>
+        <label class="algo-check-label checked"
+               style="--algo-color: #00B894; --algo-rgb: 0,184,148;"
+               data-algo="lpt" onclick="toggleAlgo(this)">
+          <span class="algo-dot"></span>
+          <span>LPT <small style="color:var(--muted); font-size:11px;">(glouton)</small></span>
+          <span class="checkmark">✓</span>
+        </label>
+        <label class="algo-check-label"
+               style="--algo-color: #FDCB6E; --algo-rgb: 253,203,110;"
+               data-algo="spt" onclick="toggleAlgo(this)">
+          <span class="algo-dot"></span>
+          <span>SPT <small style="color:var(--muted); font-size:11px;">(baseline)</small></span>
+          <span class="checkmark">✓</span>
+        </label>
+        <label class="algo-check-label"
+               style="--algo-color: #B2BEC3; --algo-rgb: 178,190,195;"
+               data-algo="fifo" onclick="toggleAlgo(this)">
+          <span class="algo-dot"></span>
+          <span>FIFO <small style="color:var(--muted); font-size:11px;">(sans optim.)</small></span>
+          <span class="checkmark">✓</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Bouton lancer -->
+    <button class="btn-run" id="btn-run" onclick="lancerComparaison()">
+      <span>▶</span> Comparer les algorithmes
+    </button>
+
+  </aside>
+
+  <!-- ── Panneau droit : résultats ────────────────────── -->
+  <section class="panel-results" id="panel-results">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">🧑‍🍳</div>
+      <h3>Prêt à comparer</h3>
+      <p>Saisissez vos plats, choisissez vos algorithmes et cliquez sur <strong>Comparer</strong>.</p>
+    </div>
+  </section>
+
+</div>
+
+<!-- Loader -->
+<div class="loader-overlay" id="loader">
+  <div class="spinner"></div>
+  <p style="color:var(--muted); font-family:'Space Mono',monospace; font-size:13px;">Calcul en cours…</p>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Données ──────────────────────────────────────────────
+const ALGO_COLORS = {
+  johnson: '#FF6B6B',
+  neh:     '#A29BFE',
+  lpt:     '#00B894',
+  spt:     '#FDCB6E',
+  fifo:    '#B2BEC3',
+};
+
+const PRESETS = {
+  1: {
+    label: 'Exemple 1',
+    plats: [
+      { nom: 'Plat A', prep: 15, cuisson: 17 },
+      { nom: 'Plat B', prep: 11, cuisson: 16 },
+      { nom: 'Plat C', prep: 0,  cuisson: 12 },
+    ],
+    commis: 1, fours: 1
+  },
+  2: {
+    label: 'Exemple 2',
+    plats: [
+      { nom: 'Plat 1', prep: 16, cuisson: 10 },
+      { nom: 'Plat 2', prep: 14, cuisson: 14 },
+      { nom: 'Plat 3', prep: 11, cuisson: 8  },
+    ],
+    commis: 1, fours: 1
+  },
+  3: {
+    label: 'Exemple 3',
+    plats: [
+      { nom: 'Salade', prep: 2,  cuisson: 0 },
+      { nom: 'Pates', prep: 5, cuisson: 20  },
+      { nom: 'Viande', prep: 3, cuisson: 25 },
+      { nom: 'Gateau', prep: 15, cuisson: 30 },
+      { nom: 'Soupe', prep: 8, cuisson: 5 },
+      { nom: 'Omelette', prep: 10, cuisson: 3 },
+    ],
+    commis: 1, fours: 1
+  }
+};
+
+let activeAlgos = new Set(['johnson', 'neh', 'lpt']);
+let activePreset = null;
+
+// ── Init ─────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  chargerPreset(1);
+});
+
+// ── Presets ──────────────────────────────────────────────
+function chargerPreset(n) {
+  const p = PRESETS[n];
+  if (!p) return;
+  activePreset = n;
+
+  // Mettre à jour les boutons preset
+  document.querySelectorAll('.preset-btn').forEach((b, i) => {
+    b.classList.toggle('active', i + 1 === n);
+  });
+
+  // Remplir la table
+  const tbody = document.getElementById('plats-tbody');
+  tbody.innerHTML = '';
+  p.plats.forEach(plat => ajouterLigne(plat.nom, plat.prep, plat.cuisson));
+
+  // Stations
+  document.getElementById('nb-commis').value = p.commis;
+  document.getElementById('nb-fours').value  = p.fours;
+}
+
+// ── Table des plats ──────────────────────────────────────
+let rowId = 0;
+function ajouterLigne(nom = '', prep = '', cuisson = '') {
+  const tbody = document.getElementById('plats-tbody');
+  const id = rowId++;
+  const tr = document.createElement('tr');
+  tr.dataset.rowId = id;
+  tr.innerHTML = `
+    <td><input type="text"   value="${nom}"    placeholder="Plat ${id+1}" class="input-nom"></td>
+    <td><input type="number" value="${prep}"   placeholder="0" min="0" class="input-prep"></td>
+    <td><input type="number" value="${cuisson}" placeholder="0" min="0" class="input-cuisson"></td>
+    <td><button class="btn-remove-row" onclick="supprimerLigne(${id})">✕</button></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function supprimerLigne(id) {
+  const tr = document.querySelector(`tr[data-row-id="${id}"]`);
+  if (tr) tr.remove();
+}
+
+// ── Algos checkbox ───────────────────────────────────────
+function toggleAlgo(label) {
+  const algo = label.dataset.algo;
+  if (activeAlgos.has(algo)) {
+    if (activeAlgos.size <= 1) { showToast('Gardez au moins 1 algorithme.', 'error'); return; }
+    activeAlgos.delete(algo);
+    label.classList.remove('checked');
+  } else {
+    activeAlgos.add(algo);
+    label.classList.add('checked');
+  }
+}
+
+// ── Lire les plats saisis ────────────────────────────────
+function lirePlats() {
+  const rows = document.querySelectorAll('#plats-tbody tr');
+  const plats = [];
+  for (const row of rows) {
+    const nom     = row.querySelector('.input-nom').value.trim() || `Plat ${plats.length + 1}`;
+    const prep    = parseInt(row.querySelector('.input-prep').value)    || 0;
+    const cuisson = parseInt(row.querySelector('.input-cuisson').value) || 0;
+    if (prep === 0 && cuisson === 0) continue;
+    plats.push({ nom, prep, cuisson });
+  }
+  return plats;
+}
+
+// ── Lancer la comparaison ────────────────────────────────
+async function lancerComparaison() {
+  const plats = lirePlats();
+  if (plats.length < 1) {
+    showToast('Ajoutez au moins un plat avec un temps non nul.', 'error');
+    return;
+  }
+
+  const nbCommis = parseInt(document.getElementById('nb-commis').value) || 1;
+  const nbFours  = parseInt(document.getElementById('nb-fours').value)  || 1;
+  const algos    = [...activeAlgos];
+
+  document.getElementById('loader').classList.add('active');
+  document.getElementById('btn-run').disabled = true;
+
+  try {
+    const resp = await fetch('/api/compare', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plats, nb_commis: nbCommis, nb_fours: nbFours, algos })
+    });
+
+    if (!resp.ok) throw new Error(`Erreur serveur : ${resp.status}`);
+    const data = await resp.json();
+    afficherResultats(data);
+    showToast('Comparaison terminée !', 'success');
+  } catch (err) {
+    showToast(`Erreur : ${err.message}`, 'error');
+  } finally {
+    document.getElementById('loader').classList.remove('active');
+    document.getElementById('btn-run').disabled = false;
+  }
+}
+
+// ── Afficher les résultats ───────────────────────────────
+function afficherResultats(data) {
+  const container = document.getElementById('panel-results');
+  container.innerHTML = '';
+
+  const { resultats, meilleur_algo, meilleur_makespan, nb_commis, nb_fours, est_optimal_garanti } = data;
+  const entries = Object.entries(resultats).sort((a, b) => a[1].makespan - b[1].makespan);
+  const makespan_max = Math.max(...entries.map(([, r]) => r.makespan));
+
+  // ── Info pédagogique ────────────────────────────────
+  const infoBox = document.createElement('div');
+  infoBox.className = 'info-box';
+  const infoMsg = est_optimal_garanti
+    ? `<strong>Johnson garantit l'optimal</strong> sur cette instance (1 commis + 1 four). Les autres algorithmes s'en écartent plus ou moins — comparez les ratios pour visualiser leur performance relative.`
+    : `<strong>Aucun algorithme ne garantit l'optimal</strong> pour ${nb_commis} commis + ${nb_fours} fours. Le meilleur résultat trouvé (${(meilleur_makespan/60).toFixed(0)} min) est une <em>borne supérieure</em> de l'optimal théorique.`;
+  infoBox.innerHTML = `<div class="info-icon">💡</div><p>${infoMsg}</p>`;
+  container.appendChild(infoBox);
+
+  // ── Tableau de résultats ────────────────────────────
+  const tableWrapper = document.createElement('div');
+  tableWrapper.className = 'results-table-wrapper';
+  tableWrapper.innerHTML = `
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>Algorithme</th>
+          <th>Makespan</th>
+          <th>Ratio / meilleur</th>
+          <th>Temps calcul</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${entries.map(([nom, r]) => {
+          const color  = ALGO_COLORS[nom] || '#888';
+          const isBest = nom === meilleur_algo;
+          const ratio  = r.makespan / meilleur_makespan;
+          const pct    = ((ratio - 1) * 100).toFixed(1);
+          const barPct = (meilleur_makespan / r.makespan * 100).toFixed(1);
+          const ms_min = (r.makespan / 60).toFixed(0);
+          const isOpt  = r.est_optimal;
+          return `
+            <tr>
+              <td>
+                <div class="algo-badge">
+                  <span class="algo-dot" style="background:${color};"></span>
+                  <span>${formatNom(nom)}</span>
+                  ${isBest ? '<span class="best-badge">🏆 meilleur</span>' : ''}
+                  ${isOpt  ? '<span class="optimal-badge">✅ optimal</span>' : ''}
+                </div>
+              </td>
+              <td>
+                <span class="makespan-value" style="color:${color};">${ms_min} min</span>
+              </td>
+              <td>
+                <div class="ratio-bar-wrap">
+                  <div class="ratio-bar-bg">
+                    <div class="ratio-bar-fill" style="width:${barPct}%; background:${color};"></div>
+                  </div>
+                  <span class="ratio-text">${isBest ? '—' : '+' + pct + '%'}</span>
+                </div>
+              </td>
+              <td>
+                <span class="time-text">${(r.temps_execution * 1000).toFixed(3)} ms</span>
+              </td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+  container.appendChild(tableWrapper);
+
+  // ── Diagrammes de Gantt ──────────────────────────────
+  const ganttSection = document.createElement('div');
+  ganttSection.className = 'gantt-section';
+  const ganttTitle = document.createElement('div');
+  ganttTitle.className = 'section-title';
+  ganttTitle.textContent = '📊 Diagrammes de Gantt';
+  ganttSection.appendChild(ganttTitle);
+
+  entries.forEach(([nom, r]) => {
+    const color = ALGO_COLORS[nom] || '#888';
+    const card  = creerGanttCard(nom, r, color, makespan_max);
+    ganttSection.appendChild(card);
+  });
+
+  container.appendChild(ganttSection);
+}
+
+// ── Créer une carte Gantt ────────────────────────────────
+function creerGanttCard(nom, resultat, color, makespan_max) {
+  const card = document.createElement('div');
+  card.className = 'gantt-card';
+  card.style.setProperty('--algo-color', color);
+
+  const ms_min = (resultat.makespan / 60).toFixed(0);
+  const isBest = resultat.makespan === Math.min(...Object.values(arguments[0] || {}));
+
+  card.innerHTML = `
+    <div class="gantt-card-header">
+      <span class="algo-dot" style="background:${color};"></span>
+      <span class="gantt-card-title">${formatNom(nom)}</span>
+      ${resultat.est_optimal ? '<span class="optimal-badge" style="font-size:10px;">✅ optimal</span>' : ''}
+      <span class="gantt-card-makespan">Makespan : ${ms_min} min</span>
+    </div>
+    <div class="gantt-body" id="gantt-body-${nom}"></div>
+  `;
+
+  // Construire les pistes après insertion dans le DOM
+  requestAnimationFrame(() => {
+    const body = document.getElementById(`gantt-body-${nom}`);
+    if (!body) return;
+
+    const scale = makespan_max > 0 ? 100 / makespan_max : 1;
+
+    // Commis
+    (resultat.schedule_commis || []).forEach((commis, i) => {
+      const row = creerGanttRow(`Commis ${i+1}`, commis, scale, color);
+      body.appendChild(row);
+    });
+
+    // Fours
+    (resultat.schedule_fours || []).forEach((four, i) => {
+      const row = creerGanttRow(`Four ${i+1}`, four, scale, color, true);
+      body.appendChild(row);
+    });
+  });
+
+  return card;
+}
+
+function creerGanttRow(label, taches, scale, color, isFour = false) {
+  const row = document.createElement('div');
+  row.className = 'gantt-row';
+
+  const lbl = document.createElement('div');
+  lbl.className = 'gantt-label';
+  lbl.textContent = label;
+
+  const track = document.createElement('div');
+  track.className = 'gantt-track';
+
+  taches.forEach((t, idx) => {
+    if (!t || t.debut === undefined) return;
+    const left  = (t.debut * scale).toFixed(2);
+    const width = Math.max(0.5, ((t.fin - t.debut) * scale)).toFixed(2);
+    const nom   = t.plat?.nom || `Tâche ${idx+1}`;
+    const debut_min = (t.debut / 60).toFixed(0);
+    const fin_min   = (t.fin   / 60).toFixed(0);
+
+    const block = document.createElement('div');
+    block.className = 'gantt-block';
+    block.style.left       = `${left}%`;
+    block.style.width      = `${width}%`;
+    block.style.background = isFour
+      ? `${color}cc`
+      : `${color}66`;
+    block.style.border = `1px solid ${color}`;
+    block.style.color  = '#fff';
+    block.textContent  = width > 4 ? nom : '';
+    block.dataset.tooltip = `${nom} : ${debut_min}→${fin_min} min`;
+
+    track.appendChild(block);
+  });
+
+  row.appendChild(lbl);
+  row.appendChild(track);
+  return row;
+}
+
+// ── Utilitaires ──────────────────────────────────────────
+function formatNom(algo) {
+  const noms = {
+    johnson: "Johnson's Algorithm",
+    neh:     "NEH (Nawaz-Enscore-Ham)",
+    lpt:     "LPT (Longest Processing Time)",
+    spt:     "SPT (Shortest Processing Time)",
+    fifo:    "FIFO (sans optimisation)",
+  };
+  return noms[algo] || algo;
+}
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = `toast ${type} show`;
+  setTimeout(() => { t.classList.remove('show'); }, 3500);
+}
+</script>
+</body>
+</html>

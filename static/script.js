@@ -227,11 +227,25 @@ class LandingPageController {
         this.gameContainer = document.getElementById('game-container');
         this.tutorialOverlay = document.getElementById('tutorial-overlay');
         this.optionsOverlay = document.getElementById('options-overlay');
+        this.burgerBtn = document.getElementById('burger-btn');
+        this.panel = document.getElementById('panel-loadbalancer');
+        this.panelOverlay = document.getElementById('panel-overlay');
 
         this.setupEventListeners();
     }
 
     setupEventListeners() {
+        // Burger menu toggle
+        this.burgerBtn?.addEventListener('click', () => {
+            soundManager.play('click');
+            this.togglePanel();
+        });
+
+        // Close panel when clicking overlay
+        this.panelOverlay?.addEventListener('click', () => {
+            this.closePanel();
+        });
+
         // Play button
         document.getElementById('btn-play')?.addEventListener('click', () => {
             soundManager.init();
@@ -332,6 +346,18 @@ class LandingPageController {
     hideOptions() {
         this.optionsOverlay.classList.remove('visible');
     }
+
+    togglePanel() {
+        const isOpen = this.panel.classList.toggle('open');
+        this.burgerBtn.classList.toggle('active', isOpen);
+        this.panelOverlay.classList.toggle('visible', isOpen);
+    }
+
+    closePanel() {
+        this.panel.classList.remove('open');
+        this.burgerBtn.classList.remove('active');
+        this.panelOverlay.classList.remove('visible');
+    }
 }
 
 // Add fade-out animation
@@ -411,17 +437,18 @@ class Plat {
         const cuissonClass = this.etapes.cuisson.done ? 'done' : (this.currentEtape === 'cuisson' ? 'active' : '');
         const dressageClass = this.etapes.dressage.done ? 'done' : (this.currentEtape === 'dressage' ? 'active' : '');
 
+        const prepTime = this.etapes.preparation.done ? 0 : Math.ceil(this.etapes.preparation.remaining);
+        const cuissonTime = this.etapes.cuisson.done ? 0 : Math.ceil(this.etapes.cuisson.remaining);
+        const dressageTime = this.etapes.dressage.done ? 0 : Math.ceil(this.etapes.dressage.remaining);
+
         card.innerHTML = `
             ${priorityBadge}
             <div class="plat-icon">${this.icon}</div>
             <div class="plat-name">${this.nom}</div>
             <div class="plat-etapes">
-                <span class="etape prep ${prepClass}">${this.etapes.preparation.total}s</span>
-                ${this.etapes.cuisson.total > 0 ? `<span class="etape cuisson ${cuissonClass}">${this.etapes.cuisson.total}s</span>` : ''}
-                <span class="etape dressage ${dressageClass}">${this.etapes.dressage.total}s</span>
-            </div>
-            <div class="plat-deadline">
-                <div class="countdown">${Math.ceil(this.timeRemaining)}</div>
+                <span class="etape prep ${prepClass}">🥕 <span class="etape-timer">${prepTime}s</span></span>
+                ${this.etapes.cuisson.total > 0 ? `<span class="etape cuisson ${cuissonClass}">🔥 <span class="etape-timer">${cuissonTime}s</span></span>` : ''}
+                <span class="etape dressage ${dressageClass}">🎨 <span class="etape-timer">${dressageTime}s</span></span>
             </div>
             <div class="plat-progress">
                 <div class="progress-fill" style="width: 0%"></div>
@@ -435,26 +462,6 @@ class Plat {
     // Mettre a jour l'affichage
     updateDisplay() {
         if (!this.element) return;
-
-        // Mettre a jour le countdown
-        const countdown = this.element.querySelector('.countdown');
-        if (countdown) {
-            countdown.textContent = Math.ceil(this.timeRemaining);
-            countdown.className = 'countdown';
-            if (this.timeRemaining <= 5) {
-                countdown.classList.add('critical');
-            } else if (this.timeRemaining <= 10) {
-                countdown.classList.add('warning');
-            }
-        }
-
-        // Mettre a jour les classes de deadline
-        this.element.classList.remove('deadline-warning', 'deadline-critical');
-        if (this.timeRemaining <= 5) {
-            this.element.classList.add('deadline-critical');
-        } else if (this.timeRemaining <= 10) {
-            this.element.classList.add('deadline-warning');
-        }
 
         // Mettre a jour la barre de progression si en cours
         if (this.currentEtape) {
@@ -735,10 +742,6 @@ class GameEngine {
         // Manual mode
         this.selectedPlat = null;
 
-        // Generation de commandes
-        this.nextOrderTime = 0;
-        this.orderInterval = 8; // Nouvelle commande toutes les 8 secondes de base
-
         // Initialiser les stations
         this.stations = {
             preparation: new Station('preparation', 'prep-active', 'prep-queue'),
@@ -869,13 +872,20 @@ class GameEngine {
         if (!this.selectedPlat) return;
 
         const plat = this.selectedPlat;
+        // Sauvegarder l'ancien element avant que manualAssign ne l'ecrase
+        const oldElement = plat.element;
         const result = this.loadBalancer.manualAssign(plat, stationType);
 
         if (result.success) {
             // Son d'assignation
             soundManager.play('assign');
 
-            // Retirer des commandes ou waiting
+            // Retirer l'ancien element des commandes
+            if (oldElement && oldElement.parentNode === this.commandesContainer) {
+                this.commandesContainer.removeChild(oldElement);
+            }
+
+            // Retirer des listes commandes ou waiting
             this.removeFromWaitingAreas(plat);
 
             // Deselectionner
@@ -891,26 +901,16 @@ class GameEngine {
         }
     }
 
-    // Retirer un plat des zones d'attente
+    // Retirer un plat des listes d'attente
     removeFromWaitingAreas(plat) {
-        // Retirer de commandes
         const cmdIndex = this.commandes.indexOf(plat);
         if (cmdIndex > -1) {
             this.commandes.splice(cmdIndex, 1);
-            if (plat.element && plat.element.parentNode === this.commandesContainer) {
-                this.commandesContainer.removeChild(plat.element);
-                plat.element = null;
-            }
         }
 
-        // Retirer de waitingPlats
         const waitIndex = this.waitingPlats.indexOf(plat);
         if (waitIndex > -1) {
             this.waitingPlats.splice(waitIndex, 1);
-            if (plat.element && plat.element.parentNode === this.commandesContainer) {
-                this.commandesContainer.removeChild(plat.element);
-                plat.element = null;
-            }
         }
     }
 
@@ -986,6 +986,14 @@ class GameEngine {
     start() {
         if (this.isRunning) return;
 
+        // Fermer le panel burger
+        if (window.landingController) {
+            window.landingController.closePanel();
+        }
+
+        // Nettoyer l'etat precedent
+        this.reset();
+
         this.isRunning = true;
         this.isPaused = false;
         this.lastTickTime = performance.now();
@@ -999,11 +1007,29 @@ class GameEngine {
         // Update manual mode UI
         this.updateManualModeUI();
 
-        // Generer quelques commandes initiales
-        this.generateOrder();
-        this.generateOrder();
+        // Charger les 6 plats fixes
+        this.loadFixedOrders();
 
         this.gameLoop();
+    }
+
+    // Charger les 6 plats fixes au demarrage
+    loadFixedOrders() {
+        const platIds = Object.keys(PLATS_CATALOGUE);
+        platIds.forEach(catalogId => {
+            this.platCounter++;
+            const plat = new Plat(catalogId, `plat-${this.platCounter}`);
+            this.totalPlats++;
+
+            this.allPlats.set(plat.id, plat);
+            this.commandes.push(plat);
+
+            const element = plat.createElement(false, false);
+            if (this.loadBalancer.isManualMode()) {
+                element.classList.add('selectable');
+            }
+            this.commandesContainer.appendChild(element);
+        });
     }
 
     // Pause/Resume
@@ -1030,7 +1056,6 @@ class GameEngine {
         this.commandes = [];
         this.waitingPlats = [];
         this.allPlats.clear();
-        this.nextOrderTime = 0;
         this.selectedPlat = null;
 
         // Vider les containers
@@ -1066,47 +1091,23 @@ class GameEngine {
 
         this.gameTime += deltaTime * this.speedMultiplier;
 
-        // Generation de commandes
-        if (this.gameTime >= this.nextOrderTime) {
-            this.generateOrder();
-            // Intervalle aleatoire entre 7 et 12 secondes
-            this.nextOrderTime = this.gameTime + 7 + Math.random() * 5;
-        }
-
         // Assigner les commandes en attente
         this.processCommandes();
 
         // Traiter les stations
         this.processStations(deltaTime * this.speedMultiplier);
 
-        // Mettre a jour les deadlines de tous les plats
-        this.updateAllDeadlines(deltaTime * this.speedMultiplier);
-
         // Mettre a jour le HUD
         this.updateHUD();
 
+        // Verifier victoire (tous les 6 plats servis)
+        if (this.platsServis >= this.totalPlats) {
+            this.victory();
+            return;
+        }
+
         // Continuer la boucle
         requestAnimationFrame(() => this.gameLoop());
-    }
-
-    // Generer une nouvelle commande
-    generateOrder() {
-        const platIds = Object.keys(PLATS_CATALOGUE);
-        const randomId = platIds[Math.floor(Math.random() * platIds.length)];
-
-        this.platCounter++;
-        const plat = new Plat(randomId, `plat-${this.platCounter}`);
-        this.totalPlats++;
-
-        this.allPlats.set(plat.id, plat);
-        this.commandes.push(plat);
-
-        // Creer l'element et l'ajouter
-        const element = plat.createElement(false, false);
-        if (this.loadBalancer.isManualMode()) {
-            element.classList.add('selectable');
-        }
-        this.commandesContainer.appendChild(element);
     }
 
     // Traiter les commandes en attente
@@ -1114,12 +1115,13 @@ class GameEngine {
         const toRemove = [];
 
         this.commandes.forEach(plat => {
+            // Sauvegarder l'ancien element avant que assignPlat ne l'ecrase
+            const oldElement = plat.element;
             if (this.loadBalancer.assignPlat(plat)) {
                 toRemove.push(plat);
-                // Retirer l'element de la zone commandes
-                if (plat.element && plat.element.parentNode === this.commandesContainer) {
-                    this.commandesContainer.removeChild(plat.element);
-                    plat.element = null;
+                // Retirer l'ancien element de la zone commandes
+                if (oldElement && oldElement.parentNode === this.commandesContainer) {
+                    this.commandesContainer.removeChild(oldElement);
                 }
             }
         });
@@ -1183,40 +1185,13 @@ class GameEngine {
         this.commandesContainer.appendChild(element);
     }
 
-    // Mettre a jour les deadlines
-    updateAllDeadlines(deltaTime) {
-        this.allPlats.forEach((plat, id) => {
-            if (plat.etat !== 'SERVI' && plat.etat !== 'BRULE') {
-                const previousTime = plat.timeRemaining;
-                plat.timeRemaining -= deltaTime;
-
-                // Son d'avertissement quand on passe a 5 secondes
-                if (previousTime > 5 && plat.timeRemaining <= 5) {
-                    soundManager.play('warning');
-                }
-
-                // Effet de fumee pour les plats critiques
-                if (plat.timeRemaining <= 5 && plat.element && Math.random() < 0.1) {
-                    ParticleEffects.createSmoke(plat.element);
-                }
-
-                if (plat.timeRemaining <= 0) {
-                    this.burnPlat(plat);
-                } else {
-                    plat.updateDisplay();
-                }
-            }
-        });
-    }
-
     // Servir un plat
     servePlat(plat) {
         plat.etat = 'SERVI';
         this.platsServis++;
 
-        // Bonus de satisfaction si servi a temps
-        const timeBonus = plat.timeRemaining > 5 ? 2 : 0;
-        this.satisfaction = Math.min(100, this.satisfaction + 1 + timeBonus);
+        // Bonus de satisfaction
+        this.satisfaction = Math.min(100, this.satisfaction + 3);
 
         // Son et effets
         if (plat.priorite === 'vip') {
@@ -1244,58 +1219,12 @@ class GameEngine {
         }, 3000);
     }
 
-    // Bruler un plat (timeout)
-    burnPlat(plat) {
-        plat.etat = 'BRULE';
-        this.platsRates++;
-
-        // Penalite de satisfaction
-        let penalty = 5;
-        if (plat.priorite === 'vip') penalty = 15;
-        if (plat.priorite === 'elevee') penalty = 10;
-        this.satisfaction = Math.max(0, this.satisfaction - penalty);
-
-        // Son de brulure
-        soundManager.play('burn');
-
-        // Animation de brulure avec flammes
-        if (plat.element) {
-            ParticleEffects.createFlame(plat.element);
-            ParticleEffects.createSmoke(plat.element);
-            plat.element.classList.add('burning');
-            setTimeout(() => {
-                if (plat.element && plat.element.parentNode) {
-                    plat.element.parentNode.removeChild(plat.element);
-                }
-            }, 500);
-        }
-
-        // Retirer des stations/commandes
-        Object.values(this.stations).forEach(station => {
-            station.removePlat(plat);
-        });
-
-        const cmdIndex = this.commandes.indexOf(plat);
-        if (cmdIndex > -1) {
-            this.commandes.splice(cmdIndex, 1);
-        }
-
-        // Message si VIP perdu
-        if (plat.priorite === 'vip') {
-            this.showMessage("Client VIP perdu ! La satisfaction chute.");
-        }
-
-        // Verifier la defaite
-        if (this.satisfaction <= 0) {
-            this.gameOver();
-        }
-    }
-
     // Mettre a jour le HUD
     updateHUD() {
-        // Timer
-        const minutes = Math.floor(this.gameTime / 60);
-        const seconds = Math.floor(this.gameTime % 60);
+        // Chrono (compte depuis 0)
+        const elapsed = Math.floor(this.gameTime);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
         this.timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
         // Satisfaction
@@ -1311,7 +1240,7 @@ class GameEngine {
         }
 
         // Stats
-        this.platsServisDisplay.textContent = this.platsServis;
+        this.platsServisDisplay.textContent = `${this.platsServis}/${this.totalPlats}`;
         this.platsRatesDisplay.textContent = this.platsRates;
     }
 
@@ -1321,11 +1250,16 @@ class GameEngine {
         document.getElementById('message-overlay').classList.add('visible');
     }
 
-    // Game Over
-    gameOver() {
+    // Victoire (tous les plats servis)
+    victory() {
         this.isRunning = false;
-        soundManager.play('gameOver');
-        this.showMessage(`Game Over ! Vous avez servi ${this.platsServis} plats en ${Math.floor(this.gameTime)} secondes.`);
+        const tempsUtilise = Math.floor(this.gameTime);
+        const minutes = Math.floor(tempsUtilise / 60);
+        const seconds = tempsUtilise % 60;
+        const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        soundManager.play('dingVip');
+        ParticleEffects.createConfetti(80);
+        this.showMessage(`Victoire ! Tous les ${this.totalPlats} plats servis en ${timeStr} !`);
         document.getElementById('btn-start').disabled = false;
         document.getElementById('btn-pause').disabled = true;
     }
@@ -1341,3 +1275,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize game engine
     window.game = new GameEngine();
 });
+
