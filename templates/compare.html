@@ -654,6 +654,13 @@
           <span>Johnson <small style="color:var(--muted); font-size:11px;">(optimal 1+1)</small></span>
           <span class="checkmark">✓</span>
         </label>
+        <label class="algo-check-label"
+               style="--algo-color: #E17055; --algo-rgb: 225,112,85;"
+               data-algo="brute" onclick="toggleAlgo(this)">
+          <span class="algo-dot"></span>
+          <span>Force brute <small style="color:var(--muted); font-size:11px;">(optimal exact)</small></span>
+          <span class="checkmark">✓</span>
+        </label>
         <label class="algo-check-label checked"
                style="--algo-color: #A29BFE; --algo-rgb: 162,155,254;"
                data-algo="neh" onclick="toggleAlgo(this)">
@@ -716,6 +723,7 @@
 // ── Données ──────────────────────────────────────────────
 const ALGO_COLORS = {
   johnson: '#FF6B6B',
+  brute:   '#E17055',
   neh:     '#A29BFE',
   lpt:     '#00B894',
   spt:     '#FDCB6E',
@@ -755,7 +763,7 @@ const PRESETS = {
   }
 };
 
-let activeAlgos = new Set(['johnson', 'neh', 'lpt']);
+let activeAlgos = new Set(['johnson', 'brute', 'neh', 'lpt']);
 let activePreset = null;
 
 // ── Init ─────────────────────────────────────────────────
@@ -1040,6 +1048,7 @@ function creerGanttRow(label, taches, scale, color, isFour = false) {
 function formatNom(algo) {
   const noms = {
     johnson: "Johnson's Algorithm",
+    brute:   "Force brute (optimal exact)",
     neh:     "NEH (Nawaz-Enscore-Ham)",
     lpt:     "LPT (Longest Processing Time)",
     spt:     "SPT (Shortest Processing Time)",

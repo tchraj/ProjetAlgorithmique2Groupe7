@@ -1,6 +1,13 @@
 .venv
 __pycache__
+**/__pycache__
 .git
 .idea
 *.pyc
+*.pyo
 backend/.pytest_cache
+backend/tests/
+docs/
+deploy/
+*.md
+.dockerignore

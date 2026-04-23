@@ -1,3 +1,4 @@
+# deploy/docker-compose.yaml
 services:
   web:
     image: <registry>/projetalgorithmique2groupe7:latest
@@ -8,7 +9,7 @@ services:
       - PYTHONUNBUFFERED=1
     restart: unless-stopped
     volumes:
-      - ./instances:/app/instances
+      - ./instances:/app/instances  # bind mount pour les fichiers JSON
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/"]
       interval: 30s
